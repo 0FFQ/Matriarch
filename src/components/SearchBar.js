@@ -60,22 +60,14 @@ const SearchBar = memo(({
 
   return (
     <div className="search-bar-wrapper">
-      {/* ЛЕВАЯ ИКОНКА: Лупа (видна когда не раскрыто) */}
+      {/* ЛЕВАЯ ИКОНКА: Лупа (видна ВСЕГДА) */}
       <div className="search-icon-left">
-        <AnimatePresence>
-          {!isExpanded && (
-            <motion.div 
-              className="search-icon-only" 
-              onClick={handleIconClick}
-              initial={{ opacity: 0, scale: 0.5 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.5 }}
-              transition={{ duration: 0.2 }}
-            >
-              <Search size={24} />
-            </motion.div>
-          )}
-        </AnimatePresence>
+        <div 
+          className="search-icon-only" 
+          onClick={handleIconClick}
+        >
+          <Search size={24} />
+        </div>
       </div>
 
       {/* ЦЕНТР: Строка поиска */}
