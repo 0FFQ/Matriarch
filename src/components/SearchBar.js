@@ -43,15 +43,22 @@ const SearchBar = memo(({
   }, [isExpanded]);
 
   const handleInputBlur = useCallback(() => {
-    if (!query) {
+    if (!query && !searchActive) {
       setIsExpanded(false);
     }
-  }, [query]);
+  }, [query, searchActive]);
 
   const showSuggestions = useMemo(() => 
     suggestions.length > 0 && isExpanded,
     [suggestions.length, isExpanded]
   );
+
+  // Разворачиваем строку если есть query или searchActive
+  useEffect(() => {
+    if (query || searchActive) {
+      setIsExpanded(true);
+    }
+  }, [query, searchActive]);
 
   return (
     <motion.div

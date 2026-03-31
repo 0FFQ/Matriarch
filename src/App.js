@@ -35,7 +35,7 @@ function App() {
 
   // Поиск подсказок с debounce 300ms
   useEffect(() => {
-    if (query.length > 2 && !searchActive) {
+    if (query.length > 2) {
       if (debounceRef.current) clearTimeout(debounceRef.current);
 
       debounceRef.current = setTimeout(async () => {
@@ -60,7 +60,7 @@ function App() {
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current);
     };
-  }, [query, searchActive]);
+  }, [query]);
 
   // Сброс состояния при очистке поиска
   useEffect(() => {
