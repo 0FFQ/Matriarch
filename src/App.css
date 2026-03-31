@@ -276,6 +276,7 @@ body.light {
   justify-content: center;
   align-items: center;
   height: 40px;
+  gap: 8px;
 }
 
 /* Иконка поиска - видна всегда */
@@ -296,6 +297,11 @@ body.light {
 
 .search-icon-only:hover {
   color: #ffffff;
+}
+
+.filter-icon-only {
+  cursor: default;
+  pointer-events: none;
 }
 
 /* Строка поиска - скрыта по умолчанию */
@@ -359,23 +365,6 @@ body.light {
 
 .clear-btn:hover {
   background: rgba(255, 255, 255, 0.15);
-  color: #ffffff;
-}
-
-.filter-icon {
-  width: 32px;
-  height: 32px;
-  margin-right: 4px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #666666;
-  cursor: pointer;
-  transition: color 0.2s;
-  flex-shrink: 0;
-}
-
-.filter-icon:hover {
   color: #ffffff;
 }
 
@@ -571,6 +560,10 @@ body.light {
   color: #4a4438;
 }
 
+.light .filter-icon-only {
+  color: #6b6356;
+}
+
 .light .search-bar {
   background: rgba(255, 255, 255, 0.95);
   border-color: rgba(139, 131, 120, 0.3);
@@ -591,14 +584,6 @@ body.light {
 
 .light .clear-btn:hover {
   background: rgba(139, 131, 120, 0.25);
-  color: #4a4438;
-}
-
-.light .filter-icon {
-  color: #6b6356;
-}
-
-.light .filter-icon:hover {
   color: #4a4438;
 }
 

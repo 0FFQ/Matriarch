@@ -84,21 +84,10 @@ const SearchBar = memo(({
                 onBlur={handleInputBlur}
               />
 
-              {/* Иконка фильтра - появляется только когда строка раскрыта */}
-              <motion.div
-                className="filter-icon"
-                initial={{ opacity: 0, scale: 0 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0 }}
-                transition={{ duration: 0.2, delay: 0.1 }}
-              >
-                <Sliders size={20} />
-              </motion.div>
-
               {query && (
-                <motion.button 
-                  type="button" 
-                  className="clear-btn" 
+                <motion.button
+                  type="button"
+                  className="clear-btn"
                   onClick={handleClear}
                   initial={{ opacity: 0, scale: 0 }}
                   animate={{ opacity: 1, scale: 1 }}
@@ -150,6 +139,21 @@ const SearchBar = memo(({
                 </motion.div>
               )}
             </AnimatePresence>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Иконка фильтра - справа от строки */}
+      <AnimatePresence>
+        {showSearch && (
+          <motion.div
+            className="search-icon-only filter-icon-only"
+            initial={{ opacity: 0, scale: 0.5 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.5 }}
+            transition={{ duration: 0.2, delay: 0.1 }}
+          >
+            <Sliders size={24} />
           </motion.div>
         )}
       </AnimatePresence>
