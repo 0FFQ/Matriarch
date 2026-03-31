@@ -1,10 +1,10 @@
-import React, { memo, useCallback } from 'react';
+import React, { memo, useCallback, useMemo } from 'react';
 import YouTube from 'react-youtube';
 import { motion } from 'framer-motion';
 import { X } from 'lucide-react';
 
 const TrailerPlayer = memo(({ trailer, onClose, setSearchActive }) => {
-  const opts = memo(() => ({
+  const opts = useMemo(() => ({
     width: '100%',
     height: '500px',
     playerVars: { autoplay: 1 }
@@ -27,7 +27,7 @@ const TrailerPlayer = memo(({ trailer, onClose, setSearchActive }) => {
           <X size={32} />
         </button>
         <h2>{trailer.title}</h2>
-        <YouTube videoId={trailer.key} opts={opts()} />
+        <YouTube videoId={trailer.key} opts={opts} />
       </div>
     </motion.div>
   );
