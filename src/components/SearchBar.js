@@ -64,7 +64,7 @@ const SearchBar = memo(({
       <motion.div 
         className="search-icon-left"
         animate={{ 
-          x: isExpanded ? -260 : 0
+          x: isExpanded ? -280 : 0  // Увеличил отступ
         }}
         transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
         style={{ pointerEvents: 'none' }}
@@ -166,7 +166,7 @@ const SearchBar = memo(({
           className="search-icon-only filter-icon"
           animate={{ 
             opacity: isExpanded ? 1 : 0,
-            x: isExpanded ? 0 : -10
+            x: isExpanded ? 40 : 0  // Отступ вправо
           }}
           transition={{ duration: 0.2 }}
         >
