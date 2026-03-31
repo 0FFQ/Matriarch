@@ -1,5 +1,11 @@
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
+/* Убираем все подчёркивания */
+a {
+  text-decoration: none !important;
+  color: inherit;
+}
+
 html {
   overflow-x: hidden;
   width: 100%;
@@ -544,7 +550,6 @@ body.light {
   background: rgba(255, 255, 255, 0.08);
   color: #ffffff;
   border-radius: 12px;
-  text-decoration: none;
   font-weight: 600;
   font-size: 1rem;
   transition: all 0.2s;
@@ -688,13 +693,11 @@ body.light {
   margin-bottom: 0.5rem;
   font-size: 1.3rem;
   pointer-events: none;
-  text-decoration: none;
 }
 
 .result-card p {
   color: #ccc;
   pointer-events: none;
-  text-decoration: none;
   font-size: 0.95rem;
   font-weight: 500;
   letter-spacing: 0.5px;
@@ -722,7 +725,6 @@ body.light {
 
 .light .result-card h3 {
   color: #4a4438;
-  text-decoration: none;
 }
 
 .light .result-card p {
