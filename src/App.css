@@ -688,11 +688,25 @@ body.light {
   margin-bottom: 0.5rem;
   font-size: 1.3rem;
   pointer-events: none;
+  text-decoration: none;
 }
 
 .result-card p {
   color: #ccc;
   pointer-events: none;
+  text-decoration: none;
+  font-size: 0.95rem;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  display: inline-block;
+  padding: 4px 12px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  margin-top: 0.25rem;
+}
+
+.light .result-card p {
+  background: rgba(139, 131, 120, 0.15);
 }
 
 .result-card-large .kinopoisk-icon {
@@ -708,6 +722,7 @@ body.light {
 
 .light .result-card h3 {
   color: #4a4438;
+  text-decoration: none;
 }
 
 .light .result-card p {

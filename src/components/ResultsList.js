@@ -18,6 +18,12 @@ const ResultsList = memo(({ results, imageBase, onSelect }) => {
     return `https://www.kinopoisk.ru/search/?query=${encodeURIComponent(`${title} ${year} ${type}`)}`;
   };
 
+  const formatYear = (dateString) => {
+    if (!dateString) return '';
+    const year = dateString.split('-')[0];
+    return year;
+  };
+
   return (
     <motion.div
       className={isSingleResult ? 'results-list-single' : 'results-list'}
@@ -47,7 +53,7 @@ const ResultsList = memo(({ results, imageBase, onSelect }) => {
             </div>
           </div>
           <h3>{item.title || item.name}</h3>
-          <p>{item.release_date || item.first_air_date}</p>
+          <p>{formatYear(item.release_date || item.first_air_date)}</p>
         </motion.a>
       ))}
     </motion.div>
