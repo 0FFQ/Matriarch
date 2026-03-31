@@ -1,8 +1,8 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, memo, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, X, Film, Tv } from 'lucide-react';
 
-const SearchBar = ({
+const SearchBar = memo(({
   query,
   setQuery,
   onSearch,
@@ -15,40 +15,43 @@ const SearchBar = ({
   const [isExpanded, setIsExpanded] = useState(false);
   const inputRef = useRef(null);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = useCallback((e) => {
     e.preventDefault();
     if (query.trim()) {
       onSearch(query);
       setSearchActive(true);
     }
-  };
+  }, [query, onSearch, setSearchActive]);
 
-  const handleClear = () => {
+  const handleClear = useCallback(() => {
     setQuery('');
     setSearchActive(false);
     inputRef.current?.focus();
-  };
+  }, [setQuery, setSearchActive]);
 
-  const handleSelect = (title) => {
+  const handleSelect = useCallback((title) => {
     if (onSuggestionClick) {
       onSuggestionClick(title);
     }
-  };
+  }, [onSuggestionClick]);
 
-  const handleIconClick = () => {
+  const handleIconClick = useCallback(() => {
     if (!isExpanded) {
       setIsExpanded(true);
       setTimeout(() => inputRef.current?.focus(), 300);
     }
-  };
+  }, [isExpanded]);
 
-  const handleInputBlur = () => {
+  const handleInputBlur = useCallback(() => {
     if (!query) {
       setIsExpanded(false);
     }
-  };
+  }, [query]);
 
-  const showSuggestions = suggestions.length > 0 && isExpanded;
+  const showSuggestions = useMemo(() => 
+    suggestions.length > 0 && isExpanded,
+    [suggestions.length, isExpanded]
+  );
 
   return (
     <motion.div
@@ -117,6 +120,7 @@ const SearchBar = ({
                       src={`https://image.tmdb.org/t/p/w92${item.poster_path}`}
                       alt=""
                       className="suggestion-poster"
+                      loading="lazy"
                     />
                   )}
                   <div className="suggestion-info">
@@ -137,6 +141,6 @@ const SearchBar = ({
       </motion.div>
     </motion.div>
   );
-};
+});
 
 export default SearchBar;

@@ -11,18 +11,20 @@ const InteractiveAtom = () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext('2d', { alpha: false }); // Оптимизация: отключаем прозрачность canvas
     let width = canvas.width = window.innerWidth;
     let height = canvas.height = window.innerHeight;
 
+    // Уменьшаем количество частиц для производительности
+    const PARTICLE_COUNT = Math.min(8000, Math.floor((width * height) / 150));
+
     const createParticles = () => {
-      const particles = [];
+      const particles = new Array(PARTICLE_COUNT);
       const sphereRadius = Math.min(width, height) * 0.20;
-      const totalParticles = 8000;
       const isDark = isDarkRef.current;
 
-      for (let i = 0; i < totalParticles; i++) {
-        const phi = Math.acos(1 - 2 * (i + 0.5) / totalParticles);
+      for (let i = 0; i < PARTICLE_COUNT; i++) {
+        const phi = Math.acos(1 - 2 * (i + 0.5) / PARTICLE_COUNT);
         const theta = Math.PI * (1 + Math.sqrt(5)) * (i + 0.5);
 
         const randomFactor = Math.random();
@@ -81,12 +83,7 @@ const InteractiveAtom = () => {
           }
         }
 
-        particles.push({
-          x, y, z,
-          baseX: x, baseY: y, baseZ: z,
-          size,
-          r, g, b, a
-        });
+        particles[i] = { x, y, z, baseX: x, baseY: y, baseZ: z, size, r, g, b, a };
       }
 
       return particles;
@@ -108,12 +105,14 @@ const InteractiveAtom = () => {
       particlesRef.current = createParticles();
     };
 
-    window.addEventListener('resize', handleResize);
+    window.addEventListener('resize', handleResize, { passive: true });
 
     const animate = () => {
       if (!ctx) return;
 
-      ctx.clearRect(0, 0, width, height);
+      // Оптимизация: используем fillRect вместо clearRect
+      ctx.fillStyle = isDarkRef.current ? '#000000' : '#f5f2ed';
+      ctx.fillRect(0, 0, width, height);
 
       const centerX = width / 2;
       const centerY = height / 2;
@@ -131,6 +130,7 @@ const InteractiveAtom = () => {
       const particles = particlesRef.current;
       const len = particles.length;
 
+      // Оптимизация: кэшируем вычисления
       for (let i = 0; i < len; i++) {
         const p = particles[i];
         const x1 = p.x * cosY - p.z * sinY;
@@ -143,14 +143,20 @@ const InteractiveAtom = () => {
         p.displayZ = z2;
       }
 
+      // Оптимизация: отрисовка с сортировкой по Z
+      const sortedIndices = new Uint16Array(len);
+      for (let i = 0; i < len; i++) sortedIndices[i] = i;
+      
+      sortedIndices.sort((a, b) => particles[a].displayZ - particles[b].displayZ);
+
       for (let i = 0; i < len; i++) {
-        const p = particles[i];
+        const idx = sortedIndices[i];
+        const p = particles[idx];
         const normalizedZ = p.displayZ + 200;
         const scale = 1 / (1 + normalizedZ / 400);
         const screenSize = Math.max(0.5, Math.min(p.size * scale, p.size * 2));
-        const alpha = p.a;
 
-        ctx.fillStyle = `rgba(${p.r}, ${p.g}, ${p.b}, ${alpha})`;
+        ctx.fillStyle = `rgba(${p.r}, ${p.g}, ${p.b}, ${p.a})`;
         ctx.beginPath();
         ctx.arc(p.displayX, p.displayY, screenSize, 0, Math.PI * 2);
         ctx.fill();

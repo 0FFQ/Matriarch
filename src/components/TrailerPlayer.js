@@ -1,19 +1,19 @@
-import React from 'react';
+import React, { memo, useCallback } from 'react';
 import YouTube from 'react-youtube';
 import { motion } from 'framer-motion';
 import { X } from 'lucide-react';
 
-const TrailerPlayer = ({ trailer, onClose, setSearchActive }) => {
-  const opts = {
+const TrailerPlayer = memo(({ trailer, onClose, setSearchActive }) => {
+  const opts = memo(() => ({
     width: '100%',
     height: '500px',
     playerVars: { autoplay: 1 }
-  };
+  }), []);
 
-  const handleClose = () => {
+  const handleClose = useCallback(() => {
     onClose();
     setSearchActive(true);
-  };
+  }, [onClose, setSearchActive]);
 
   return (
     <motion.div
@@ -27,10 +27,10 @@ const TrailerPlayer = ({ trailer, onClose, setSearchActive }) => {
           <X size={32} />
         </button>
         <h2>{trailer.title}</h2>
-        <YouTube videoId={trailer.key} opts={opts} />
+        <YouTube videoId={trailer.key} opts={opts()} />
       </div>
     </motion.div>
   );
-};
+});
 
 export default TrailerPlayer;
