@@ -79,11 +79,11 @@ const SearchBar = memo(({
       <motion.div
         className="search-bar"
         animate={{ 
-          width: isExpanded ? 'min(90vw, 480px)' : 0,
+          width: isExpanded ? 480 : 0,
           opacity: isExpanded ? 1 : 0
         }}
         transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
-        style={{ overflow: 'hidden' }}
+        style={{ overflow: 'hidden', maxWidth: '90vw' }}
       >
         <form className="search-form" onSubmit={handleSubmit}>
           <input
