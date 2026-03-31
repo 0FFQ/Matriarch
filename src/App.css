@@ -77,8 +77,8 @@ body.light {
   position: fixed;
   top: 2rem;
   right: 2rem;
-  width: 48px;
-  height: 48px;
+  width: 40px;
+  height: 40px;
   background: transparent;
   border: none;
   cursor: pointer;
@@ -86,13 +86,13 @@ body.light {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 5px;
+  gap: 4px;
   z-index: 1000;
   padding: 0;
 }
 
 .menu-toggle .line {
-  width: 28px;
+  width: 24px;
   height: 2px;
   background: #666666;
   border-radius: 2px;
@@ -104,7 +104,7 @@ body.light {
 }
 
 .menu-toggle .line.open:nth-child(1) {
-  transform: translateY(7px) rotate(45deg);
+  transform: translateY(6px) rotate(45deg);
 }
 
 .menu-toggle .line.open:nth-child(2) {
@@ -112,7 +112,7 @@ body.light {
 }
 
 .menu-toggle .line.open:nth-child(3) {
-  transform: translateY(-7px) rotate(-45deg);
+  transform: translateY(-6px) rotate(-45deg);
 }
 
 .sidebar-overlay {
