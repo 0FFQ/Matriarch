@@ -303,6 +303,7 @@ body.light {
   pointer-events: none;
   margin-left: 8px;
   flex-shrink: 0;
+  display: flex;
 }
 
 /* Строка поиска - скрыта по умолчанию */

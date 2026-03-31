@@ -151,7 +151,7 @@ const SearchBar = memo(({
       {/* Иконка фильтра - всегда в потоке */}
       <div 
         className="filter-icon-only" 
-        style={{ visibility: showSearch ? 'visible' : 'hidden' }}
+        style={{ visibility: showSearch ? 'visible' : 'hidden', display: 'flex' }}
       >
         <Sliders size={24} />
       </div>
