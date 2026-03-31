@@ -12,7 +12,7 @@ const SearchBar = memo(({
   suggestions,
   onSuggestionClick
 }) => {
-  const [showSearch, setShowSearch] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
   const inputRef = useRef(null);
 
   const handleSubmit = useCallback((e) => {
@@ -26,6 +26,7 @@ const SearchBar = memo(({
   const handleClear = useCallback(() => {
     setQuery('');
     setSearchActive(false);
+    setIsExpanded(false);
     inputRef.current?.focus();
   }, [setQuery, setSearchActive]);
 
@@ -36,46 +37,55 @@ const SearchBar = memo(({
   }, [onSuggestionClick]);
 
   const handleIconClick = useCallback(() => {
-    setShowSearch(true);
+    setIsExpanded(true);
     setTimeout(() => inputRef.current?.focus(), 100);
   }, []);
 
   const handleInputBlur = useCallback(() => {
     if (!query && !searchActive) {
-      setShowSearch(false);
+      setIsExpanded(false);
     }
   }, [query, searchActive]);
 
   const showSuggestions = useMemo(() => 
-    suggestions.length > 0 && showSearch && !searchActive && !loading,
-    [suggestions.length, showSearch, searchActive, loading]
+    suggestions.length > 0 && isExpanded && !searchActive && !loading,
+    [suggestions.length, isExpanded, searchActive, loading]
   );
 
   useEffect(() => {
     if (query || searchActive) {
-      setShowSearch(true);
+      setIsExpanded(true);
     }
   }, [query, searchActive]);
 
   return (
     <div className="search-bar-wrapper">
-      {/* Иконка поиска - всегда в потоке */}
-      <div 
-        className="search-icon-only" 
-        onClick={handleIconClick} 
-        style={{ visibility: !showSearch ? 'visible' : 'hidden' }}
-      >
-        <Search size={24} />
+      {/* ЛЕВАЯ ИКОНКА: Лупа (видна когда не раскрыто) */}
+      <div className="search-icon-left">
+        <AnimatePresence>
+          {!isExpanded && (
+            <motion.div 
+              className="search-icon-only" 
+              onClick={handleIconClick}
+              initial={{ opacity: 0, scale: 0.5 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.5 }}
+              transition={{ duration: 0.2 }}
+            >
+              <Search size={24} />
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
-      {/* Строка поиска - появляется при клике */}
+      {/* ЦЕНТР: Строка поиска */}
       <AnimatePresence>
-        {showSearch && (
+        {isExpanded && (
           <motion.div
             className="search-bar expanded"
-            initial={{ opacity: 0, width: 0, scale: 0.8 }}
-            animate={{ opacity: 1, width: 'min(90vw, 480px)', scale: 1 }}
-            exit={{ opacity: 0, width: 0, scale: 0.8 }}
+            initial={{ opacity: 0, width: 0 }}
+            animate={{ opacity: 1, width: 'min(90vw, 480px)' }}
+            exit={{ opacity: 0, width: 0 }}
             transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
           >
             <form className="search-form" onSubmit={handleSubmit}>
@@ -107,10 +117,9 @@ const SearchBar = memo(({
               {showSuggestions && (
                 <motion.div
                   className="suggestions-list"
-                  initial={{ opacity: 0, y: -10, scale: 0.95 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: -10, scale: 0.95 }}
-                  transition={{ duration: 0.2 }}
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
                 >
                   {suggestions.map((item, idx) => (
                     <motion.div
@@ -148,12 +157,21 @@ const SearchBar = memo(({
         )}
       </AnimatePresence>
 
-      {/* Иконка фильтра - всегда в потоке */}
-      <div 
-        className="filter-icon-only" 
-        style={{ visibility: showSearch ? 'visible' : 'hidden', display: 'flex' }}
-      >
-        <Sliders size={24} />
+      {/* ПРАВАЯ ИКОНКА: Фильтр (виден когда раскрыто) */}
+      <div className="search-icon-right">
+        <AnimatePresence>
+          {isExpanded && (
+            <motion.div
+              className="search-icon-only filter-icon"
+              initial={{ opacity: 0, scale: 0.5 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.5 }}
+              transition={{ duration: 0.2 }}
+            >
+              <Sliders size={24} />
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );
