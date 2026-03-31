@@ -64,7 +64,7 @@ const SearchBar = memo(({
       <div className={`search-bar ${isExpanded ? 'expanded' : ''}`}>
         <form className="search-form" onSubmit={handleSubmit}>
           <div className="search-icon-button" onClick={handleIconClick}>
-            <Search size={24} />
+            <Search size={20} />
           </div>
 
           <AnimatePresence>
@@ -95,7 +95,7 @@ const SearchBar = memo(({
               exit={{ opacity: 0, scale: 0 }}
               transition={{ duration: 0.15 }}
             >
-              <X size={16} />
+              <X size={14} />
             </motion.button>
           )}
         </form>

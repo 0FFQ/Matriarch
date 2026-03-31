@@ -274,23 +274,27 @@ body.light {
   margin-bottom: 2rem;
   display: flex;
   justify-content: center;
+  align-items: center;
 }
 
 .search-bar {
   position: relative;
-  height: 60px;
-  background: rgba(0, 0, 0, 0.3);
-  border: none;
+  height: 40px;
+  width: 40px;
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
   overflow: hidden;
-  border-radius: 50%;
-  transition: all 0.3s ease;
+  border-radius: 20px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  align-items: center;
 }
 
 .search-bar.expanded {
-  background: rgba(0, 0, 0, 0.5);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 50px;
+  width: min(90vw, 600px);
+  background: rgba(0, 0, 0, 0.8);
+  border-color: rgba(255, 255, 255, 0.2);
 }
 
 .search-form {
@@ -301,8 +305,8 @@ body.light {
 }
 
 .search-icon-button {
-  width: 60px;
-  height: 60px;
+  width: 40px;
+  height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -310,11 +314,13 @@ body.light {
   flex-shrink: 0;
   color: #666666;
   transition: all 0.2s;
+  background: transparent;
+  border: none;
+  padding: 0;
 }
 
 .search-icon-button:hover {
   color: #ffffff;
-  background: rgba(255, 255, 255, 0.05);
 }
 
 .suggestions-list {
@@ -470,8 +476,8 @@ body.light {
   height: 100%;
   border: none;
   background: transparent;
-  padding: 0 1rem;
-  font-size: 1.1rem;
+  padding: 0 0.5rem;
+  font-size: 1rem;
   color: #ffffff;
   outline: none;
 }
@@ -481,9 +487,9 @@ body.light {
 }
 
 .clear-btn {
-  width: 36px;
-  height: 36px;
-  margin-right: 8px;
+  width: 32px;
+  height: 32px;
+  margin-right: 4px;
   background: rgba(255, 255, 255, 0.1);
   border: none;
   border-radius: 50%;
@@ -511,11 +517,11 @@ body.light {
   border-color: rgba(139, 131, 120, 0.3);
 }
 
-.light .search-icon-wrapper {
+.light .search-icon-button {
   color: #6b6356;
 }
 
-.light .search-icon-wrapper:hover {
+.light .search-icon-button:hover {
   color: #4a4438;
 }
 
