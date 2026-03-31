@@ -20,7 +20,7 @@ const SearchBar = memo(({
     if (query.trim()) {
       onSearch(query);
       setSearchActive(true);
-      setSuggestions([]); // Очищаем подсказки после поиска
+      // setSuggestions([]) вызывается в App.js внутри searchMovies
     }
   }, [query, onSearch, setSearchActive]);
 
