@@ -96,9 +96,9 @@ const SearchBar = memo(({
               />
 
               {query && (
-                <motion.button 
-                  type="button" 
-                  className="clear-btn" 
+                <motion.button
+                  type="button"
+                  className="clear-btn"
                   onClick={handleClear}
                   initial={{ opacity: 0, scale: 0 }}
                   animate={{ opacity: 1, scale: 1 }}
