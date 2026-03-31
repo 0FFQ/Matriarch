@@ -61,7 +61,14 @@ const SearchBar = memo(({
   return (
     <div className="search-bar-wrapper">
       {/* ЛЕВАЯ ИКОНКА: Лупа */}
-      <div className="search-icon-left">
+      <motion.div 
+        className="search-icon-left"
+        animate={{ 
+          x: isExpanded ? -260 : 0
+        }}
+        transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
+        style={{ pointerEvents: 'none' }}
+      >
         <motion.div 
           className="search-icon-only" 
           onClick={handleIconClick}
@@ -70,10 +77,11 @@ const SearchBar = memo(({
             scale: isExpanded ? 0.9 : 1
           }}
           transition={{ duration: 0.15 }}
+          style={{ pointerEvents: 'auto' }}
         >
           <Search size={24} />
         </motion.div>
-      </div>
+      </motion.div>
 
       {/* ЦЕНТР: Строка поиска */}
       <motion.div
