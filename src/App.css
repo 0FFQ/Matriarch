@@ -275,30 +275,46 @@ body.light {
   display: flex;
   justify-content: center;
   align-items: center;
+  height: 40px;
 }
 
-.search-bar {
-  position: relative;
-  height: 40px;
+/* Иконка поиска - видна всегда */
+.search-icon-only {
   width: 40px;
-  background: transparent;
-  border: none;
-  box-shadow: none;
-  overflow: visible;
-  border-radius: 20px;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  height: 40px;
   display: flex;
   align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #666666;
+  transition: color 0.2s;
+  background: transparent;
+  border: none;
+  padding: 0;
+  flex-shrink: 0;
 }
 
-.search-bar.expanded {
-  width: min(90vw, 600px);
+.search-icon-only:hover {
+  color: #ffffff;
+}
+
+/* Строка поиска - скрыта по умолчанию */
+.search-bar {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
   height: 40px;
   background: rgba(0, 0, 0, 0.8);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 20px;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
   overflow: hidden;
+  display: flex;
+  align-items: center;
+}
+
+.search-bar.expanded {
+  width: min(90vw, 600px);
 }
 
 .search-form {
@@ -308,22 +324,39 @@ body.light {
   width: 100%;
 }
 
-.search-icon-button {
-  width: 40px;
-  height: 40px;
+.search-input {
+  flex: 1;
+  height: 100%;
+  border: none;
+  background: transparent;
+  padding: 0 0.5rem;
+  font-size: 1rem;
+  color: #ffffff;
+  outline: none;
+}
+
+.search-input::placeholder {
+  color: #666666;
+}
+
+.clear-btn {
+  width: 32px;
+  height: 32px;
+  margin-right: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
-  flex-shrink: 0;
   color: #666666;
-  transition: color 0.2s;
-  background: transparent;
-  border: none;
-  padding: 0;
+  transition: all 0.2s;
+  flex-shrink: 0;
 }
 
-.search-icon-button:hover {
+.clear-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
   color: #ffffff;
 }
 
@@ -511,22 +544,17 @@ body.light {
   color: #ffffff;
 }
 
-.light .search-bar {
-  background: rgba(255, 255, 255, 0.8);
-  border-color: rgba(139, 131, 120, 0.2);
-}
-
-.light .search-bar.expanded {
-  background: rgba(255, 255, 255, 0.95);
-  border-color: rgba(139, 131, 120, 0.3);
-}
-
-.light .search-icon-button {
+.light .search-icon-only {
   color: #6b6356;
 }
 
-.light .search-icon-button:hover {
+.light .search-icon-only:hover {
   color: #4a4438;
+}
+
+.light .search-bar {
+  background: rgba(255, 255, 255, 0.95);
+  border-color: rgba(139, 131, 120, 0.3);
 }
 
 .light .search-input {
