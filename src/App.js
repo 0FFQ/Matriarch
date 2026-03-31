@@ -27,18 +27,16 @@ function App() {
   const [menuOpen, setMenuOpen] = useState(false);
   const debounceRef = useRef(null);
 
+  // Инициализация темы
   useEffect(() => {
     document.body.classList.add('dark');
-    return () => {
-      document.body.classList.remove('dark', 'light');
-    };
+    return () => document.body.classList.remove('dark', 'light');
   }, []);
 
+  // Поиск подсказок с debounce 300ms
   useEffect(() => {
     if (query.length > 2 && !searchActive) {
-      if (debounceRef.current) {
-        clearTimeout(debounceRef.current);
-      }
+      if (debounceRef.current) clearTimeout(debounceRef.current);
 
       debounceRef.current = setTimeout(async () => {
         try {
@@ -54,18 +52,17 @@ function App() {
           console.error('Suggestions failed:', err.message);
           setSuggestions([]);
         }
-      }, 1500);
+      }, 300);
     } else {
       setSuggestions([]);
     }
 
     return () => {
-      if (debounceRef.current) {
-        clearTimeout(debounceRef.current);
-      }
+      if (debounceRef.current) clearTimeout(debounceRef.current);
     };
   }, [query, searchActive]);
 
+  // Сброс состояния при очистке поиска
   useEffect(() => {
     if (!query && searchActive) {
       setSearchActive(false);
@@ -74,7 +71,7 @@ function App() {
       setSelectedTrailer(null);
       setNoTrailer(false);
     }
-  }, [query, searchActive, setSearchActive, setResults, setCurrentMovie, setSelectedTrailer, setNoTrailer]);
+  }, [query, searchActive]);
 
   const toggleTheme = () => {
     const newDarkMode = !darkMode;
@@ -132,10 +129,7 @@ function App() {
     }
   };
 
-  const getKinopoiskLink = (movie) => {
-    const query = `${movie.title} ${movie.year} ${movie.type === 'tv' ? 'сериал' : 'фильм'}`;
-    return `https://www.kinopoisk.ru/search/?query=${encodeURIComponent(query)}`;
-  };
+  const showAtom = !searchActive || (!results.length && !query);
 
   return (
     <div className={`app ${darkMode ? 'dark' : 'light'}`}>
@@ -148,7 +142,7 @@ function App() {
         onToggleTheme={toggleTheme}
       />
 
-      {(!searchActive || (!results.length && !query)) && <InteractiveAtom />}
+      {showAtom && <InteractiveAtom />}
 
       <motion.div className="hero" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 1 }}>
         <AnimatePresence mode="wait">
@@ -181,10 +175,10 @@ function App() {
               onClick={() => setNoTrailer(false)}
             >
               <div className="no-trailer-content" onClick={(e) => e.stopPropagation()}>
-                <h2>Плак плак</h2>
+                <h2>Трейлер не найден</h2>
                 <p>К сожалению, для фильма "{currentMovie.title}" трейлер не найден.</p>
                 <a
-                  href={getKinopoiskLink(currentMovie)}
+                  href={`https://www.kinopoisk.ru/search/?query=${encodeURIComponent(`${currentMovie.title} ${currentMovie.year} ${currentMovie.type === 'tv' ? 'сериал' : 'фильм'}`)}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="kinopoisk-widget-btn"
