@@ -59,19 +59,30 @@ const SearchBar = memo(({
 
   return (
     <div className="search-bar-wrapper">
-      {/* Иконка поиска - видна всегда */}
-      <div className="search-icon-only" onClick={handleIconClick}>
-        <Search size={24} />
-      </div>
+      {/* Иконка поиска - видна всегда когда строка скрыта */}
+      <AnimatePresence>
+        {!showSearch && (
+          <motion.div 
+            className="search-icon-only" 
+            onClick={handleIconClick}
+            initial={{ opacity: 0, scale: 0.5 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.5, rotate: -90 }}
+            transition={{ duration: 0.2 }}
+          >
+            <Search size={24} />
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Строка поиска - появляется при клике */}
       <AnimatePresence>
         {showSearch && (
           <motion.div
             className="search-bar expanded"
-            initial={{ opacity: 0, width: 0 }}
-            animate={{ opacity: 1, width: 'min(90vw, 600px)' }}
-            exit={{ opacity: 0, width: 0 }}
+            initial={{ opacity: 0, width: 0, scale: 0.8 }}
+            animate={{ opacity: 1, width: 'min(90vw, 480px)', scale: 1 }}
+            exit={{ opacity: 0, width: 0, scale: 0.8 }}
             transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
           >
             <form className="search-form" onSubmit={handleSubmit}>
@@ -85,9 +96,9 @@ const SearchBar = memo(({
               />
 
               {query && (
-                <motion.button
-                  type="button"
-                  className="clear-btn"
+                <motion.button 
+                  type="button" 
+                  className="clear-btn" 
                   onClick={handleClear}
                   initial={{ opacity: 0, scale: 0 }}
                   animate={{ opacity: 1, scale: 1 }}
