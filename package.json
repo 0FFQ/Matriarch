@@ -2,6 +2,7 @@
   "name": "kino",
   "version": "1.0.0",
   "private": true,
+  "homepage": "https://0FFQ.github.io/KIno",
   "dependencies": {
     "axios": "^1.5.1",
     "cors": "^2.8.6",
@@ -19,7 +20,9 @@
     "dev": "concurrently \"npm run server\" \"npm start\"",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d build"
   },
   "browserslist": {
     "production": [
@@ -35,6 +38,7 @@
   },
   "devDependencies": {
     "concurrently": "^9.2.1",
+    "gh-pages": "^6.3.0",
     "http-proxy-middleware": "^3.0.5"
   }
 }
