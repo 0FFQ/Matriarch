@@ -20,7 +20,6 @@ const SearchBar = memo(({
     if (query.trim()) {
       onSearch(query);
       setSearchActive(true);
-      // setSuggestions([]) вызывается в App.js внутри searchMovies
     }
   }, [query, onSearch, setSearchActive]);
 
@@ -44,51 +43,29 @@ const SearchBar = memo(({
   }, [isExpanded]);
 
   const handleInputBlur = useCallback(() => {
-    // Не сворачиваем если есть searchActive или query
     if (!query && !searchActive) {
       setIsExpanded(false);
     }
   }, [query, searchActive]);
 
-  // Показываем подсказки только когда нет searchActive и loading
   const showSuggestions = useMemo(() => 
     suggestions.length > 0 && isExpanded && !searchActive && !loading,
     [suggestions.length, isExpanded, searchActive, loading]
   );
 
-  // Разворачиваем строку если есть query или searchActive
   useEffect(() => {
     if (query || searchActive) {
       setIsExpanded(true);
     }
   }, [query, searchActive]);
 
-  // Скрываем подсказки когда начинается поиск
-  useEffect(() => {
-    if (searchActive) {
-      // Подсказки скроются автоматически через showSuggestions
-    }
-  }, [searchActive]);
-
   return (
-    <motion.div
-      className="search-bar-wrapper"
-      initial={{ opacity: 0, y: -20 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -20 }}
-    >
-      <motion.div
-        className={`search-bar ${isExpanded ? 'expanded' : ''}`}
-        animate={{
-          width: isExpanded ? 'min(90vw, 600px)' : '60px',
-          borderRadius: isExpanded ? '50px' : '50%'
-        }}
-        transition={{ duration: 0.2, ease: 'easeOut' }}
-      >
+    <div className="search-bar-wrapper">
+      <div className={`search-bar ${isExpanded ? 'expanded' : ''}`}>
         <form className="search-form" onSubmit={handleSubmit}>
-          <motion.div className="search-icon-wrapper" onClick={handleIconClick} whileHover={{ scale: 1.1 }}>
+          <div className="search-icon-button" onClick={handleIconClick}>
             <Search size={24} />
-          </motion.div>
+          </div>
 
           <AnimatePresence>
             {isExpanded && (
@@ -103,13 +80,21 @@ const SearchBar = memo(({
                 initial={{ opacity: 0, width: 0 }}
                 animate={{ opacity: 1, width: 'auto' }}
                 exit={{ opacity: 0, width: 0 }}
-                transition={{ duration: 0.15, delay: 0.05 }}
+                transition={{ duration: 0.2, delay: 0.05 }}
               />
             )}
           </AnimatePresence>
 
           {isExpanded && query && (
-            <motion.button type="button" className="clear-btn" onClick={handleClear} initial={{ opacity: 0, scale: 0 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0 }} transition={{ duration: 0.15 }}>
+            <motion.button 
+              type="button" 
+              className="clear-btn" 
+              onClick={handleClear}
+              initial={{ opacity: 0, scale: 0 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0 }}
+              transition={{ duration: 0.15 }}
+            >
               <X size={16} />
             </motion.button>
           )}
@@ -155,8 +140,8 @@ const SearchBar = memo(({
             </motion.div>
           )}
         </AnimatePresence>
-      </motion.div>
-    </motion.div>
+      </div>
+    </div>
   );
 });
 
