@@ -63,7 +63,7 @@ const SearchBar = memo(({
       <div 
         className="search-icon-only" 
         onClick={handleIconClick} 
-        style={{ visibility: showSearch ? 'hidden' : 'visible' }}
+        style={{ visibility: !showSearch ? 'visible' : 'hidden' }}
       >
         <Search size={24} />
       </div>
