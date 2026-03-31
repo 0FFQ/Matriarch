@@ -59,21 +59,14 @@ const SearchBar = memo(({
 
   return (
     <div className="search-bar-wrapper">
-      {/* Иконка поиска - видна всегда когда строка скрыта */}
-      <AnimatePresence>
-        {!showSearch && (
-          <motion.div 
-            className="search-icon-only" 
-            onClick={handleIconClick}
-            initial={{ opacity: 0, scale: 0.5 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.5, rotate: -90 }}
-            transition={{ duration: 0.2 }}
-          >
-            <Search size={24} />
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {/* Иконка поиска - всегда в потоке */}
+      <div 
+        className="search-icon-only" 
+        onClick={handleIconClick} 
+        style={{ visibility: showSearch ? 'hidden' : 'visible' }}
+      >
+        <Search size={24} />
+      </div>
 
       {/* Строка поиска - появляется при клике */}
       <AnimatePresence>
@@ -114,9 +107,10 @@ const SearchBar = memo(({
               {showSuggestions && (
                 <motion.div
                   className="suggestions-list"
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
+                  initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                  transition={{ duration: 0.2 }}
                 >
                   {suggestions.map((item, idx) => (
                     <motion.div
@@ -154,20 +148,13 @@ const SearchBar = memo(({
         )}
       </AnimatePresence>
 
-      {/* Иконка фильтра - справа от строки */}
-      <AnimatePresence>
-        {showSearch && (
-          <motion.div
-            className="search-icon-only filter-icon-only"
-            initial={{ opacity: 0, scale: 0.5 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.5 }}
-            transition={{ duration: 0.2, delay: 0.1 }}
-          >
-            <Sliders size={24} />
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {/* Иконка фильтра - всегда в потоке */}
+      <div 
+        className="filter-icon-only" 
+        style={{ visibility: showSearch ? 'visible' : 'hidden' }}
+      >
+        <Sliders size={24} />
+      </div>
     </div>
   );
 });
