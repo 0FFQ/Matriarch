@@ -78,7 +78,7 @@ const SearchBar = memo(({
             initial={{ opacity: 0, width: 0 }}
             animate={{ opacity: 1, width: 'min(90vw, 480px)' }}
             exit={{ opacity: 0, width: 0 }}
-            transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
+            transition={{ duration: 0.25, ease: "easeInOut" }}
           >
             <form className="search-form" onSubmit={handleSubmit}>
               <input
@@ -155,10 +155,10 @@ const SearchBar = memo(({
           {isExpanded && (
             <motion.div
               className="search-icon-only filter-icon"
-              initial={{ opacity: 0, scale: 0.5 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.5 }}
-              transition={{ duration: 0.2 }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.15 }}
             >
               <Sliders size={24} />
             </motion.div>
