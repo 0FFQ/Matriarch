@@ -284,6 +284,7 @@ body.light {
   border-radius: 16px;
   max-height: 450px;
   overflow-y: auto;
+  overflow-x: hidden;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
   z-index: 100;
   border: 1px solid rgba(255, 255, 255, 0.1);
@@ -321,6 +322,7 @@ body.light {
   transition: background 0.2s;
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
   gap: 0.875rem;
+  overflow-x: hidden;
 }
 
 .light .suggestion-item {
