@@ -176,7 +176,7 @@ function App() {
             >
               <div className="no-trailer-content" onClick={(e) => e.stopPropagation()}>
                 <h2>Трейлер не найден</h2>
-                <p>К сожалению, для фильма "{currentMovie.title}" трейлер не найден.</p>
+                <p>К сожалению, для фильма «{currentMovie.title}» ({currentMovie.year}) трейлер не найден.</p>
                 <a
                   href={`https://www.kinopoisk.ru/search/?query=${encodeURIComponent(`${currentMovie.title} ${currentMovie.year} ${currentMovie.type === 'tv' ? 'сериал' : 'фильм'}`)}`}
                   target="_blank"
