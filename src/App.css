@@ -292,6 +292,7 @@ body.light {
   border: none;
   padding: 0;
   flex-shrink: 0;
+  z-index: 10;
 }
 
 .search-icon-only:hover {
@@ -302,6 +303,7 @@ body.light {
   cursor: default;
   pointer-events: none;
   margin-left: 8px;
+  z-index: 10;
 }
 
 /* Строка поиска - скрыта по умолчанию */
@@ -318,10 +320,11 @@ body.light {
   display: flex;
   align-items: center;
   padding: 0 4px;
+  z-index: 5;
 }
 
 .search-bar.expanded {
-  width: min(90vw, 520px);
+  width: min(90vw, 480px);
 }
 
 .search-form {
