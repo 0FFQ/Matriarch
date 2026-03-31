@@ -329,9 +329,22 @@ body.light {
   pointer-events: none;
 }
 
-/* Когда фильтр скрыт - убираем pointer-events */
+/* Когда фильтр скрыт - убираем pointer-events и видимость */
 .search-icon-right {
   pointer-events: none;
+  position: absolute;
+  left: 50%;
+  transform: translateX(calc(-50% + 240px + 25px));
+  opacity: 0;
+}
+
+.search-icon-right.visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.search-icon-right.visible .filter-icon {
+  pointer-events: auto;
 }
 
 /* Строка поиска */
@@ -448,10 +461,10 @@ body.light {
 /* Выпадающий список с подсказками */
 .suggestions-dropdown {
   position: absolute;
-  top: 100%;
+  top: 120%;
   transform: translateX(-50%);
   margin-top: 8px;
-  width: 480px;
+  width: 500px;
   max-width: 90vw;
   max-height: 850px;
   overflow-y: auto;
@@ -581,6 +594,8 @@ body.light {
   background: rgba(0, 0, 0, 0.3);
   border: 1px solid rgba(255, 255, 255, 0.1);
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  left: 50%;
+  transform: translateX(-50%);
 }
 
 .search-bar.expanded {

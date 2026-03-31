@@ -156,10 +156,10 @@ const SearchBar = memo(({
 
       {/* Правая иконка: Фильтр */}
       <motion.div
-        className="search-icon-right"
+        className={`search-icon-right ${isExpanded ? 'visible' : ''}`}
         initial={{ opacity: 0 }}
         animate={{ opacity: isExpanded ? 1 : 0 }}
-        transition={{ duration: 0.3, delay: 0.2 }}
+        transition={{ duration: 0.2, delay: isExpanded ? 1 : 0 }}
       >
         <div className="search-icon-only filter-icon">
           <Sliders size={24} />
