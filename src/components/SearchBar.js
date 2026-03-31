@@ -47,7 +47,7 @@ const SearchBar = memo(({
     }
   }, [query, searchActive]);
 
-  const showSuggestions = useMemo(() => 
+  const showSuggestions = useMemo(() =>
     suggestions.length > 0 && isExpanded && !searchActive && !loading,
     [suggestions.length, isExpanded, searchActive, loading]
   );
@@ -60,111 +60,111 @@ const SearchBar = memo(({
 
   return (
     <div className="search-bar-wrapper">
-      {/* ЛЕВАЯ ИКОНКА: Лупа */}
-      <div className="search-icon-left">
-        <motion.div 
-          className="search-icon-only" 
-          onClick={handleIconClick}
-          animate={{ 
-            opacity: isExpanded ? 0.5 : 1,
-            scale: isExpanded ? 0.9 : 1
-          }}
-          transition={{ duration: 0.15 }}
-        >
-          <Search size={24} />
-        </motion.div>
-      </div>
+      {/* Прозрачная кнопка на весь экран */}
+      <motion.button
+        className="search-trigger-overlay"
+        onClick={handleIconClick}
+        initial={{ opacity: 1 }}
+        animate={{ opacity: isExpanded ? 0 : 1 }}
+        transition={{ duration: 0.3, ease: "easeOut" }}
+        style={{ pointerEvents: isExpanded ? 'none' : 'auto' }}
+      />
 
-      {/* ЦЕНТР: Строка поиска */}
+      {/* Строка поиска */}
       <motion.div
         className="search-bar"
-        animate={{ 
-          width: isExpanded ? 'min(90vw, 480px)' : 0,
-          opacity: isExpanded ? 1 : 0
-        }}
-        transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
-        style={{ overflow: 'hidden' }}
+        initial={{ width: 0, opacity: 0 }}
+        animate={{ width: isExpanded ? 480 : 0, opacity: isExpanded ? 1 : 0 }}
+        transition={{ duration: 0.5, ease: "easeInOut" }}
+        style={{ overflow: 'visible', maxWidth: '90vw' }}
       >
         <form className="search-form" onSubmit={handleSubmit}>
-          <input
-            ref={inputRef}
-            type="text"
-            className="search-input"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            onBlur={handleInputBlur}
-          />
+          <div className="search-input-wrapper">
+            <input
+              ref={inputRef}
+              type="text"
+              className="search-input"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              onKeyPress={(e) => {
+                if (e.key === 'Enter') {
+                  handleSubmit(e);
+                }
+              }}
+              onBlur={handleInputBlur}
+            />
 
-          {query && (
-            <motion.button 
-              type="button" 
-              className="clear-btn" 
-              onClick={handleClear}
-              initial={{ opacity: 0, scale: 0 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0 }}
-              transition={{ duration: 0.15 }}
-            >
-              <X size={14} />
-            </motion.button>
-          )}
+            {query && (
+              <motion.button
+                type="button"
+                className="clear-btn"
+                onClick={handleClear}
+                initial={{ opacity: 0, scale: 0 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0 }}
+                transition={{ duration: 0.15 }}
+              >
+                <X size={14} />
+              </motion.button>
+            )}
+          </div>
         </form>
-
-        <AnimatePresence>
-          {showSuggestions && (
-            <motion.div
-              className="suggestions-list"
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-            >
-              {suggestions.map((item, idx) => (
-                <motion.div
-                  key={item.id}
-                  className="suggestion-item"
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: idx * 0.03 }}
-                  onClick={() => handleSelect(item.title || item.name)}
-                >
-                  {item.poster_path && (
-                    <img
-                      src={`https://image.tmdb.org/t/p/w92${item.poster_path}`}
-                      alt=""
-                      className="suggestion-poster"
-                      loading="lazy"
-                    />
-                  )}
-                  <div className="suggestion-info">
-                    <span className="suggestion-title">{item.title || item.name}</span>
-                    <span className="suggestion-meta">
-                      {item.media_type === 'tv' ? <Tv size={14} /> : <Film size={14} />}
-                      {item.media_type === 'tv' ? ' Сериал' : ' Фильм'}
-                      {item.release_date || item.first_air_date
-                        ? ` • ${new Date(item.release_date || item.first_air_date).getFullYear()}`
-                        : ''}
-                    </span>
-                  </div>
-                </motion.div>
-              ))}
-            </motion.div>
-          )}
-        </AnimatePresence>
       </motion.div>
 
-      {/* ПРАВАЯ ИКОНКА: Фильтр */}
-      <div className="search-icon-right">
-        <motion.div
-          className="search-icon-only filter-icon"
-          animate={{ 
-            opacity: isExpanded ? 1 : 0,
-            x: isExpanded ? 0 : -10
-          }}
-          transition={{ duration: 0.2 }}
-        >
+      {/* Выпадающий список с подсказками */}
+      <AnimatePresence>
+        {showSuggestions && (
+          <motion.div
+            className="suggestions-dropdown"
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.2 }}
+          >
+            {suggestions.map((item, idx) => (
+              <motion.div
+                key={item.id}
+                className="suggestion-item"
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: idx * 0.03 }}
+                onClick={() => handleSelect(item.title || item.name)}
+              >
+                {item.poster_path && (
+                  <img
+                    src={`https://image.tmdb.org/t/p/w92${item.poster_path}`}
+                    alt=""
+                    className="suggestion-poster"
+                    loading="lazy"
+                  />
+                )}
+                <div className="suggestion-info">
+                  <span className="suggestion-title">{item.title || item.name}</span>
+                  <span className="suggestion-meta">
+                    {item.media_type === 'tv' ? <Tv size={14} /> : <Film size={14} />}
+                    {item.media_type === 'tv' ? ' Сериал' : ' Фильм'}
+                    {item.release_date || item.first_air_date
+                      ? ` • ${new Date(item.release_date || item.first_air_date).getFullYear()}`
+                      : ''}
+                  </span>
+                </div>
+              </motion.div>
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Правая иконка: Фильтр */}
+      <motion.div
+        className="search-icon-right"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: isExpanded ? 1 : 0 }}
+        transition={{ duration: 0.3, delay: 0.2 }}
+      >
+        <div className="search-icon-only filter-icon">
           <Sliders size={24} />
-        </motion.div>
-      </div>
+        </div>
+      </motion.div>
     </div>
   );
 });
