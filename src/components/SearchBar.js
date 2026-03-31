@@ -60,7 +60,7 @@ const SearchBar = memo(({
 
   return (
     <div className="search-bar-wrapper">
-      {/* ЛЕВАЯ ИКОНКА: Лупа (видна ВСЕГДА, с анимацией) */}
+      {/* ЛЕВАЯ ИКОНКА: Лупа */}
       <div className="search-icon-left">
         <motion.div 
           className="search-icon-only" 
@@ -85,73 +85,71 @@ const SearchBar = memo(({
         transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
         style={{ overflow: 'hidden' }}
       >
-            <form className="search-form" onSubmit={handleSubmit}>
-              <input
-                ref={inputRef}
-                type="text"
-                className="search-input"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                onBlur={handleInputBlur}
-              />
+        <form className="search-form" onSubmit={handleSubmit}>
+          <input
+            ref={inputRef}
+            type="text"
+            className="search-input"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            onBlur={handleInputBlur}
+          />
 
-              {query && (
-                <motion.button
-                  type="button"
-                  className="clear-btn"
-                  onClick={handleClear}
-                  initial={{ opacity: 0, scale: 0 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0 }}
-                  transition={{ duration: 0.15 }}
-                >
-                  <X size={14} />
-                </motion.button>
-              )}
-            </form>
+          {query && (
+            <motion.button 
+              type="button" 
+              className="clear-btn" 
+              onClick={handleClear}
+              initial={{ opacity: 0, scale: 0 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0 }}
+              transition={{ duration: 0.15 }}
+            >
+              <X size={14} />
+            </motion.button>
+          )}
+        </form>
 
-            <AnimatePresence>
-              {showSuggestions && (
+        <AnimatePresence>
+          {showSuggestions && (
+            <motion.div
+              className="suggestions-list"
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+            >
+              {suggestions.map((item, idx) => (
                 <motion.div
-                  className="suggestions-list"
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
+                  key={item.id}
+                  className="suggestion-item"
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: idx * 0.03 }}
+                  onClick={() => handleSelect(item.title || item.name)}
                 >
-                  {suggestions.map((item, idx) => (
-                    <motion.div
-                      key={item.id}
-                      className="suggestion-item"
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: idx * 0.03 }}
-                      onClick={() => handleSelect(item.title || item.name)}
-                    >
-                      {item.poster_path && (
-                        <img
-                          src={`https://image.tmdb.org/t/p/w92${item.poster_path}`}
-                          alt=""
-                          className="suggestion-poster"
-                          loading="lazy"
-                        />
-                      )}
-                      <div className="suggestion-info">
-                        <span className="suggestion-title">{item.title || item.name}</span>
-                        <span className="suggestion-meta">
-                          {item.media_type === 'tv' ? <Tv size={14} /> : <Film size={14} />}
-                          {item.media_type === 'tv' ? ' Сериал' : ' Фильм'}
-                          {item.release_date || item.first_air_date
-                            ? ` • ${new Date(item.release_date || item.first_air_date).getFullYear()}`
-                            : ''}
-                        </span>
-                      </div>
-                    </motion.div>
-                  ))}
+                  {item.poster_path && (
+                    <img
+                      src={`https://image.tmdb.org/t/p/w92${item.poster_path}`}
+                      alt=""
+                      className="suggestion-poster"
+                      loading="lazy"
+                    />
+                  )}
+                  <div className="suggestion-info">
+                    <span className="suggestion-title">{item.title || item.name}</span>
+                    <span className="suggestion-meta">
+                      {item.media_type === 'tv' ? <Tv size={14} /> : <Film size={14} />}
+                      {item.media_type === 'tv' ? ' Сериал' : ' Фильм'}
+                      {item.release_date || item.first_air_date
+                        ? ` • ${new Date(item.release_date || item.first_air_date).getFullYear()}`
+                        : ''}
+                    </span>
+                  </div>
                 </motion.div>
-              )}
-            </AnimatePresence>
-          </motion.div>
-        )}
+              ))}
+            </motion.div>
+          )}
+        </AnimatePresence>
       </motion.div>
 
       {/* ПРАВАЯ ИКОНКА: Фильтр */}
@@ -163,7 +161,6 @@ const SearchBar = memo(({
             x: isExpanded ? 0 : -10
           }}
           transition={{ duration: 0.2 }}
-          style={{ pointerEvents: isExpanded ? 'none' : 'auto' }}
         >
           <Sliders size={24} />
         </motion.div>
