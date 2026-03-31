@@ -60,14 +60,19 @@ const SearchBar = memo(({
 
   return (
     <div className="search-bar-wrapper">
-      {/* ЛЕВАЯ ИКОНКА: Лупа (видна ВСЕГДА) */}
+      {/* ЛЕВАЯ ИКОНКА: Лупа (видна ВСЕГДА, с анимацией) */}
       <div className="search-icon-left">
-        <div 
+        <motion.div 
           className="search-icon-only" 
           onClick={handleIconClick}
+          animate={{ 
+            opacity: isExpanded ? 0.5 : 1,
+            scale: isExpanded ? 0.9 : 1
+          }}
+          transition={{ duration: 0.15 }}
         >
           <Search size={24} />
-        </div>
+        </motion.div>
       </div>
 
       {/* ЦЕНТР: Строка поиска */}
@@ -78,7 +83,7 @@ const SearchBar = memo(({
             initial={{ opacity: 0, width: 0 }}
             animate={{ opacity: 1, width: 'min(90vw, 480px)' }}
             exit={{ opacity: 0, width: 0 }}
-            transition={{ duration: 0.25, ease: "easeInOut" }}
+            transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
           >
             <form className="search-form" onSubmit={handleSubmit}>
               <input
@@ -155,10 +160,10 @@ const SearchBar = memo(({
           {isExpanded && (
             <motion.div
               className="search-icon-only filter-icon"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.15 }}
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -10 }}
+              transition={{ duration: 0.2 }}
             >
               <Sliders size={24} />
             </motion.div>
