@@ -83,7 +83,8 @@ function App() {
   const searchMovies = useCallback(async (q) => {
     if (!q.trim()) return;
     setLoading(true);
-    setSuggestions([]);
+    setSuggestions([]); // Очищаем подсказки СРАЗУ
+    setSearchActive(true); // Устанавливаем searchActive
     try {
       const { data } = await axios.get(`${BASE_URL}/search/multi`, {
         params: { query: q, language: 'ru-RU' },
@@ -98,11 +99,11 @@ function App() {
     setLoading(false);
   }, []);
 
-  const handleSuggestionClick = (title) => {
+  const handleSuggestionClick = useCallback((title) => {
     searchMovies(title);
-    setSearchActive(true);
+    // setSearchActive(true) вызывается внутри searchMovies
     setSuggestions([]);
-  };
+  }, [searchMovies]);
 
   const getTrailer = async (id, type = 'movie') => {
     try {

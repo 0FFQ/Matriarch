@@ -20,6 +20,7 @@ const SearchBar = memo(({
     if (query.trim()) {
       onSearch(query);
       setSearchActive(true);
+      setSuggestions([]); // Очищаем подсказки после поиска
     }
   }, [query, onSearch, setSearchActive]);
 
@@ -43,14 +44,16 @@ const SearchBar = memo(({
   }, [isExpanded]);
 
   const handleInputBlur = useCallback(() => {
+    // Не сворачиваем если есть searchActive или query
     if (!query && !searchActive) {
       setIsExpanded(false);
     }
   }, [query, searchActive]);
 
+  // Показываем подсказки только когда нет searchActive и loading
   const showSuggestions = useMemo(() => 
-    suggestions.length > 0 && isExpanded,
-    [suggestions.length, isExpanded]
+    suggestions.length > 0 && isExpanded && !searchActive && !loading,
+    [suggestions.length, isExpanded, searchActive, loading]
   );
 
   // Разворачиваем строку если есть query или searchActive
@@ -59,6 +62,13 @@ const SearchBar = memo(({
       setIsExpanded(true);
     }
   }, [query, searchActive]);
+
+  // Скрываем подсказки когда начинается поиск
+  useEffect(() => {
+    if (searchActive) {
+      // Подсказки скроются автоматически через showSuggestions
+    }
+  }, [searchActive]);
 
   return (
     <motion.div
