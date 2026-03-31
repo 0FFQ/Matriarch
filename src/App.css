@@ -333,6 +333,7 @@ body.light {
   font-size: 1rem;
   color: #ffffff;
   outline: none;
+  text-align: center;
 }
 
 .search-input::placeholder {

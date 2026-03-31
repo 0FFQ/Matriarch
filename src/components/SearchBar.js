@@ -79,7 +79,6 @@ const SearchBar = memo(({
                 ref={inputRef}
                 type="text"
                 className="search-input"
-                placeholder="Поиск фильмов и сериалов..."
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 onBlur={handleInputBlur}
