@@ -266,6 +266,7 @@ body.light {
   margin-bottom: 2rem;
   display: flex;
   justify-content: center;
+  overflow: hidden;
 }
 
 .search-bar {
