@@ -281,10 +281,10 @@ body.light {
   position: relative;
   height: 40px;
   width: 40px;
-  background: rgba(0, 0, 0, 0.5);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-  overflow: hidden;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  overflow: visible;
   border-radius: 20px;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   display: flex;
@@ -293,8 +293,12 @@ body.light {
 
 .search-bar.expanded {
   width: min(90vw, 600px);
+  height: 40px;
   background: rgba(0, 0, 0, 0.8);
-  border-color: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
 }
 
 .search-form {
@@ -317,10 +321,12 @@ body.light {
   background: transparent;
   border: none;
   padding: 0;
+  border-radius: 50%;
 }
 
 .search-icon-button:hover {
   color: #ffffff;
+  background: rgba(255, 255, 255, 0.1);
 }
 
 .suggestions-list {
@@ -523,6 +529,7 @@ body.light {
 
 .light .search-icon-button:hover {
   color: #4a4438;
+  background: rgba(139, 131, 120, 0.1);
 }
 
 .light .search-input {
