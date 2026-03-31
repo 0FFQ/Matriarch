@@ -76,15 +76,15 @@ const SearchBar = memo(({
       </div>
 
       {/* ЦЕНТР: Строка поиска */}
-      <AnimatePresence>
-        {isExpanded && (
-          <motion.div
-            className="search-bar expanded"
-            initial={{ opacity: 0, width: 0 }}
-            animate={{ opacity: 1, width: 'min(90vw, 480px)' }}
-            exit={{ opacity: 0, width: 0 }}
-            transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
-          >
+      <motion.div
+        className="search-bar"
+        animate={{ 
+          width: isExpanded ? 'min(90vw, 480px)' : 0,
+          opacity: isExpanded ? 1 : 0
+        }}
+        transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
+        style={{ overflow: 'hidden' }}
+      >
             <form className="search-form" onSubmit={handleSubmit}>
               <input
                 ref={inputRef}
@@ -152,23 +152,21 @@ const SearchBar = memo(({
             </AnimatePresence>
           </motion.div>
         )}
-      </AnimatePresence>
+      </motion.div>
 
-      {/* ПРАВАЯ ИКОНКА: Фильтр (виден когда раскрыто) */}
+      {/* ПРАВАЯ ИКОНКА: Фильтр */}
       <div className="search-icon-right">
-        <AnimatePresence>
-          {isExpanded && (
-            <motion.div
-              className="search-icon-only filter-icon"
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -10 }}
-              transition={{ duration: 0.2 }}
-            >
-              <Sliders size={24} />
-            </motion.div>
-          )}
-        </AnimatePresence>
+        <motion.div
+          className="search-icon-only filter-icon"
+          animate={{ 
+            opacity: isExpanded ? 1 : 0,
+            x: isExpanded ? 0 : -10
+          }}
+          transition={{ duration: 0.2 }}
+          style={{ pointerEvents: isExpanded ? 'none' : 'auto' }}
+        >
+          <Sliders size={24} />
+        </motion.div>
       </div>
     </div>
   );

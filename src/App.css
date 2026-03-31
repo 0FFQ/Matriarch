@@ -314,8 +314,14 @@ body.light {
   pointer-events: none;
 }
 
+/* Когда фильтр скрыт - убираем pointer-events */
+.search-icon-right {
+  pointer-events: none;
+}
+
 /* Строка поиска */
 .search-bar {
+  width: 0;
   height: 40px;
   background: rgba(0, 0, 0, 0.8);
   border: 1px solid rgba(255, 255, 255, 0.1);
@@ -325,10 +331,7 @@ body.light {
   display: flex;
   align-items: center;
   padding: 0 4px;
-}
-
-.search-bar.expanded {
-  width: min(90vw, 480px);
+  pointer-events: auto;
 }
 
 .search-form {
