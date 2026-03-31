@@ -276,6 +276,7 @@ body.light {
   justify-content: center;
   align-items: center;
   height: 40px;
+  gap: 8px;
 }
 
 /* Контейнеры для иконок */
@@ -287,17 +288,6 @@ body.light {
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  position: absolute;
-  z-index: 10;
-}
-
-.search-icon-left {
-  left: 50%;
-  transform: translateX(-50%);
-}
-
-.search-icon-right {
-  right: 0;
 }
 
 /* Иконка поиска */
@@ -342,8 +332,6 @@ body.light {
   align-items: center;
   padding: 0 4px;
   pointer-events: auto;
-  position: relative;
-  z-index: 5;
 }
 
 .search-form {
