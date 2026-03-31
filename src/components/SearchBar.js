@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, memo, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, X, Film, Tv } from 'lucide-react';
+import { Search, X, Film, Tv, Sliders } from 'lucide-react';
 
 const SearchBar = memo(({
   query,
@@ -83,6 +83,17 @@ const SearchBar = memo(({
                 onChange={(e) => setQuery(e.target.value)}
                 onBlur={handleInputBlur}
               />
+
+              {/* Иконка фильтра - появляется только когда строка раскрыта */}
+              <motion.div
+                className="filter-icon"
+                initial={{ opacity: 0, scale: 0 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0 }}
+                transition={{ duration: 0.2, delay: 0.1 }}
+              >
+                <Sliders size={20} />
+              </motion.div>
 
               {query && (
                 <motion.button 
