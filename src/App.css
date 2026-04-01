@@ -1120,7 +1120,6 @@ body.light {
   right: 0;
   bottom: 0;
   background: rgba(0, 0, 0, 0.7);
-  backdrop-filter: blur(4px);
   z-index: 1003;
 }
 
@@ -1130,8 +1129,7 @@ body.light {
   right: 16px;
   width: 380px;
   max-height: calc(100vh - 32px);
-  background: rgba(0, 0, 0, 0.95);
-  backdrop-filter: blur(20px);
+  background: #000000;
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 20px;
   z-index: 1004;
@@ -1142,7 +1140,7 @@ body.light {
 }
 
 .light .filter-panel {
-  background: rgba(255, 255, 255, 0.98);
+  background: #ffffff;
   border: 1px solid rgba(0, 0, 0, 0.1);
   box-shadow: -10px 10px 40px rgba(0, 0, 0, 0.15);
 }
@@ -1239,59 +1237,161 @@ body.light {
   color: #8b8578;
 }
 
-.filter-select {
+/* Обёртка для кастомного select */
+.custom-select-wrapper {
+  position: relative;
   width: 100%;
-  padding: 0.875rem 1rem;
-  background: rgba(255, 255, 255, 0.05);
+}
+
+.filter-select,
+.year-select {
+  width: 100%;
+  padding: 0.875rem 1rem !important;
+  background: rgba(255, 255, 255, 0.05) !important;
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 12px;
-  color: #ffffff;
+  color: #ffffff !important;
   font-size: 1rem;
   cursor: pointer;
   transition: all 0.2s;
   outline: none;
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23888888' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 12px center;
-  padding-right: 40px;
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  appearance: none !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23888888' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E") !important;
+  background-repeat: no-repeat !important;
+  background-position: right 12px center !important;
+  padding-right: 40px !important;
+  text-indent: 0.01px;
+  text-overflow: '';
 }
 
-.light .filter-select {
-  background: rgba(0, 0, 0, 0.03);
+/* Убираем стандартную стрелку в Firefox */
+.filter-select:-moz-focusring,
+.year-select:-moz-focusring {
+  color: transparent !important;
+  text-shadow: 0 0 0 #ffffff;
+}
+
+.light .filter-select:-moz-focusring,
+.light .year-select:-moz-focusring {
+  text-shadow: 0 0 0 #4a4438;
+}
+
+/* Убираем стрелку в старых версиях IE и Edge */
+.filter-select::-ms-expand,
+.year-select::-ms-expand {
+  display: none !important;
+}
+
+.light .filter-select,
+.light .year-select {
+  background-color: rgba(0, 0, 0, 0.02) !important;
   border: 1px solid rgba(0, 0, 0, 0.1);
-  color: #4a4438;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%238b8578' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  color: #4a4438 !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%238b8578' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E") !important;
 }
 
-.filter-select:hover {
+.light .filter-select::-ms-expand,
+.light .year-select::-ms-expand {
+  display: none !important;
+}
+
+.filter-select:hover,
+.year-select:hover {
   border-color: rgba(255, 255, 255, 0.2);
 }
 
-.light .filter-select:hover {
+.light .filter-select:hover,
+.light .year-select:hover {
   border-color: rgba(0, 0, 0, 0.2);
 }
 
-.filter-select:focus {
+.filter-select:focus,
+.year-select:focus {
   border-color: rgba(255, 255, 255, 0.3);
   box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.05);
 }
 
-.light .filter-select:focus {
+.light .filter-select:focus,
+.light .year-select:focus {
   border-color: rgba(0, 0, 0, 0.3);
   box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.05);
 }
 
-.filter-select option {
-  background: #1a1a1a;
-  color: #ffffff;
+.filter-select option,
+.year-select option {
+  background: #1a1a1a !important;
+  color: #ffffff !important;
+  padding: 10px;
 }
 
-.light .filter-select option {
-  background: #f5f2ed;
-  color: #4a4438;
+.light .filter-select option,
+.light .year-select option {
+  background: #f5f2ed !important;
+  color: #4a4438 !important;
+  padding: 10px;
+}
+
+/* Кастомный скроллбар для select (жанры, сортировка, годы) */
+.custom-select::-webkit-scrollbar,
+.filter-select::-webkit-scrollbar,
+.year-select::-webkit-scrollbar {
+  width: 8px;
+}
+
+.custom-select::-webkit-scrollbar-track,
+.filter-select::-webkit-scrollbar-track,
+.year-select::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+  margin: 4px 0;
+}
+
+.light .custom-select::-webkit-scrollbar-track,
+.light .filter-select::-webkit-scrollbar-track,
+.light .year-select::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.08);
+}
+
+.custom-select::-webkit-scrollbar-thumb,
+.filter-select::-webkit-scrollbar-thumb,
+.year-select::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+  transition: background 0.2s;
+}
+
+.custom-select::-webkit-scrollbar-thumb:hover,
+.filter-select::-webkit-scrollbar-thumb:hover,
+.year-select::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.5);
+}
+
+.light .custom-select::-webkit-scrollbar-thumb,
+.light .filter-select::-webkit-scrollbar-thumb,
+.light .year-select::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.light .custom-select::-webkit-scrollbar-thumb:hover,
+.light .filter-select::-webkit-scrollbar-thumb:hover,
+.light .year-select::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.5);
+}
+
+/* Для Firefox */
+.custom-select,
+.filter-select,
+.year-select {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.3) rgba(0, 0, 0, 0.2);
+}
+
+.light .custom-select,
+.light .filter-select,
+.light .year-select {
+  scrollbar-color: rgba(0, 0, 0, 0.3) rgba(0, 0, 0, 0.08);
 }
 
 .type-toggle {
@@ -1657,7 +1757,6 @@ body.light {
 
 .page-nav-full:hover {
   background: rgba(0, 0, 0, 0.8);
-  border-color: rgba(255, 255, 255, 0.2);
 }
 
 .page-nav-left {
@@ -1698,12 +1797,12 @@ body.light {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  padding: 0.75rem 1.5rem;
+  padding: 0.5rem 1rem;
   background: rgba(0, 0, 0, 0.8);
   backdrop-filter: blur(20px);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 20px;
-  margin: 0 auto 2rem;
+  margin: 0 auto 1rem;
   width: fit-content;
   z-index: 60;
   position: relative;

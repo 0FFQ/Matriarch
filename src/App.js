@@ -128,56 +128,83 @@ function App() {
   const searchWithFilters = useCallback(async (searchFilters) => {
     setLoading(true);
     setSearchActive(true);
-    
+
     const { type, genre, yearFrom, yearTo, rating, sortBy, animeOnly } = searchFilters;
-    
+
     try {
       let endpoint = '/discover/movie';
-      const params = {
+      const baseParams = {
         language: 'ru-RU',
         sort_by: sortBy,
         include_adult: false,
-        include_video: false,
-        page: 1
+        include_video: false
       };
 
       // Фильтры
-      if (genre) params.with_genres = genre;
-      if (yearFrom) params.primary_release_year = yearFrom;
-      if (rating) params['vote_average.gte'] = parseFloat(rating);
+      if (genre) baseParams.with_genres = genre;
+      if (yearFrom) baseParams.primary_release_year = yearFrom;
+      if (rating) baseParams['vote_average.gte'] = parseFloat(rating);
       if (yearFrom && yearTo && yearFrom !== yearTo) {
-        params['primary_release_date.gte'] = `${yearFrom}-01-01`;
-        params['primary_release_date.lte'] = `${yearTo}-12-31`;
-        delete params.primary_release_year;
+        baseParams['primary_release_date.gte'] = `${yearFrom}-01-01`;
+        baseParams['primary_release_date.lte'] = `${yearTo}-12-31`;
+        delete baseParams.primary_release_year;
       }
-      
+
       // Фильтр аниме (Япония + Анимация)
       if (animeOnly) {
-        params.with_genres = params.with_genres 
-          ? `${params.with_genres},16` 
+        baseParams.with_genres = baseParams.with_genres
+          ? `${baseParams.with_genres},16`
           : '16';
-        params.with_origin_country = 'JP';
+        baseParams.with_origin_country = 'JP';
       }
+
+      // Запрашиваем несколько страниц для большего количества результатов
+      const pagesToFetch = 5; // 5 страниц * 20 = 100 результатов
+      const fetchPage = async (page) => {
+        const params = { ...baseParams, page };
+        if (type === 'tv') {
+          params['vote_count.gte'] = 10;
+        }
+        return axios.get(`${BASE_URL}${endpoint}`, {
+          params,
+          headers: { Authorization: `Bearer ${AUTH_TOKEN}` }
+        });
+      };
 
       // Если тип 'tv' или 'all'
       if (type === 'tv') {
-        endpoint = '/discover/tv';
-        params['vote_count.gte'] = 10; // Для сериалов нужен мин. счетчик голосов
+        baseParams['vote_count.gte'] = 10;
+        const pageRequests = Array.from({ length: pagesToFetch }, (_, i) => i + 1);
+        const responses = await Promise.all(pageRequests.map(p => fetchPage(p)));
+        const allResults = responses.flatMap(res => res.data.results);
+        setResults(allResults.map(r => ({ ...r, media_type: 'tv' })));
+        setCurrentPage(1);
+        setLoading(false);
+        return;
       } else if (type === 'all') {
-        // Для "все" делаем два запроса и объединяем
-        const [movieRes, tvRes] = await Promise.all([
-          axios.get(`${BASE_URL}/discover/movie`, { params, headers: { Authorization: `Bearer ${AUTH_TOKEN}` } }),
-          axios.get(`${BASE_URL}/discover/tv`, { 
-            params: { ...params, 'vote_count.gte': 10 }, 
-            headers: { Authorization: `Bearer ${AUTH_TOKEN}` } 
-          })
+        // Для "все" делаем запросы для фильмов и сериалов
+        const moviePageRequests = Array.from({ length: pagesToFetch }, (_, i) => i + 1);
+        const tvPageRequests = Array.from({ length: pagesToFetch }, (_, i) => i + 1);
+
+        const [movieResponses, tvResponses] = await Promise.all([
+          Promise.all(moviePageRequests.map(p => 
+            axios.get(`${BASE_URL}/discover/movie`, {
+              params: { ...baseParams, page: p },
+              headers: { Authorization: `Bearer ${AUTH_TOKEN}` }
+            })
+          )),
+          Promise.all(tvPageRequests.map(p =>
+            axios.get(`${BASE_URL}/discover/tv`, {
+              params: { ...baseParams, page: p, 'vote_count.gte': 10 },
+              headers: { Authorization: `Bearer ${AUTH_TOKEN}` }
+            })
+          ))
         ]);
-        
-        const combined = [
-          ...movieRes.data.results.map(r => ({ ...r, media_type: 'movie' })),
-          ...tvRes.data.results.map(r => ({ ...r, media_type: 'tv' }))
-        ];
-        
+
+        const movieResults = movieResponses.flatMap(res => res.data.results.map(r => ({ ...r, media_type: 'movie' })));
+        const tvResults = tvResponses.flatMap(res => res.data.results.map(r => ({ ...r, media_type: 'tv' })));
+        const combined = [...movieResults, ...tvResults];
+
         // Сортируем по выбранному параметру
         const sortKey = sortBy.split('.')[0];
         const sortOrder = sortBy.split('.')[1];
@@ -192,19 +219,19 @@ function App() {
           }
           return sortOrder === 'asc' ? -comparison : comparison;
         });
-        
+
         setResults(combined);
+        setCurrentPage(1);
         setLoading(false);
         return;
       }
 
-      const { data } = await axios.get(`${BASE_URL}${endpoint}`, {
-        params,
-        headers: { Authorization: `Bearer ${AUTH_TOKEN}` }
-      });
-      
-      setResults(data.results.map(r => ({ ...r, media_type: type })));
-      setCurrentPage(1); // Сброс на первую страницу при новом поиске
+      // Для movie - запрашиваем несколько страниц
+      const pageRequests = Array.from({ length: pagesToFetch }, (_, i) => i + 1);
+      const responses = await Promise.all(pageRequests.map(p => fetchPage(p)));
+      const allResults = responses.flatMap(res => res.data.results);
+      setResults(allResults.map(r => ({ ...r, media_type: type })));
+      setCurrentPage(1);
     } catch (err) {
       console.error('Discover search failed:', err.message);
     }
