@@ -245,12 +245,16 @@ function App() {
     return results.slice(start, end);
   }, [results, currentPage]);
 
-  const handlePageChange = useCallback((newPage) => {
-    if (newPage >= 1 && newPage <= totalPages) {
-      setCurrentPage(newPage);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+  const handlePageChange = useCallback((direction) => {
+    let newPage;
+    if (direction === 'next') {
+      newPage = currentPage >= totalPages ? 1 : currentPage + 1;
+    } else {
+      newPage = currentPage <= 1 ? totalPages : currentPage - 1;
     }
-  }, [totalPages]);
+    setCurrentPage(newPage);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [currentPage, totalPages]);
 
   // Проверка активных фильтров
   const hasActiveFilters = useCallback(() => {
@@ -378,25 +382,45 @@ function App() {
         )}
       </AnimatePresence>
 
-      {/* Пагинация - две прозрачные кнопки по половинам экрана */}
+      {/* Индикатор страниц между поиском и карточками */}
+      {searchActive && results.length > ITEMS_PER_PAGE && (
+        <motion.div
+          className="pagination-indicator"
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0 }}
+        >
+          {Array.from({ length: totalPages }, (_, i) => (
+            <div
+              key={i}
+              className={`page-dot ${currentPage === i + 1 ? 'active' : ''}`}
+              onClick={() => {
+                setCurrentPage(i + 1);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+            />
+          ))}
+          <span className="page-number">{currentPage} / {totalPages}</span>
+        </motion.div>
+      )}
+
+      {/* Пагинация - стрелки по бокам экрана */}
       {searchActive && results.length > ITEMS_PER_PAGE && (
         <>
-          {/* Левая половина экрана - скролл влево */}
+          {/* Левая кнопка - назад */}
           <button
             className="page-nav-full page-nav-left"
-            onClick={() => handlePageChange(currentPage - 1)}
-            disabled={currentPage === 1}
+            onClick={() => handlePageChange('prev')}
           >
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M15 18l-6-6 6-6"/>
             </svg>
           </button>
-          
-          {/* Правая половина экрана - скролл вправо */}
+
+          {/* Правая кнопка - вперёд */}
           <button
             className="page-nav-full page-nav-right"
-            onClick={() => handlePageChange(currentPage + 1)}
-            disabled={currentPage === totalPages}
+            onClick={() => handlePageChange('next')}
           >
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M9 18l6-6-6-6"/>

@@ -1635,53 +1635,148 @@ body.light {
 }
 
 /* ========== Pagination Styles ========== */
-/* Прозрачные кнопки на половину экрана - под карточками */
+/* Кнопки пагинации - стрелки по бокам */
 .page-nav-full {
   position: fixed;
-  top: 0;
-  bottom: 0;
-  width: 50vw;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 60px;
+  height: 100px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: transparent;
-  border: none;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
   cursor: pointer;
-  z-index: 5;
+  z-index: 50;
   padding: 0;
+  transition: all 0.2s;
+}
+
+.page-nav-full:hover {
+  background: rgba(0, 0, 0, 0.8);
+  border-color: rgba(255, 255, 255, 0.2);
 }
 
 .page-nav-left {
-  left: 0;
+  left: calc(50vw - 600px);
 }
 
 .page-nav-right {
-  right: 0;
+  right: calc(50vw - 600px);
 }
 
 .page-nav-full svg {
-  width: 24px;
-  height: 24px;
-  color: #666666;
+  width: 32px;
+  height: 32px;
+  color: #ffffff;
   flex-shrink: 0;
+  transition: all 0.2s;
+}
+
+.light .page-nav-full {
+  background: rgba(255, 255, 255, 0.8);
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+.light .page-nav-full:hover {
+  background: rgba(255, 255, 255, 0.95);
+  border-color: rgba(0, 0, 0, 0.2);
 }
 
 .light .page-nav-full svg {
-  color: #6b6356;
+  color: #4a4438;
 }
 
-.page-nav-full:disabled {
-  cursor: default;
+/* Индикатор страниц */
+.pagination-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0.75rem 1.5rem;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  margin: 0 auto 2rem;
+  width: fit-content;
+  z-index: 60;
+  position: relative;
 }
 
-.page-nav-full:disabled svg {
-  opacity: 0.3;
+.light .pagination-indicator {
+  background: rgba(255, 255, 255, 0.9);
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+.page-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+  transition: all 0.2s;
+  cursor: pointer;
+}
+
+.light .page-dot {
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.page-dot:hover {
+  background: rgba(255, 255, 255, 0.6);
+  transform: scale(1.2);
+}
+
+.light .page-dot:hover {
+  background: rgba(0, 0, 0, 0.4);
+}
+
+.page-dot.active {
+  background: #ffffff;
+  width: 24px;
+  border-radius: 5px;
+}
+
+.light .page-dot.active {
+  background: #4a4438;
+}
+
+.page-number {
+  color: #ffffff;
+  font-size: 0.9rem;
+  font-weight: 600;
+  min-width: 60px;
+  text-align: center;
+}
+
+.light .page-number {
+  color: #4a4438;
 }
 
 /* Адаптивность для пагинации */
 @media (max-width: 768px) {
+  .page-nav-full {
+    width: 50px;
+    height: 80px;
+  }
+  
   .page-nav-full svg {
-    width: 20px;
-    height: 20px;
+    width: 24px;
+    height: 24px;
+  }
+  
+  .page-nav-left {
+    left: 10px;
+  }
+  
+  .page-nav-right {
+    right: 10px;
+  }
+  
+  .pagination-indicator {
+    padding: 0.5rem 1rem;
   }
 }
