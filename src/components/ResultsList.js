@@ -52,8 +52,10 @@ const ResultsList = memo(({ results, imageBase, onSelect }) => {
               </svg>
             </div>
           </div>
-          <h3>{item.title || item.name}</h3>
-          <p>{formatYear(item.release_date || item.first_air_date)}</p>
+          <div className="title-wrapper">
+            <h3>{item.title || item.name}</h3>
+            <p>{formatYear(item.release_date || item.first_air_date)}</p>
+          </div>
         </motion.a>
       ))}
     </motion.div>

@@ -10,7 +10,9 @@ const SearchBar = memo(({
   setSearchActive,
   loading,
   suggestions,
-  onSuggestionClick
+  onSuggestionClick,
+  onFilterClick,
+  hasActiveFilters
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const inputRef = useRef(null);
@@ -41,11 +43,21 @@ const SearchBar = memo(({
     setTimeout(() => inputRef.current?.focus(), 100);
   }, []);
 
-  const handleInputBlur = useCallback(() => {
+  const handleInputBlur = useCallback((e) => {
+    // Проверяем, что фокус перешёл не на кнопку фильтра
+    const relatedTarget = e.relatedTarget;
+    if (relatedTarget && relatedTarget.classList.contains('filter-icon')) {
+      return;
+    }
     if (!query && !searchActive) {
       setIsExpanded(false);
     }
   }, [query, searchActive]);
+
+  const handleFilterClick = useCallback((e) => {
+    e.stopPropagation();
+    onFilterClick();
+  }, [onFilterClick]);
 
   const showSuggestions = useMemo(() =>
     suggestions.length > 0 && isExpanded && !searchActive && !loading,
@@ -161,9 +173,13 @@ const SearchBar = memo(({
         animate={{ opacity: isExpanded ? 1 : 0 }}
         transition={{ duration: 0.2, delay: isExpanded ? 1 : 0 }}
       >
-        <div className="search-icon-only filter-icon">
+        <button
+          className={`search-icon-only filter-icon ${hasActiveFilters ? 'has-filters' : ''}`}
+          onClick={handleFilterClick}
+          type="button"
+        >
           <Sliders size={24} />
-        </div>
+        </button>
       </motion.div>
     </div>
   );

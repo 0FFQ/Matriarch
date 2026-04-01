@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect, useRef } from 'react';
+import React, { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import axios from 'axios';
 import SearchBar from './components/SearchBar';
@@ -7,6 +7,7 @@ import TrailerPlayer from './components/TrailerPlayer';
 import InteractiveAtom from './components/InteractiveAtom';
 import MenuToggle from './components/MenuToggle';
 import Sidebar from './components/Sidebar';
+import FilterPanel from './components/FilterPanel';
 import { Loader2 } from 'lucide-react';
 import './App.css';
 
@@ -25,12 +26,55 @@ function App() {
   const [noTrailer, setNoTrailer] = useState(false);
   const [currentMovie, setCurrentMovie] = useState(null);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [filterOpen, setFilterOpen] = useState(false);
+  const [genres, setGenres] = useState([]);
+  const [loadingGenres, setLoadingGenres] = useState(false);
+  const [filters, setFilters] = useState({
+    type: 'all',
+    genre: '',
+    yearFrom: '',
+    yearTo: '',
+    rating: '',
+    sortBy: 'popularity.desc',
+    animeOnly: false
+  });
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 6;
   const debounceRef = useRef(null);
 
   // Инициализация темы
   useEffect(() => {
     document.body.classList.add('dark');
     return () => document.body.classList.remove('dark', 'light');
+  }, []);
+
+  // Загрузка жанров
+  useEffect(() => {
+    const loadGenres = async () => {
+      setLoadingGenres(true);
+      try {
+        const [movieGenres, tvGenres] = await Promise.all([
+          axios.get(`${BASE_URL}/genre/movie/list`, {
+            params: { language: 'ru-RU' },
+            headers: { Authorization: `Bearer ${AUTH_TOKEN}` }
+          }),
+          axios.get(`${BASE_URL}/genre/tv/list`, {
+            params: { language: 'ru-RU' },
+            headers: { Authorization: `Bearer ${AUTH_TOKEN}` }
+          })
+        ]);
+        // Объединяем жанры, убираем дубликаты
+        const allGenres = [...movieGenres.data.genres, ...tvGenres.data.genres];
+        const uniqueGenres = allGenres.filter(
+          (genre, index, self) => index === self.findIndex(g => g.id === genre.id)
+        );
+        setGenres(uniqueGenres);
+      } catch (err) {
+        console.error('Failed to load genres:', err.message);
+      }
+      setLoadingGenres(false);
+    };
+    loadGenres();
   }, []);
 
   // Поиск подсказок с debounce 300ms
@@ -62,16 +106,16 @@ function App() {
     };
   }, [query]);
 
-  // Сброс состояния при очистке поиска
+  // Сброс состояния при очистке поиска (только если был текстовый запрос)
   useEffect(() => {
-    if (!query && searchActive) {
+    // Не сбрасываем, если результаты получены через фильтры (без query)
+    if (!query && searchActive && results.length === 0) {
       setSearchActive(false);
-      setResults([]);
       setCurrentMovie(null);
       setSelectedTrailer(null);
       setNoTrailer(false);
     }
-  }, [query, searchActive]);
+  }, [query, searchActive, results.length]);
 
   const toggleTheme = () => {
     const newDarkMode = !darkMode;
@@ -80,11 +124,99 @@ function App() {
     document.body.classList.add(newDarkMode ? 'dark' : 'light');
   };
 
+  // Поиск через /discover с фильтрами
+  const searchWithFilters = useCallback(async (searchFilters) => {
+    setLoading(true);
+    setSearchActive(true);
+    
+    const { type, genre, yearFrom, yearTo, rating, sortBy, animeOnly } = searchFilters;
+    
+    try {
+      let endpoint = '/discover/movie';
+      const params = {
+        language: 'ru-RU',
+        sort_by: sortBy,
+        include_adult: false,
+        include_video: false,
+        page: 1
+      };
+
+      // Фильтры
+      if (genre) params.with_genres = genre;
+      if (yearFrom) params.primary_release_year = yearFrom;
+      if (rating) params['vote_average.gte'] = parseFloat(rating);
+      if (yearFrom && yearTo && yearFrom !== yearTo) {
+        params['primary_release_date.gte'] = `${yearFrom}-01-01`;
+        params['primary_release_date.lte'] = `${yearTo}-12-31`;
+        delete params.primary_release_year;
+      }
+      
+      // Фильтр аниме (Япония + Анимация)
+      if (animeOnly) {
+        params.with_genres = params.with_genres 
+          ? `${params.with_genres},16` 
+          : '16';
+        params.with_origin_country = 'JP';
+      }
+
+      // Если тип 'tv' или 'all'
+      if (type === 'tv') {
+        endpoint = '/discover/tv';
+        params['vote_count.gte'] = 10; // Для сериалов нужен мин. счетчик голосов
+      } else if (type === 'all') {
+        // Для "все" делаем два запроса и объединяем
+        const [movieRes, tvRes] = await Promise.all([
+          axios.get(`${BASE_URL}/discover/movie`, { params, headers: { Authorization: `Bearer ${AUTH_TOKEN}` } }),
+          axios.get(`${BASE_URL}/discover/tv`, { 
+            params: { ...params, 'vote_count.gte': 10 }, 
+            headers: { Authorization: `Bearer ${AUTH_TOKEN}` } 
+          })
+        ]);
+        
+        const combined = [
+          ...movieRes.data.results.map(r => ({ ...r, media_type: 'movie' })),
+          ...tvRes.data.results.map(r => ({ ...r, media_type: 'tv' }))
+        ];
+        
+        // Сортируем по выбранному параметру
+        const sortKey = sortBy.split('.')[0];
+        const sortOrder = sortBy.split('.')[1];
+        combined.sort((a, b) => {
+          let comparison = 0;
+          if (sortKey === 'popularity' || sortKey === 'vote_average') {
+            comparison = b[sortKey] - a[sortKey];
+          } else if (sortKey === 'primary_release_date') {
+            comparison = new Date(b[sortKey]) - new Date(a[sortKey]);
+          } else if (sortKey === 'title') {
+            comparison = (b.title || b.name || '').localeCompare(a.title || a.name || '', 'ru');
+          }
+          return sortOrder === 'asc' ? -comparison : comparison;
+        });
+        
+        setResults(combined);
+        setLoading(false);
+        return;
+      }
+
+      const { data } = await axios.get(`${BASE_URL}${endpoint}`, {
+        params,
+        headers: { Authorization: `Bearer ${AUTH_TOKEN}` }
+      });
+      
+      setResults(data.results.map(r => ({ ...r, media_type: type })));
+      setCurrentPage(1); // Сброс на первую страницу при новом поиске
+    } catch (err) {
+      console.error('Discover search failed:', err.message);
+    }
+    setLoading(false);
+  }, []);
+
   const searchMovies = useCallback(async (q) => {
     if (!q.trim()) return;
     setLoading(true);
-    setSuggestions([]); // Очищаем подсказки СРАЗУ
-    setSearchActive(true); // Устанавливаем searchActive
+    setSuggestions([]);
+    setSearchActive(true);
+    setCurrentPage(1); // Сброс на первую страницу
     try {
       const { data } = await axios.get(`${BASE_URL}/search/multi`, {
         params: { query: q, language: 'ru-RU' },
@@ -101,9 +233,42 @@ function App() {
 
   const handleSuggestionClick = useCallback((title) => {
     searchMovies(title);
-    // setSearchActive(true) вызывается внутри searchMovies
     setSuggestions([]);
   }, [searchMovies]);
+
+  // Пагинация
+  const totalPages = Math.ceil(results.length / ITEMS_PER_PAGE);
+  
+  const paginatedResults = useMemo(() => {
+    const start = (currentPage - 1) * ITEMS_PER_PAGE;
+    const end = start + ITEMS_PER_PAGE;
+    return results.slice(start, end);
+  }, [results, currentPage]);
+
+  const handlePageChange = useCallback((newPage) => {
+    if (newPage >= 1 && newPage <= totalPages) {
+      setCurrentPage(newPage);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }, [totalPages]);
+
+  // Проверка активных фильтров
+  const hasActiveFilters = useCallback(() => {
+    return (
+      filters.genre !== '' ||
+      filters.yearFrom !== '' ||
+      filters.yearTo !== '' ||
+      filters.rating !== '' ||
+      filters.type !== 'all' ||
+      filters.sortBy !== 'popularity.desc' ||
+      filters.animeOnly === true
+    );
+  }, [filters]);
+
+  // Применение фильтров
+  const handleApplyFilters = useCallback((appliedFilters) => {
+    searchWithFilters(appliedFilters);
+  }, [searchWithFilters]);
 
   const getTrailer = async (id, type = 'movie') => {
     try {
@@ -142,6 +307,15 @@ function App() {
         darkMode={darkMode}
         onToggleTheme={toggleTheme}
       />
+      <FilterPanel
+        isOpen={filterOpen}
+        onClose={() => setFilterOpen(false)}
+        filters={filters}
+        setFilters={setFilters}
+        onApply={handleApplyFilters}
+        genres={genres}
+        loadingGenres={loadingGenres}
+      />
 
       {showAtom && <InteractiveAtom />}
 
@@ -157,6 +331,8 @@ function App() {
             loading={loading}
             suggestions={suggestions}
             onSuggestionClick={handleSuggestionClick}
+            onFilterClick={() => setFilterOpen(true)}
+            hasActiveFilters={hasActiveFilters()}
           />
         </AnimatePresence>
 
@@ -197,10 +373,37 @@ function App() {
       </motion.div>
 
       <AnimatePresence>
-        {searchActive && results.length > 0 && !selectedTrailer && (
-          <ResultsList results={results} imageBase={IMAGE_BASE} onSelect={getTrailer} />
+        {searchActive && paginatedResults.length > 0 && !selectedTrailer && (
+          <ResultsList results={paginatedResults} imageBase={IMAGE_BASE} onSelect={getTrailer} />
         )}
       </AnimatePresence>
+
+      {/* Пагинация - две прозрачные кнопки по половинам экрана */}
+      {searchActive && results.length > ITEMS_PER_PAGE && (
+        <>
+          {/* Левая половина экрана - скролл влево */}
+          <button
+            className="page-nav-full page-nav-left"
+            onClick={() => handlePageChange(currentPage - 1)}
+            disabled={currentPage === 1}
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M15 18l-6-6 6-6"/>
+            </svg>
+          </button>
+          
+          {/* Правая половина экрана - скролл вправо */}
+          <button
+            className="page-nav-full page-nav-right"
+            onClick={() => handlePageChange(currentPage + 1)}
+            disabled={currentPage === totalPages}
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M9 18l6-6-6-6"/>
+            </svg>
+          </button>
+        </>
+      )}
 
       <AnimatePresence>
         {selectedTrailer && (
