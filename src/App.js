@@ -16,33 +16,48 @@ const BASE_URL = 'https://api.themoviedb.org/3';
 const IMAGE_BASE = 'https://image.tmdb.org/t/p/w500';
 
 function App() {
+  // Состояние поиска
   const [query, setQuery] = useState('');
-  const [results, setResults] = useState([]);
   const [suggestions, setSuggestions] = useState([]);
-  const [selectedTrailer, setSelectedTrailer] = useState(null);
+  
+  // Состояние результатов
+  const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
   const [searchActive, setSearchActive] = useState(false);
-  const [darkMode, setDarkMode] = useState(true);
+  
+  // Состояние трейлера
+  const [selectedTrailer, setSelectedTrailer] = useState(null);
   const [noTrailer, setNoTrailer] = useState(false);
   const [currentMovie, setCurrentMovie] = useState(null);
+  
+  // Состояние UI
+  const [darkMode, setDarkMode] = useState(true);
   const [menuOpen, setMenuOpen] = useState(false);
   const [filterOpen, setFilterOpen] = useState(false);
+  
+  // Жанры
   const [genres, setGenres] = useState([]);
   const [loadingGenres, setLoadingGenres] = useState(false);
+  
+  // Фильтры
   const [filters, setFilters] = useState({
     type: 'all',
     genre: '',
-    yearFrom: '',
-    yearTo: '',
+    year: '',
     rating: '',
     sortBy: 'popularity.desc',
     animeOnly: false
   });
+  
+  // Пагинация
   const [currentPage, setCurrentPage] = useState(1);
   const ITEMS_PER_PAGE = 6;
+  
   const debounceRef = useRef(null);
 
-  // Инициализация темы
+  // === Инициализация ===
+  
+  // Тема
   useEffect(() => {
     document.body.classList.add('dark');
     return () => document.body.classList.remove('dark', 'light');
@@ -63,7 +78,6 @@ function App() {
             headers: { Authorization: `Bearer ${AUTH_TOKEN}` }
           })
         ]);
-        // Объединяем жанры, убираем дубликаты
         const allGenres = [...movieGenres.data.genres, ...tvGenres.data.genres];
         const uniqueGenres = allGenres.filter(
           (genre, index, self) => index === self.findIndex(g => g.id === genre.id)
@@ -77,7 +91,7 @@ function App() {
     loadGenres();
   }, []);
 
-  // Поиск подсказок с debounce 300ms
+  // === Поиск подсказок ===
   useEffect(() => {
     if (query.length > 2) {
       if (debounceRef.current) clearTimeout(debounceRef.current);
@@ -106,17 +120,7 @@ function App() {
     };
   }, [query]);
 
-  // Сброс состояния при очистке поиска (только если был текстовый запрос)
-  useEffect(() => {
-    // Не сбрасываем, если результаты получены через фильтры (без query)
-    if (!query && searchActive && results.length === 0) {
-      setSearchActive(false);
-      setCurrentMovie(null);
-      setSelectedTrailer(null);
-      setNoTrailer(false);
-    }
-  }, [query, searchActive, results.length]);
-
+  // === Переключение темы ===
   const toggleTheme = () => {
     const newDarkMode = !darkMode;
     setDarkMode(newDarkMode);
@@ -124,171 +128,149 @@ function App() {
     document.body.classList.add(newDarkMode ? 'dark' : 'light');
   };
 
-  // Поиск через /discover с фильтрами
-  const searchWithFilters = useCallback(async (searchFilters) => {
+  // === Основная функция поиска с фильтрами ===
+  const applyFilters = useCallback(async () => {
     setLoading(true);
     setSearchActive(true);
+    setCurrentPage(1);
 
-    const { type, genre, yearFrom, yearTo, rating, sortBy, animeOnly } = searchFilters;
+    const { type, genre, year, rating, sortBy, animeOnly } = filters;
 
     try {
-      let endpoint = '/discover/movie';
-      const baseParams = {
+      // Базовые параметры для фильмов
+      const movieParams = {
         language: 'ru-RU',
-        sort_by: sortBy,
         include_adult: false,
-        include_video: false
+        include_video: false,
+        sort_by: getSortField(sortBy, 'movie'),
       };
 
-      // Фильтры
-      if (genre) baseParams.with_genres = genre;
-      if (yearFrom) baseParams.primary_release_year = yearFrom;
-      if (rating) baseParams['vote_average.gte'] = parseFloat(rating);
-      if (yearFrom && yearTo && yearFrom !== yearTo) {
-        baseParams['primary_release_date.gte'] = `${yearFrom}-01-01`;
-        baseParams['primary_release_date.lte'] = `${yearTo}-12-31`;
-        delete baseParams.primary_release_year;
-      }
+      // Базовые параметры для сериалов
+      const tvParams = {
+        language: 'ru-RU',
+        include_adult: false,
+        include_video: false,
+        sort_by: getSortField(sortBy, 'tv'),
+        'vote_count.gte': 10,
+      };
 
-      // Фильтр аниме (Япония + Анимация)
+      // Фильтры для фильмов
+      const movieFilters = {};
+      if (genre) movieFilters.with_genres = genre;
+      if (year) movieFilters.primary_release_year = year;
+      if (rating) movieFilters['vote_average.gte'] = parseFloat(rating);
       if (animeOnly) {
-        baseParams.with_genres = baseParams.with_genres
-          ? `${baseParams.with_genres},16`
+        const currentGenre = movieFilters.with_genres;
+        movieFilters.with_genres = currentGenre
+          ? `${currentGenre},16`
           : '16';
-        baseParams.with_origin_country = 'JP';
+        movieFilters.with_origin_country = 'JP';
       }
 
-      // Запрашиваем несколько страниц для большего количества результатов
-      const pagesToFetch = 5; // 5 страниц * 20 = 100 результатов
-      const fetchPage = async (page) => {
-        const params = { ...baseParams, page };
-        if (type === 'tv') {
-          params['vote_count.gte'] = 10;
+      // Фильтры для сериалов
+      const tvFilters = {};
+      if (genre) tvFilters.with_genres = genre;
+      if (year) tvFilters.first_air_date_year = year;
+      if (rating) tvFilters['vote_average.gte'] = parseFloat(rating);
+      if (animeOnly) {
+        const currentGenre = tvFilters.with_genres;
+        tvFilters.with_genres = currentGenre
+          ? `${currentGenre},16`
+          : '16';
+        tvFilters.with_origin_country = 'JP';
+      }
+
+      // Функция для получения страниц (максимум 20 страниц = 400 результатов)
+      const fetchPages = async (endpoint, params, pagesCount = 20) => {
+        const requests = [];
+        for (let page = 1; page <= pagesCount; page++) {
+          requests.push(
+            axios.get(`${BASE_URL}${endpoint}`, {
+              params: { ...params, page },
+              headers: { Authorization: `Bearer ${AUTH_TOKEN}` }
+            })
+          );
         }
-        return axios.get(`${BASE_URL}${endpoint}`, {
-          params,
-          headers: { Authorization: `Bearer ${AUTH_TOKEN}` }
-        });
+        const responses = await Promise.all(requests);
+        return responses.flatMap(res => res.data.results || []);
       };
 
-      // Если тип 'tv' или 'all'
-      if (type === 'tv') {
-        baseParams['vote_count.gte'] = 10;
-        const pageRequests = Array.from({ length: pagesToFetch }, (_, i) => i + 1);
-        const responses = await Promise.all(pageRequests.map(p => fetchPage(p)));
-        const allResults = responses.flatMap(res => res.data.results);
-        setResults(allResults.map(r => ({ ...r, media_type: 'tv' })));
-        setCurrentPage(1);
-        setLoading(false);
-        return;
-      } else if (type === 'all') {
-        // Для "все" делаем запросы для фильмов и сериалов
-        const moviePageRequests = Array.from({ length: pagesToFetch }, (_, i) => i + 1);
-        const tvPageRequests = Array.from({ length: pagesToFetch }, (_, i) => i + 1);
+      let allResults = [];
 
-        const [movieResponses, tvResponses] = await Promise.all([
-          Promise.all(moviePageRequests.map(p => 
-            axios.get(`${BASE_URL}/discover/movie`, {
-              params: { ...baseParams, page: p },
-              headers: { Authorization: `Bearer ${AUTH_TOKEN}` }
-            })
-          )),
-          Promise.all(tvPageRequests.map(p =>
-            axios.get(`${BASE_URL}/discover/tv`, {
-              params: { ...baseParams, page: p, 'vote_count.gte': 10 },
-              headers: { Authorization: `Bearer ${AUTH_TOKEN}` }
-            })
-          ))
+      // Определяем какие запросы делать
+      if (type === 'movie') {
+        allResults = await fetchPages('/discover/movie', { ...movieParams, ...movieFilters });
+        allResults = allResults.map(item => ({ ...item, media_type: 'movie' }));
+      } 
+      else if (type === 'tv') {
+        allResults = await fetchPages('/discover/tv', { ...tvParams, ...tvFilters });
+        allResults = allResults.map(item => ({ ...item, media_type: 'tv' }));
+      } 
+      else if (type === 'all') {
+        const [movieResults, tvResults] = await Promise.all([
+          fetchPages('/discover/movie', { ...movieParams, ...movieFilters }),
+          fetchPages('/discover/tv', { ...tvParams, ...tvFilters })
         ]);
-
-        const movieResults = movieResponses.flatMap(res => res.data.results.map(r => ({ ...r, media_type: 'movie' })));
-        const tvResults = tvResponses.flatMap(res => res.data.results.map(r => ({ ...r, media_type: 'tv' })));
-        const combined = [...movieResults, ...tvResults];
-
-        // Сортируем по выбранному параметру
-        const sortKey = sortBy.split('.')[0];
-        const sortOrder = sortBy.split('.')[1];
-        combined.sort((a, b) => {
-          let comparison = 0;
-          if (sortKey === 'popularity' || sortKey === 'vote_average') {
-            comparison = b[sortKey] - a[sortKey];
-          } else if (sortKey === 'primary_release_date') {
-            comparison = new Date(b[sortKey]) - new Date(a[sortKey]);
-          } else if (sortKey === 'title') {
-            comparison = (b.title || b.name || '').localeCompare(a.title || a.name || '', 'ru');
-          }
-          return sortOrder === 'asc' ? -comparison : comparison;
-        });
-
-        setResults(combined);
-        setCurrentPage(1);
-        setLoading(false);
-        return;
+        allResults = [
+          ...movieResults.map(item => ({ ...item, media_type: 'movie' })),
+          ...tvResults.map(item => ({ ...item, media_type: 'tv' }))
+        ];
+        // Сортируем смешанные результаты
+        allResults = sortResults(allResults, sortBy);
       }
 
-      // Для movie - запрашиваем несколько страниц
-      const pageRequests = Array.from({ length: pagesToFetch }, (_, i) => i + 1);
-      const responses = await Promise.all(pageRequests.map(p => fetchPage(p)));
-      const allResults = responses.flatMap(res => res.data.results);
-      setResults(allResults.map(r => ({ ...r, media_type: type })));
-      setCurrentPage(1);
+      // Фильтруем результаты без постеров
+      allResults = allResults.filter(item => item.poster_path);
+      
+      setResults(allResults);
     } catch (err) {
-      console.error('Discover search failed:', err.message);
+      console.error('Filter search failed:', err.message);
+      setResults([]);
     }
+    
     setLoading(false);
-  }, []);
+  }, [filters]);
 
-  const searchMovies = useCallback(async (q) => {
-    if (!q.trim()) return;
+  // === Поиск по тексту ===
+  const searchByText = useCallback(async (searchQuery) => {
+    if (!searchQuery.trim()) return;
+    
     setLoading(true);
-    setSuggestions([]);
     setSearchActive(true);
-    setCurrentPage(1); // Сброс на первую страницу
+    setCurrentPage(1);
+    setSuggestions([]);
+
     try {
       const { data } = await axios.get(`${BASE_URL}/search/multi`, {
-        params: { query: q, language: 'ru-RU' },
+        params: { query: searchQuery, language: 'ru-RU' },
         headers: { Authorization: `Bearer ${AUTH_TOKEN}` }
       });
-      setResults(data.results.filter(
-        item => item.media_type === 'movie' || item.media_type === 'tv'
-      ));
+      
+      const filtered = data.results.filter(
+        item => (item.media_type === 'movie' || item.media_type === 'tv') && item.poster_path
+      );
+      
+      setResults(filtered);
     } catch (err) {
-      console.error('Search failed:', err.message);
+      console.error('Text search failed:', err.message);
+      setResults([]);
     }
+    
     setLoading(false);
   }, []);
 
+  // === Клик по подсказке ===
   const handleSuggestionClick = useCallback((title) => {
-    searchMovies(title);
+    setQuery(title);
+    searchByText(title);
     setSuggestions([]);
-  }, [searchMovies]);
+  }, [searchByText]);
 
-  // Пагинация
-  const totalPages = Math.ceil(results.length / ITEMS_PER_PAGE);
-  
-  const paginatedResults = useMemo(() => {
-    const start = (currentPage - 1) * ITEMS_PER_PAGE;
-    const end = start + ITEMS_PER_PAGE;
-    return results.slice(start, end);
-  }, [results, currentPage]);
-
-  const handlePageChange = useCallback((direction) => {
-    let newPage;
-    if (direction === 'next') {
-      newPage = currentPage >= totalPages ? 1 : currentPage + 1;
-    } else {
-      newPage = currentPage <= 1 ? totalPages : currentPage - 1;
-    }
-    setCurrentPage(newPage);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }, [currentPage, totalPages]);
-
-  // Проверка активных фильтров
-  const hasActiveFilters = useCallback(() => {
+  // === Проверка активных фильтров ===
+  const hasActiveFilters = useMemo(() => {
     return (
       filters.genre !== '' ||
-      filters.yearFrom !== '' ||
-      filters.yearTo !== '' ||
+      filters.year !== '' ||
       filters.rating !== '' ||
       filters.type !== 'all' ||
       filters.sortBy !== 'popularity.desc' ||
@@ -296,20 +278,70 @@ function App() {
     );
   }, [filters]);
 
-  // Применение фильтров
-  const handleApplyFilters = useCallback((appliedFilters) => {
-    searchWithFilters(appliedFilters);
-  }, [searchWithFilters]);
+  // === Вспомогательные функции ===
+  
+  const getSortField = (sortBy, type = 'movie') => {
+    const field = sortBy.split('.')[0];
+    if (type === 'tv' && field === 'primary_release_date') {
+      return 'first_air_date';
+    }
+    if (field === 'title') return 'original_title';
+    return field;
+  };
 
+  const sortResults = (results, sortBy) => {
+    const [field, order] = sortBy.split('.');
+    const sorted = [...results].sort((a, b) => {
+      if (field === 'popularity' || field === 'vote_average') {
+        return order === 'desc' ? b[field] - a[field] : a[field] - b[field];
+      }
+      if (field === 'primary_release_date') {
+        const dateA = new Date(a[field] || 0);
+        const dateB = new Date(b[field] || 0);
+        return order === 'desc' ? dateB - dateA : dateA - dateB;
+      }
+      if (field === 'title') {
+        const titleA = a.title || a.name || '';
+        const titleB = b.title || b.name || '';
+        return order === 'desc' 
+          ? titleB.localeCompare(titleA, 'ru') 
+          : titleA.localeCompare(titleB, 'ru');
+      }
+      return 0;
+    });
+    return sorted;
+  };
+
+  // === Пагинация ===
+  const totalPages = Math.ceil(results.length / ITEMS_PER_PAGE);
+
+  const paginatedResults = useMemo(() => {
+    const start = (currentPage - 1) * ITEMS_PER_PAGE;
+    const end = start + ITEMS_PER_PAGE;
+    return results.slice(start, end);
+  }, [results, currentPage]);
+
+  const handlePageChange = useCallback((direction) => {
+    if (direction === 'next') {
+      setCurrentPage(prev => prev >= totalPages ? 1 : prev + 1);
+    } else {
+      setCurrentPage(prev => prev <= 1 ? totalPages : prev - 1);
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [currentPage, totalPages]);
+
+  // === Получение трейлера ===
   const getTrailer = async (id, type = 'movie') => {
     try {
       const { data } = await axios.get(`${BASE_URL}/${type}/${id}/videos`, {
         params: { language: 'ru-RU' },
         headers: { Authorization: `Bearer ${AUTH_TOKEN}` }
       });
+      
       const trailer = data.results.find(
         v => v.site === 'YouTube' && ['Trailer', 'Teaser', 'Clip'].includes(v.type)
       );
+      
       if (trailer) {
         setSelectedTrailer({ key: trailer.key, title: trailer.name });
       } else {
@@ -326,7 +358,8 @@ function App() {
     }
   };
 
-  const showAtom = !searchActive || (!results.length && !query);
+  // === Рендер ===
+  const showAtom = !searchActive || (results.length === 0 && !loading);
 
   return (
     <div className={`app ${darkMode ? 'dark' : 'light'}`}>
@@ -338,12 +371,13 @@ function App() {
         darkMode={darkMode}
         onToggleTheme={toggleTheme}
       />
+      
       <FilterPanel
         isOpen={filterOpen}
         onClose={() => setFilterOpen(false)}
         filters={filters}
         setFilters={setFilters}
-        onApply={handleApplyFilters}
+        onApply={applyFilters}
         genres={genres}
         loadingGenres={loadingGenres}
       />
@@ -356,14 +390,14 @@ function App() {
             key="search"
             query={query}
             setQuery={setQuery}
-            onSearch={searchMovies}
+            onSearch={searchByText}
             searchActive={searchActive}
             setSearchActive={setSearchActive}
             loading={loading}
             suggestions={suggestions}
             onSuggestionClick={handleSuggestionClick}
             onFilterClick={() => setFilterOpen(true)}
-            hasActiveFilters={hasActiveFilters()}
+            hasActiveFilters={hasActiveFilters}
           />
         </AnimatePresence>
 
@@ -409,7 +443,6 @@ function App() {
         )}
       </AnimatePresence>
 
-      {/* Индикатор страниц между поиском и карточками */}
       {searchActive && results.length > ITEMS_PER_PAGE && (
         <motion.div
           className="pagination-indicator"
@@ -431,24 +464,15 @@ function App() {
         </motion.div>
       )}
 
-      {/* Пагинация - стрелки по бокам экрана */}
       {searchActive && results.length > ITEMS_PER_PAGE && (
         <>
-          {/* Левая кнопка - назад */}
-          <button
-            className="page-nav-full page-nav-left"
-            onClick={() => handlePageChange('prev')}
-          >
+          <button className="page-nav-full page-nav-left" onClick={() => handlePageChange('prev')}>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M15 18l-6-6 6-6"/>
             </svg>
           </button>
 
-          {/* Правая кнопка - вперёд */}
-          <button
-            className="page-nav-full page-nav-right"
-            onClick={() => handlePageChange('next')}
-          >
+          <button className="page-nav-full page-nav-right" onClick={() => handlePageChange('next')}>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M9 18l6-6-6-6"/>
             </svg>
