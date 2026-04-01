@@ -930,7 +930,7 @@ body.light {
 }
 
 .light .result-card p {
-  background: rgba(139, 131, 120, 0.15);
+  background: #ffffff;
 }
 
 .result-card-large .kinopoisk-icon {
@@ -940,7 +940,7 @@ body.light {
 
 /* Светлая тема */
 .light .result-card {
-  background: rgba(139, 131, 120, 0.08);
+  background: #ffffff;
   border: 1px solid rgba(139, 131, 120, 0.15);
 }
 
@@ -956,7 +956,7 @@ body.light {
 }
 
 .light .kinopoisk-icon {
-  background: rgba(139, 131, 120, 0.15);
+  background: #ffffff;
   color: #4a4438;
 }
 
@@ -1679,11 +1679,13 @@ body.light {
 .light .page-nav-full {
   background: rgba(255, 255, 255, 0.8);
   border-color: rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
 }
 
 .light .page-nav-full:hover {
   background: rgba(255, 255, 255, 0.95);
-  border-color: rgba(0, 0, 0, 0.2);
+  border-color: rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
 }
 
 .light .page-nav-full svg {
@@ -1710,6 +1712,7 @@ body.light {
 .light .pagination-indicator {
   background: rgba(255, 255, 255, 0.9);
   border-color: rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
 }
 
 .page-dot {
