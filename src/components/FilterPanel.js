@@ -1,21 +1,37 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Sliders, RotateCcw } from 'lucide-react';
+import { X, Sliders, RotateCcw, ChevronDown } from 'lucide-react';
+import { createPortal } from 'react-dom';
 
-const FilterPanel = ({ 
-  isOpen, 
-  onClose, 
-  filters, 
-  setFilters, 
-  onApply, 
-  genres, 
-  loadingGenres 
+const FilterPanel = ({
+  isOpen,
+  onClose,
+  filters,
+  setFilters,
+  onApply,
+  genres,
+  loadingGenres
 }) => {
   const [localFilters, setLocalFilters] = useState(filters);
+  const [openDropdown, setOpenDropdown] = useState(null);
+  const dropdownRefs = useRef({});
 
   useEffect(() => {
     setLocalFilters(filters);
   }, [filters]);
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (openDropdown) {
+        const triggerEl = dropdownRefs.current[openDropdown];
+        if (triggerEl && !triggerEl.contains(e.target)) {
+          setOpenDropdown(null);
+        }
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [openDropdown]);
 
   const handleChange = (key, value) => {
     setLocalFilters(prev => ({ ...prev, [key]: value }));
@@ -52,6 +68,73 @@ const FilterPanel = ({
     { value: 'title.asc', label: 'По названию (А-Я)' },
     { value: 'title.desc', label: 'По названию (Я-А)' }
   ];
+
+  const CustomSelect = ({ id, value, options, onChange, placeholder }) => {
+    const triggerRef = useRef(null);
+    const [position, setPosition] = useState({ top: 0, left: 0, width: 0 });
+    const selectedLabel = options.find(opt => opt.value === value)?.label || placeholder;
+
+    useEffect(() => {
+      if (openDropdown === id && triggerRef.current) {
+        const rect = triggerRef.current.getBoundingClientRect();
+        setPosition({
+          top: rect.bottom + window.scrollY + 6,
+          left: rect.left + window.scrollX,
+          width: rect.width
+        });
+      }
+    }, [openDropdown, id]);
+
+    const handleSelect = (optionValue) => {
+      onChange(optionValue);
+      setOpenDropdown(null);
+    };
+
+    return (
+      <>
+        <div
+          className="custom-select-wrapper"
+          ref={el => {
+            dropdownRefs.current[id] = el;
+            triggerRef.current = el;
+          }}
+        >
+          <div
+            className={`custom-select-trigger ${openDropdown === id ? 'open' : ''}`}
+            onClick={() => setOpenDropdown(openDropdown === id ? null : id)}
+          >
+            <span className="custom-select-value">{selectedLabel}</span>
+            <ChevronDown size={18} className="custom-select-arrow" />
+          </div>
+        </div>
+        {openDropdown === id && createPortal(
+          <motion.div
+            className="custom-select-dropdown"
+            style={{
+              top: position.top,
+              left: position.left,
+              width: position.width
+            }}
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.15 }}
+          >
+            {options.map(option => (
+              <div
+                key={option.value}
+                className={`custom-select-option ${value === option.value ? 'selected' : ''}`}
+                onClick={() => handleSelect(option.value)}
+              >
+                {option.label}
+              </div>
+            ))}
+          </motion.div>,
+          document.body
+        )}
+      </>
+    );
+  };
 
   return (
     <AnimatePresence>
@@ -126,71 +209,56 @@ const FilterPanel = ({
               {/* Жанр */}
               <div className="filter-section">
                 <label className="filter-label">Жанр</label>
-                <div className="custom-select-wrapper">
-                  <select
-                    value={localFilters.genre}
-                    onChange={(e) => handleChange('genre', e.target.value)}
-                    className="filter-select custom-select"
-                    disabled={loadingGenres}
-                  >
-                    <option value="">Все жанры</option>
-                    {genres.map(genre => (
-                      <option key={genre.id} value={genre.id}>
-                        {genre.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+                <CustomSelect
+                  id="genre"
+                  value={localFilters.genre}
+                  onChange={(val) => handleChange('genre', val)}
+                  placeholder="Все жанры"
+                  options={[
+                    { value: '', label: 'Все жанры' },
+                    ...genres.map(genre => ({ value: genre.id, label: genre.name }))
+                  ]}
+                />
               </div>
 
               {/* Годы */}
               <div className="filter-section">
                 <label className="filter-label">Год выпуска</label>
                 <div className="year-range">
-                  <div className="custom-select-wrapper">
-                    <select
-                      value={localFilters.yearFrom}
-                      onChange={(e) => handleChange('yearFrom', e.target.value)}
-                      className="filter-select year-select custom-select"
-                    >
-                      <option value="">От</option>
-                      {years.map(year => (
-                        <option key={year} value={year}>{year}</option>
-                      ))}
-                    </select>
-                  </div>
+                  <CustomSelect
+                    id="yearFrom"
+                    value={localFilters.yearFrom}
+                    onChange={(val) => handleChange('yearFrom', val)}
+                    placeholder="От"
+                    options={[
+                      { value: '', label: 'От' },
+                      ...years.map(year => ({ value: String(year), label: String(year) }))
+                    ]}
+                  />
                   <span className="year-separator">—</span>
-                  <div className="custom-select-wrapper">
-                    <select
-                      value={localFilters.yearTo}
-                      onChange={(e) => handleChange('yearTo', e.target.value)}
-                      className="filter-select year-select custom-select"
-                    >
-                      <option value="">До</option>
-                      {years.map(year => (
-                        <option key={year} value={year}>{year}</option>
-                      ))}
-                    </select>
-                  </div>
+                  <CustomSelect
+                    id="yearTo"
+                    value={localFilters.yearTo}
+                    onChange={(val) => handleChange('yearTo', val)}
+                    placeholder="До"
+                    options={[
+                      { value: '', label: 'До' },
+                      ...years.map(year => ({ value: String(year), label: String(year) }))
+                    ]}
+                  />
                 </div>
               </div>
 
               {/* Сортировка */}
               <div className="filter-section">
                 <label className="filter-label">Сортировка</label>
-                <div className="custom-select-wrapper">
-                  <select
-                    value={localFilters.sortBy}
-                    onChange={(e) => handleChange('sortBy', e.target.value)}
-                    className="filter-select custom-select"
-                  >
-                    {sortOptions.map(option => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+                <CustomSelect
+                  id="sortBy"
+                  value={localFilters.sortBy}
+                  onChange={(val) => handleChange('sortBy', val)}
+                  placeholder="Сортировка"
+                  options={sortOptions}
+                />
               </div>
 
               {/* Рейтинг */}
@@ -209,7 +277,6 @@ const FilterPanel = ({
                 />
                 <div className="range-labels">
                   <span>0</span>
-                  <span>5</span>
                   <span>10</span>
                 </div>
               </div>
