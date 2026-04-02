@@ -55,7 +55,21 @@ function App() {
   const debounceRef = useRef(null);
 
   // === Инициализация ===
-  
+
+  // Обработка клавиши Escape для всех модальных окон
+  useEffect(() => {
+    const handleEscape = (e) => {
+      if (e.key === 'Escape') {
+        if (selectedTrailer) setSelectedTrailer(null);
+        if (noTrailer) setNoTrailer(false);
+        if (filterOpen) setFilterOpen(false);
+        if (menuOpen) setMenuOpen(false);
+      }
+    };
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, [selectedTrailer, noTrailer, filterOpen, menuOpen]);
+
   // Тема
   useEffect(() => {
     document.body.classList.add('dark');
@@ -336,23 +350,26 @@ function App() {
         params: { language: 'ru-RU' },
         headers: { Authorization: `Bearer ${AUTH_TOKEN}` }
       });
-      
+
       const trailer = data.results.find(
         v => v.site === 'YouTube' && ['Trailer', 'Teaser', 'Clip'].includes(v.type)
       );
-      
+
       if (trailer) {
         setSelectedTrailer({ key: trailer.key, title: trailer.name });
       } else {
         const movie = results.find(m => m.id === id);
-        setCurrentMovie({
-          title: movie?.title || movie?.name || 'Фильм',
-          year: (movie?.release_date || movie?.first_air_date || '').split('-')[0],
-          type: movie?.media_type || type
-        });
-        setNoTrailer(true);
+        if (movie) {
+          setCurrentMovie({
+            title: movie.title || movie.name || 'Фильм',
+            year: (movie.release_date || movie.first_air_date || '').split('-')[0] || 'N/A',
+            type: movie.media_type || type
+          });
+          setNoTrailer(true);
+        }
       }
     } catch (err) {
+      console.error('Trailer fetch failed:', err.message);
       setNoTrailer(true);
     }
   };

@@ -43,15 +43,17 @@ const SearchBar = memo(({
     setTimeout(() => inputRef.current?.focus(), 100);
   }, []);
 
-  const handleInputBlur = useCallback((e) => {
-    // Проверяем, что фокус перешёл не на кнопку фильтра
-    const relatedTarget = e.relatedTarget;
-    if (relatedTarget && relatedTarget.classList.contains('filter-icon')) {
-      return;
-    }
-    if (!query && !searchActive) {
-      setIsExpanded(false);
-    }
+  const handleInputBlur = useCallback(() => {
+    // Отложенная проверка чтобы дать время на переход фокуса
+    setTimeout(() => {
+      const activeElement = document.activeElement;
+      if (activeElement && activeElement.classList.contains('filter-icon')) {
+        return;
+      }
+      if (!query && !searchActive) {
+        setIsExpanded(false);
+      }
+    }, 10);
   }, [query, searchActive]);
 
   const handleFilterClick = useCallback((e) => {

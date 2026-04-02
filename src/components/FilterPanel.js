@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Sliders, RotateCcw, Film, Tv, Globe, Star } from 'lucide-react';
 
@@ -13,6 +13,17 @@ const FilterPanel = ({
 }) => {
   const currentYear = new Date().getFullYear();
   const years = Array.from({ length: 100 }, (_, i) => currentYear - i);
+
+  // Обработка клавиши Escape
+  useEffect(() => {
+    const handleEscape = (e) => {
+      if (e.key === 'Escape' && isOpen) {
+        onClose();
+      }
+    };
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, [isOpen, onClose]);
 
   const sortOptions = [
     { value: 'popularity.desc', label: 'По популярности' },

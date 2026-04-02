@@ -903,14 +903,26 @@ body.light {
   height: 100%;
 }
 
+.meta-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.meta-row p {
+  margin: 0;
+  color: #999999;
+  font-size: 0.9rem;
+  padding: 4px 12px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+}
+
 .ratings-badge {
   display: flex;
   gap: 6px;
-  background: rgba(0, 0, 0, 0.75);
-  backdrop-filter: blur(10px);
-  border-radius: 8px;
-  padding: 4px 8px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
   white-space: nowrap;
 }
 
@@ -921,6 +933,9 @@ body.light {
   color: #ffffff;
   font-size: 0.75rem;
   font-weight: 600;
+  padding: 4px 12px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
 }
 
 .rating-item svg {
@@ -933,19 +948,6 @@ body.light {
 
 .rating-tmdb {
   color: #ffd700;
-}
-
-.meta-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-}
-
-.meta-row p {
-  margin: 0;
-  color: #999999;
-  font-size: 0.9rem;
 }
 
 .result-card h3 {
@@ -990,6 +992,19 @@ body.light {
 .light .meta-row p {
   background: rgba(139, 131, 120, 0.1);
   color: #6b6356;
+}
+
+.light .rating-item {
+  background: rgba(139, 131, 120, 0.1);
+  color: #4a4438;
+}
+
+.light .rating-popularity {
+  color: #0288d1;
+}
+
+.light .rating-tmdb {
+  color: #f57f17;
 }
 
 .result-card-large .kinopoisk-icon {

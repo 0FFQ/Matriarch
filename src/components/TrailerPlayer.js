@@ -1,4 +1,4 @@
-import React, { memo, useCallback, useMemo } from 'react';
+import React, { memo, useCallback, useMemo, useEffect } from 'react';
 import YouTube from 'react-youtube';
 import { motion } from 'framer-motion';
 import { X } from 'lucide-react';
@@ -14,6 +14,17 @@ const TrailerPlayer = memo(({ trailer, onClose, setSearchActive }) => {
     onClose();
     setSearchActive(true);
   }, [onClose, setSearchActive]);
+
+  // Обработка клавиши Escape
+  useEffect(() => {
+    const handleEscape = (e) => {
+      if (e.key === 'Escape') {
+        handleClose();
+      }
+    };
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, [handleClose]);
 
   return (
     <motion.div

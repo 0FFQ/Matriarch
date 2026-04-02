@@ -26,7 +26,7 @@ const ResultsList = memo(({ results, imageBase, onSelect }) => {
   };
 
   const formatRating = (value) => {
-    if (!value) return 'N/A';
+    if (value === null || value === undefined || isNaN(value)) return '—';
     return value.toFixed(1);
   };
 
