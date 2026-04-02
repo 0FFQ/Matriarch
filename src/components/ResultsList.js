@@ -1,5 +1,6 @@
 import React, { memo } from 'react';
 import { motion } from 'framer-motion';
+import { Star, TrendingUp } from 'lucide-react';
 
 const ResultsList = memo(({ results, imageBase, onSelect }) => {
   const isSingleResult = results.length === 1;
@@ -22,6 +23,11 @@ const ResultsList = memo(({ results, imageBase, onSelect }) => {
     if (!dateString) return '';
     const year = dateString.split('-')[0];
     return year;
+  };
+
+  const formatRating = (value) => {
+    if (!value) return 'N/A';
+    return value.toFixed(1);
   };
 
   return (
@@ -54,7 +60,19 @@ const ResultsList = memo(({ results, imageBase, onSelect }) => {
           </div>
           <div className="title-wrapper">
             <h3>{item.title || item.name}</h3>
-            <p>{formatYear(item.release_date || item.first_air_date)}</p>
+            <div className="meta-row">
+              <p>{formatYear(item.release_date || item.first_air_date)}</p>
+              <div className="ratings-badge">
+                <div className="rating-item rating-popularity">
+                  <TrendingUp size={12} />
+                  <span>{formatRating(item.popularity)}</span>
+                </div>
+                <div className="rating-item rating-tmdb">
+                  <Star size={12} fill="currentColor" />
+                  <span>{formatRating(item.vote_average)}</span>
+                </div>
+              </div>
+            </div>
           </div>
         </motion.a>
       ))}
