@@ -8,7 +8,6 @@ import InteractiveAtom from './components/InteractiveAtom';
 import MenuToggle from './components/MenuToggle';
 import Sidebar from './components/Sidebar';
 import FilterPanel from './components/FilterPanel';
-import { Loader2 } from 'lucide-react';
 import './App.css';
 
 const AUTH_TOKEN = 'eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI5YWY0MzRlNWZjNDk1N2I0OTlkZWMzY2FhZmNjYjk2ZCIsIm5iZiI6MTc1NjcyNjgwNC44ODgsInN1YiI6IjY4YjU4NjE0YjQ3NWQ5NjJlMTllMjA4NyIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.oAfRNRh81PD-viu5rMg4ubRtcQfBK45Mt6RpUy3DSNk';
@@ -401,12 +400,6 @@ function App() {
           />
         </AnimatePresence>
 
-        {loading && (
-          <motion.div className="loading" initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring' }}>
-            <Loader2 className="spin" size={48} />
-          </motion.div>
-        )}
-
         <AnimatePresence>
           {noTrailer && currentMovie && (
             <motion.div
@@ -450,16 +443,6 @@ function App() {
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0 }}
         >
-          {Array.from({ length: totalPages }, (_, i) => (
-            <div
-              key={i}
-              className={`page-dot ${currentPage === i + 1 ? 'active' : ''}`}
-              onClick={() => {
-                setCurrentPage(i + 1);
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-              }}
-            />
-          ))}
           <span className="page-number">{currentPage} / {totalPages}</span>
         </motion.div>
       )}

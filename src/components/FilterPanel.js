@@ -46,15 +46,7 @@ const FilterPanel = ({
   return (
     <AnimatePresence>
       {isOpen && (
-        <>
-          <motion.div
-            className="filter-overlay"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={onClose}
-          />
-          <motion.div
+        <motion.div
             className="filter-panel"
             initial={{ x: '100%', opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
@@ -198,7 +190,6 @@ const FilterPanel = ({
               </button>
             </div>
           </motion.div>
-        </>
       )}
     </AnimatePresence>
   );
