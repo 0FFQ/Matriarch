@@ -399,35 +399,6 @@ function App() {
             hasActiveFilters={hasActiveFilters}
           />
         </AnimatePresence>
-
-        <AnimatePresence>
-          {noTrailer && currentMovie && (
-            <motion.div
-              className="no-trailer-widget"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setNoTrailer(false)}
-            >
-              <div className="no-trailer-content" onClick={(e) => e.stopPropagation()}>
-                <h2>Трейлер не найден</h2>
-                <p>К сожалению, трейлер для «{currentMovie.title}» не найден.</p>
-                <a
-                  href={`https://www.kinopoisk.ru/search/?query=${encodeURIComponent(`${currentMovie.title} ${currentMovie.year}`)}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="kinopoisk-widget-btn"
-                >
-                  <svg viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M4 4h16v16H4V4zm2 2v12h12V6H6zm2 2h2v8H8V8zm4 0h2v8h-2V8zm4 0h-2v8h2V8z"/>
-                  </svg>
-                  <span>На Кинопоиске</span>
-                </a>
-                <button className="close-widget" onClick={() => setNoTrailer(false)}>✕</button>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
       </motion.div>
 
       <AnimatePresence>
@@ -466,6 +437,35 @@ function App() {
       <AnimatePresence>
         {selectedTrailer && (
           <TrailerPlayer trailer={selectedTrailer} onClose={() => setSelectedTrailer(null)} setSearchActive={setSearchActive} />
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {noTrailer && currentMovie && (
+          <motion.div
+            className="no-trailer-widget"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setNoTrailer(false)}
+          >
+            <div className="no-trailer-content" onClick={(e) => e.stopPropagation()}>
+              <h2>Трейлер не найден</h2>
+              <p>К сожалению, трейлер для «{currentMovie.title}» не найден.</p>
+              <a
+                href={`https://www.kinopoisk.ru/search/?query=${encodeURIComponent(`${currentMovie.title} ${currentMovie.year}`)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="kinopoisk-widget-btn"
+              >
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M4 4h16v16H4V4zm2 2v12h12V6H6zm2 2h2v8H8V8zm4 0h2v8h-2V8zm4 0h-2v8h2V8z"/>
+                </svg>
+                <span>На Кинопоиске</span>
+              </a>
+              <button className="close-widget" onClick={() => setNoTrailer(false)}>✕</button>
+            </div>
+          </motion.div>
         )}
       </AnimatePresence>
     </div>
