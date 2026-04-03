@@ -1,6 +1,7 @@
 import React, { memo } from 'react';
 import { motion } from 'framer-motion';
 import { Star, TrendingUp, Database } from 'lucide-react';
+import MovieActions from './MovieActions';
 
 const ResultsList = memo(({ results, imageBase, onSelect, fromCache }) => {
   const isSingleResult = results.length === 1;
@@ -64,11 +65,7 @@ const ResultsList = memo(({ results, imageBase, onSelect, fromCache }) => {
           >
             <div className="poster-wrapper">
               <img src={`${imageBase}${item.poster_path}`} alt={item.title || item.name} loading="lazy" />
-              <div className="kinopoisk-icon">
-                <svg viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M4 4h16v16H4V4zm2 2v12h12V6H6zm2 2h2v8H8V8zm4 0h2v8h-2V8zm4 0h-2v8h2V8z"/>
-                </svg>
-              </div>
+              <MovieActions item={item} />
             </div>
             <div className="title-wrapper">
               <h3>{item.title || item.name}</h3>

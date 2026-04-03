@@ -8,6 +8,8 @@ import InteractiveAtom from './components/InteractiveAtom';
 import MenuToggle from './components/MenuToggle';
 import Sidebar from './components/Sidebar';
 import FilterPanel from './components/FilterPanel';
+import UserProfile from './components/UserProfile';
+import { UserProvider } from './context/UserContext';
 import { cachedRequest, setCache, getCache, getCacheStats, clearAllCache } from './utils/cache';
 import './App.css';
 
@@ -20,6 +22,20 @@ const translations = {
     lightTheme: 'Светлая тема',
     darkTheme: 'Тёмная тема',
     language: 'Русский',
+    profile: 'Профиль',
+    profileName: 'Имя',
+    profileNamePlaceholder: 'Ваше имя',
+    changeAvatar: 'Сменить аватар',
+    favorites: 'Избранное',
+    watched: 'Просмотренное',
+    watchlist: 'Буду смотреть',
+    favoritesEmpty: 'В избранном пока пусто',
+    watchedEmpty: 'Вы ещё ничего не посмотрели',
+    watchlistEmpty: 'Список "Буду смотреть" пуст',
+    onKinopoisk: 'На Кинопоиске',
+    removeFromList: 'Удалить из списка',
+    movie: 'Фильм',
+    tvSeries: 'Сериал',
     filters: 'Фильтры',
     contentType: 'Тип контента',
     all: 'Все',
@@ -61,6 +77,20 @@ const translations = {
     lightTheme: 'Light Theme',
     darkTheme: 'Dark Theme',
     language: 'English',
+    profile: 'Profile',
+    profileName: 'Name',
+    profileNamePlaceholder: 'Your name',
+    changeAvatar: 'Change avatar',
+    favorites: 'Favorites',
+    watched: 'Watched',
+    watchlist: 'Watchlist',
+    favoritesEmpty: 'No favorites yet',
+    watchedEmpty: 'You haven\'t watched anything yet',
+    watchlistEmpty: 'Your watchlist is empty',
+    onKinopoisk: 'On Kinopoisk',
+    removeFromList: 'Remove from list',
+    movie: 'Movie',
+    tvSeries: 'TV Series',
     filters: 'Filters',
     contentType: 'Content Type',
     all: 'All',
@@ -123,6 +153,7 @@ function App() {
     return savedTheme !== null ? savedTheme === 'true' : true;
   });
   const [menuOpen, setMenuOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
   const [filterOpen, setFilterOpen] = useState(false);
   const [language, setLanguage] = useState(() => {
     // Загружаем сохранённый язык из localStorage
@@ -175,13 +206,14 @@ function App() {
       if (e.key === 'Escape') {
         if (selectedTrailer) setSelectedTrailer(null);
         if (noTrailer) setNoTrailer(false);
+        if (profileOpen) setProfileOpen(false);
         if (filterOpen) setFilterOpen(false);
         if (menuOpen) setMenuOpen(false);
       }
     };
     document.addEventListener('keydown', handleEscape);
     return () => document.removeEventListener('keydown', handleEscape);
-  }, [selectedTrailer, noTrailer, filterOpen, menuOpen]);
+  }, [selectedTrailer, noTrailer, profileOpen, filterOpen, menuOpen]);
 
   // Загрузка жанров
   useEffect(() => {
@@ -612,21 +644,33 @@ function App() {
   const showAtom = !searchActive || (results.length === 0 && !loading);
 
   return (
-    <div className={`app ${darkMode ? 'dark' : 'light'}`}>
-      <MenuToggle isOpen={menuOpen} onClick={() => setMenuOpen(!menuOpen)} />
-      {menuOpen && <div className="sidebar-overlay" onClick={() => setMenuOpen(false)} />}
-      <Sidebar
-        isOpen={menuOpen}
-        onClose={() => setMenuOpen(false)}
-        darkMode={darkMode}
-        onToggleTheme={toggleTheme}
-        language={language}
-        onToggleLanguage={toggleLanguage}
-        t={t}
-        cacheStats={cacheStats}
-        onClearCache={handleClearCache}
-      />
-      
+    <UserProvider>
+      <div className={`app ${darkMode ? 'dark' : 'light'}`}>
+        <MenuToggle isOpen={menuOpen} onClick={() => setMenuOpen(!menuOpen)} />
+        {menuOpen && <div className="sidebar-overlay" onClick={() => setMenuOpen(false)} />}
+        {profileOpen && <div className="sidebar-overlay" onClick={() => setProfileOpen(false)} />}
+        <Sidebar
+          isOpen={menuOpen}
+          onClose={() => setMenuOpen(false)}
+          darkMode={darkMode}
+          onToggleTheme={toggleTheme}
+          language={language}
+          onToggleLanguage={toggleLanguage}
+          t={t}
+          cacheStats={cacheStats}
+          onClearCache={handleClearCache}
+          onOpenProfile={() => {
+            setProfileOpen(true);
+            setMenuOpen(false);
+          }}
+        />
+
+        <UserProfile
+          isOpen={profileOpen}
+          onClose={() => setProfileOpen(false)}
+          t={t}
+        />
+
       <FilterPanel
         isOpen={filterOpen}
         onClose={() => setFilterOpen(false)}
@@ -749,6 +793,7 @@ function App() {
         )}
       </AnimatePresence>
     </div>
+    </UserProvider>
   );
 }
 

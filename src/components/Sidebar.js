@@ -1,8 +1,8 @@
 import React, { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sun, Moon, X, Globe, Trash2, Database } from 'lucide-react';
+import { Sun, Moon, X, Globe, Trash2, Database, User } from 'lucide-react';
 
-const Sidebar = ({ isOpen, onClose, darkMode, onToggleTheme, language, onToggleLanguage, t, cacheStats, onClearCache }) => {
+const Sidebar = ({ isOpen, onClose, darkMode, onToggleTheme, language, onToggleLanguage, t, cacheStats, onClearCache, onOpenProfile }) => {
   // Обработка клавиши Escape
   useEffect(() => {
     const handleEscape = (e) => {
@@ -31,6 +31,12 @@ const Sidebar = ({ isOpen, onClose, darkMode, onToggleTheme, language, onToggleL
             </button>
           </div>
           <div className="sidebar-content">
+            <div className="menu-section">
+              <button className="menu-item profile-menu-item" onClick={onOpenProfile}>
+                <User size={20} />
+                <span>{t.profile || 'Профиль'}</span>
+              </button>
+            </div>
             <div className="menu-section">
               <h3>{t.settings}</h3>
               <button className="menu-item" onClick={onToggleTheme}>
