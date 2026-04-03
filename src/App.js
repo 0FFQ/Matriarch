@@ -8,6 +8,7 @@ import InteractiveAtom from './components/InteractiveAtom';
 import MenuToggle from './components/MenuToggle';
 import Sidebar from './components/Sidebar';
 import FilterPanel from './components/FilterPanel';
+import { cachedRequest, setCache, getCache, getCacheStats, clearAllCache } from './utils/cache';
 import './App.css';
 
 // Словарь переводов
@@ -47,7 +48,11 @@ const translations = {
     close: 'Закрыть',
     searchPlaceholder: 'Поиск фильмов и сериалов...',
     noResults: 'Ничего не найдено',
-    page: 'Страница'
+    page: 'Страница',
+    cache: 'Кэш',
+    cacheActive: 'Активных:',
+    cacheSize: 'Размер:',
+    cacheClear: 'Очистить кэш'
   },
   'en-US': {
     appTitle: 'Matriarch - Movies and TV Shows Search',
@@ -84,7 +89,11 @@ const translations = {
     close: 'Close',
     searchPlaceholder: 'Search movies and TV shows...',
     noResults: 'Nothing found',
-    page: 'Page'
+    page: 'Page',
+    cache: 'Cache',
+    cacheActive: 'Active:',
+    cacheSize: 'Size:',
+    cacheClear: 'Clear cache'
   }
 };
 
@@ -108,7 +117,11 @@ function App() {
   const [currentMovie, setCurrentMovie] = useState(null);
 
   // Состояние UI
-  const [darkMode, setDarkMode] = useState(true);
+  const [darkMode, setDarkMode] = useState(() => {
+    // Загружаем сохранённую тему из localStorage
+    const savedTheme = localStorage.getItem('matriarch_dark_mode');
+    return savedTheme !== null ? savedTheme === 'true' : true;
+  });
   const [menuOpen, setMenuOpen] = useState(false);
   const [filterOpen, setFilterOpen] = useState(false);
   const [language, setLanguage] = useState(() => {
@@ -123,6 +136,11 @@ function App() {
   // Устанавливаем lang атрибут при инициализации
   useEffect(() => {
     document.documentElement.lang = language;
+    // Обновляем статистику кэша
+    setCacheStats(getCacheStats());
+    // Применяем сохранённую тему
+    document.body.classList.remove('dark', 'light');
+    document.body.classList.add(darkMode ? 'dark' : 'light');
   }, []);
 
   // Жанры
@@ -142,7 +160,11 @@ function App() {
   // Пагинация
   const [currentPage, setCurrentPage] = useState(1);
   const ITEMS_PER_PAGE = 6;
-  
+
+  // Кэширование
+  const [cacheStats, setCacheStats] = useState(null);
+  const [lastFromCache, setLastFromCache] = useState(false);
+
   const debounceRef = useRef(null);
 
   // === Инициализация ===
@@ -161,28 +183,31 @@ function App() {
     return () => document.removeEventListener('keydown', handleEscape);
   }, [selectedTrailer, noTrailer, filterOpen, menuOpen]);
 
-  // Тема
-  useEffect(() => {
-    document.body.classList.add('dark');
-    return () => document.body.classList.remove('dark', 'light');
-  }, []);
-
   // Загрузка жанров
   useEffect(() => {
     const loadGenres = async () => {
       setLoadingGenres(true);
       try {
-        const [movieGenres, tvGenres] = await Promise.all([
-          axios.get(`${BASE_URL}/genre/movie/list`, {
-            params: { language },
-            headers: { Authorization: `Bearer ${AUTH_TOKEN}` }
-          }),
-          axios.get(`${BASE_URL}/genre/tv/list`, {
-            params: { language },
-            headers: { Authorization: `Bearer ${AUTH_TOKEN}` }
-          })
+        const [movieResponse, tvResponse] = await Promise.all([
+          cachedRequest(
+            axios,
+            BASE_URL,
+            '/genre/movie/list',
+            { language },
+            { Authorization: `Bearer ${AUTH_TOKEN}` },
+            1000 * 60 * 60 * 24 // 24 часа - жанры меняются редко
+          ),
+          cachedRequest(
+            axios,
+            BASE_URL,
+            '/genre/tv/list',
+            { language },
+            { Authorization: `Bearer ${AUTH_TOKEN}` },
+            1000 * 60 * 60 * 24 // 24 часа
+          )
         ]);
-        const allGenres = [...movieGenres.data.genres, ...tvGenres.data.genres];
+        
+        const allGenres = [...movieResponse.data.genres, ...tvResponse.data.genres];
         const uniqueGenres = allGenres.filter(
           (genre, index, self) => index === self.findIndex(g => g.id === genre.id)
         );
@@ -202,10 +227,15 @@ function App() {
 
       debounceRef.current = setTimeout(async () => {
         try {
-          const { data } = await axios.get(`${BASE_URL}/search/multi`, {
-            params: { query, language },
-            headers: { Authorization: `Bearer ${AUTH_TOKEN}` }
-          });
+          const { data, fromCache } = await cachedRequest(
+            axios,
+            BASE_URL,
+            '/search/multi',
+            { query, language },
+            { Authorization: `Bearer ${AUTH_TOKEN}` },
+            1000 * 60 * 15 // 15 минут для подсказок
+          );
+          
           const filtered = data.results.filter(
             item => (item.media_type === 'movie' || item.media_type === 'tv') && item.poster_path
           );
@@ -230,6 +260,8 @@ function App() {
     setDarkMode(newDarkMode);
     document.body.classList.remove('dark', 'light');
     document.body.classList.add(newDarkMode ? 'dark' : 'light');
+    // Сохраняем тему в localStorage
+    localStorage.setItem('matriarch_dark_mode', newDarkMode.toString());
   };
 
   const toggleLanguage = () => {
@@ -239,6 +271,12 @@ function App() {
     localStorage.setItem('matriarch_language', newLanguage);
     // Обновляем атрибут lang на документе
     document.documentElement.lang = newLanguage;
+  };
+
+  const handleClearCache = () => {
+    clearAllCache();
+    setCacheStats(getCacheStats());
+    setLastFromCache(false);
   };
 
   // === Основная функция поиска с фильтрами ===
@@ -256,39 +294,55 @@ function App() {
         let allResults = [];
 
         if (type === 'movie' || type === 'all') {
-          const { data } = await axios.get(`${BASE_URL}/search/movie`, {
-            params: { 
-              query: searchQuery,
-              language,
-              include_adult: false,
-              sort_by: getSortField(sortBy, 'movie'),
-              ...(genre && { with_genres: genre }),
-              ...(year && { primary_release_year: year }),
-              ...(rating && { 'vote_average.gte': parseFloat(rating) }),
-              ...(animeOnly && { with_genres: genre ? `${genre},16` : '16', with_origin_country: 'JP' })
-            },
-            headers: { Authorization: `Bearer ${AUTH_TOKEN}` }
-          });
+          const movieParams = {
+            query: searchQuery,
+            language,
+            include_adult: false,
+            sort_by: getSortField(sortBy, 'movie'),
+            ...(genre && { with_genres: genre }),
+            ...(year && { primary_release_year: year }),
+            ...(rating && { 'vote_average.gte': parseFloat(rating) }),
+            ...(animeOnly && { with_genres: genre ? `${genre},16` : '16', with_origin_country: 'JP' })
+          };
+          
+          const { data, fromCache } = await cachedRequest(
+            axios,
+            BASE_URL,
+            '/search/movie',
+            movieParams,
+            { Authorization: `Bearer ${AUTH_TOKEN}` },
+            1000 * 60 * 60 // 1 час для поисковых запросов
+          );
+          
+          setLastFromCache(fromCache);
           allResults = data.results.map(item => ({ ...item, media_type: 'movie' }));
         }
 
         if (type === 'tv' || type === 'all') {
-          const { data } = await axios.get(`${BASE_URL}/search/tv`, {
-            params: { 
-              query: searchQuery,
-              language,
-              include_adult: false,
-              sort_by: getSortField(sortBy, 'tv'),
-              'vote_count.gte': 10,
-              ...(genre && { with_genres: genre }),
-              ...(year && { first_air_date_year: year }),
-              ...(rating && { 'vote_average.gte': parseFloat(rating) }),
-              ...(animeOnly && { with_genres: genre ? `${genre},16` : '16', with_origin_country: 'JP' })
-            },
-            headers: { Authorization: `Bearer ${AUTH_TOKEN}` }
-          });
+          const tvParams = {
+            query: searchQuery,
+            language,
+            include_adult: false,
+            sort_by: getSortField(sortBy, 'tv'),
+            'vote_count.gte': 10,
+            ...(genre && { with_genres: genre }),
+            ...(year && { first_air_date_year: year }),
+            ...(rating && { 'vote_average.gte': parseFloat(rating) }),
+            ...(animeOnly && { with_genres: genre ? `${genre},16` : '16', with_origin_country: 'JP' })
+          };
+          
+          const { data, fromCache } = await cachedRequest(
+            axios,
+            BASE_URL,
+            '/search/tv',
+            tvParams,
+            { Authorization: `Bearer ${AUTH_TOKEN}` },
+            1000 * 60 * 60 // 1 час
+          );
+          
+          setLastFromCache(fromCache);
           const tvResults = data.results.map(item => ({ ...item, media_type: 'tv' }));
-          allResults = type === 'all' 
+          allResults = type === 'all'
             ? [...allResults, ...tvResults]
             : tvResults;
         }
@@ -345,19 +399,31 @@ function App() {
           tvFilters.with_origin_country = 'JP';
         }
 
-        // Функция для получения страниц (максимум 20 страниц = 400 результатов)
+        // Функция для получения страниц с кэшированием (максимум 20 страниц = 400 результатов)
         const fetchPages = async (endpoint, params, pagesCount = 20) => {
-          const requests = [];
+          const allResults = [];
+          
           for (let page = 1; page <= pagesCount; page++) {
-            requests.push(
-              axios.get(`${BASE_URL}${endpoint}`, {
-                params: { ...params, page },
-                headers: { Authorization: `Bearer ${AUTH_TOKEN}` }
-              })
+            const { data, fromCache } = await cachedRequest(
+              axios,
+              BASE_URL,
+              endpoint,
+              { ...params, page },
+              { Authorization: `Bearer ${AUTH_TOKEN}` },
+              1000 * 60 * 60 * 2 // 2 часа для discover запросов
             );
+            
+            if (page === 1) setLastFromCache(fromCache);
+            
+            if (data.results && data.results.length > 0) {
+              allResults.push(...data.results);
+            }
+            
+            // Останавливаемся если страница пустая
+            if (!data.results || data.results.length < 20) break;
           }
-          const responses = await Promise.all(requests);
-          return responses.flatMap(res => res.data.results || []);
+          
+          return allResults;
         };
 
         let allResults = [];
@@ -394,6 +460,8 @@ function App() {
     }
 
     setLoading(false);
+    // Обновляем статистику кэша
+    setCacheStats(getCacheStats());
   }, [filters, language, query]);
 
   // Перезапрос результатов при смене языка (если поиск активен)
@@ -506,10 +574,16 @@ function App() {
   // === Получение трейлера ===
   const getTrailer = async (id, type = 'movie') => {
     try {
-      const { data } = await axios.get(`${BASE_URL}/${type}/${id}/videos`, {
-        params: { language },
-        headers: { Authorization: `Bearer ${AUTH_TOKEN}` }
-      });
+      const { data, fromCache } = await cachedRequest(
+        axios,
+        BASE_URL,
+        `/${type}/${id}/videos`,
+        { language },
+        { Authorization: `Bearer ${AUTH_TOKEN}` },
+        1000 * 60 * 60 * 6 // 6 часов для трейлеров
+      );
+      
+      setLastFromCache(fromCache);
 
       const trailer = data.results.find(
         v => v.site === 'YouTube' && ['Trailer', 'Teaser', 'Clip'].includes(v.type)
@@ -549,6 +623,8 @@ function App() {
         language={language}
         onToggleLanguage={toggleLanguage}
         t={t}
+        cacheStats={cacheStats}
+        onClearCache={handleClearCache}
       />
       
       <FilterPanel
@@ -602,7 +678,12 @@ function App() {
 
       <AnimatePresence>
         {searchActive && paginatedResults.length > 0 && !selectedTrailer && (
-          <ResultsList results={paginatedResults} imageBase={IMAGE_BASE} onSelect={getTrailer} />
+          <ResultsList
+            results={paginatedResults}
+            imageBase={IMAGE_BASE}
+            onSelect={getTrailer}
+            fromCache={lastFromCache}
+          />
         )}
       </AnimatePresence>
 

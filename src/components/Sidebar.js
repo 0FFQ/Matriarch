@@ -1,8 +1,8 @@
 import React, { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sun, Moon, X, Globe } from 'lucide-react';
+import { Sun, Moon, X, Globe, Trash2, Database } from 'lucide-react';
 
-const Sidebar = ({ isOpen, onClose, darkMode, onToggleTheme, language, onToggleLanguage, t }) => {
+const Sidebar = ({ isOpen, onClose, darkMode, onToggleTheme, language, onToggleLanguage, t, cacheStats, onClearCache }) => {
   // Обработка клавиши Escape
   useEffect(() => {
     const handleEscape = (e) => {
@@ -42,6 +42,29 @@ const Sidebar = ({ isOpen, onClose, darkMode, onToggleTheme, language, onToggleL
                 <span>{t.language}</span>
               </button>
             </div>
+            
+            {cacheStats && (
+              <div className="menu-section">
+                <h3>
+                  <Database size={16} style={{ marginRight: '8px', verticalAlign: 'middle' }} />
+                  {t.cache}
+                </h3>
+                <div className="cache-stats">
+                  <div className="cache-stat">
+                    <span className="cache-stat-label">{t.cacheActive}</span>
+                    <span className="cache-stat-value">{cacheStats.activeItems}</span>
+                  </div>
+                  <div className="cache-stat">
+                    <span className="cache-stat-label">{t.cacheSize}</span>
+                    <span className="cache-stat-value">{cacheStats.totalSizeKB} KB</span>
+                  </div>
+                </div>
+                <button className="menu-item cache-clear" onClick={onClearCache}>
+                  <Trash2 size={20} />
+                  <span>{t.cacheClear}</span>
+                </button>
+              </div>
+            )}
           </div>
         </motion.div>
       )}
