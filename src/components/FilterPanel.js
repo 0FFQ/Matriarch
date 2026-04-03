@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useDragControls } from 'framer-motion';
 import { X, Sliders, RotateCcw, Film, Tv, Globe, Star } from 'lucide-react';
+import { useDraggablePosition } from '../hooks/useDraggablePosition';
 
 const FilterPanel = ({
   isOpen,
@@ -12,6 +13,8 @@ const FilterPanel = ({
   loadingGenres,
   t
 }) => {
+  const dragControls = useDragControls();
+  const { position, savePosition } = useDraggablePosition('matriarch_filter_pos', isOpen);
   const currentYear = new Date().getFullYear();
   const years = Array.from({ length: 100 }, (_, i) => currentYear - i);
 
@@ -60,12 +63,28 @@ const FilterPanel = ({
       {isOpen && (
         <motion.div
             className="filter-panel"
-            initial={{ x: '100%', opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
+            drag
+            dragControls={dragControls}
+            dragListener={false}
+            dragConstraints={{ left: -window.innerWidth + 400, right: window.innerWidth - 400, top: -window.innerHeight + 100, bottom: window.innerHeight - 100 }}
+            dragElastic={0.1}
+            dragMomentum={false}
+            onDragEnd={(_, info) => {
+              const newX = (position?.x || 0) + info.offset.x;
+              const newY = (position?.y || 0) + info.offset.y;
+              savePosition(newX, newY);
+            }}
+            initial={false}
+            animate={position ? { x: position.x, y: position.y, opacity: 1 } : { x: 0, y: 0, opacity: 0 }}
             exit={{ x: '100%', opacity: 0 }}
             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+            style={{ position: 'fixed' }}
           >
-            <div className="filter-header">
+            <div
+              className="filter-header"
+              onPointerDown={(e) => dragControls.start(e)}
+              style={{ cursor: 'grab' }}
+            >
               <div className="filter-title">
                 <Sliders size={20} />
                 <h2>{t.filters}</h2>

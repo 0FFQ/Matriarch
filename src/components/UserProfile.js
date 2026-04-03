@@ -1,7 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useDragControls } from 'framer-motion';
 import { User, Edit2, X, Camera, Heart, Eye, Bookmark, ExternalLink, Trash2, Film, Tv } from 'lucide-react';
 import { useUser } from '../context/UserContext';
+import { useDraggablePosition } from '../hooks/useDraggablePosition';
 
 const IMAGE_BASE = 'https://image.tmdb.org/t/p/w92';
 
@@ -22,6 +23,8 @@ const UserProfile = ({ t, isOpen, onClose }) => {
   const [activeTab, setActiveTab] = useState('favorites');
   const inputRef = useRef(null);
   const fileInputRef = useRef(null);
+  const dragControls = useDragControls();
+  const { position, savePosition } = useDraggablePosition('matriarch_profile_pos', isOpen);
 
   useEffect(() => {
     setEditName(profile.name || '');
@@ -123,12 +126,28 @@ const UserProfile = ({ t, isOpen, onClose }) => {
       {isOpen && (
         <motion.div
           className="profile-panel"
-          initial={{ x: '100%', opacity: 0 }}
-          animate={{ x: 0, opacity: 1 }}
+          drag
+          dragControls={dragControls}
+          dragListener={false}
+          dragConstraints={{ left: -window.innerWidth + 420, right: window.innerWidth - 420, top: -window.innerHeight + 100, bottom: window.innerHeight - 100 }}
+          dragElastic={0.1}
+          dragMomentum={false}
+          onDragEnd={(_, info) => {
+            const newX = (position?.x || 0) + info.offset.x;
+            const newY = (position?.y || 0) + info.offset.y;
+            savePosition(newX, newY);
+          }}
+          initial={false}
+          animate={position ? { x: position.x, y: position.y, opacity: 1 } : { x: 0, y: 0, opacity: 0 }}
           exit={{ x: '100%', opacity: 0 }}
           transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+          style={{ position: 'fixed' }}
         >
-          <div className="filter-header">
+          <div
+            className="filter-header"
+            onPointerDown={(e) => dragControls.start(e)}
+            style={{ cursor: 'grab' }}
+          >
             <div className="filter-title">
               <User size={20} />
               <h2>{t.profile || 'Профиль'}</h2>
