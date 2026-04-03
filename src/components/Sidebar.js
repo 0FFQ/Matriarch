@@ -1,8 +1,8 @@
 import React, { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sun, Moon, X } from 'lucide-react';
+import { Sun, Moon, X, Globe } from 'lucide-react';
 
-const Sidebar = ({ isOpen, onClose, darkMode, onToggleTheme }) => {
+const Sidebar = ({ isOpen, onClose, darkMode, onToggleTheme, language, onToggleLanguage, t }) => {
   // Обработка клавиши Escape
   useEffect(() => {
     const handleEscape = (e) => {
@@ -25,17 +25,21 @@ const Sidebar = ({ isOpen, onClose, darkMode, onToggleTheme }) => {
           transition={{ type: 'spring', damping: 25, stiffness: 200 }}
         >
           <div className="sidebar-header">
-            <h2>Меню</h2>
+            <h2>{t.menu}</h2>
             <button className="sidebar-close" onClick={onClose}>
               <X size={24} />
             </button>
           </div>
           <div className="sidebar-content">
             <div className="menu-section">
-              <h3>Настройки</h3>
+              <h3>{t.settings}</h3>
               <button className="menu-item" onClick={onToggleTheme}>
                 {darkMode ? <Sun size={20} /> : <Moon size={20} />}
-                <span>{darkMode ? 'Светлая тема' : 'Тёмная тема'}</span>
+                <span>{darkMode ? t.lightTheme : t.darkTheme}</span>
+              </button>
+              <button className="menu-item" onClick={onToggleLanguage}>
+                <Globe size={20} />
+                <span>{t.language}</span>
               </button>
             </div>
           </div>

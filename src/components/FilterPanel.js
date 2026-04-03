@@ -9,7 +9,8 @@ const FilterPanel = ({
   setFilters,
   onApply,
   genres,
-  loadingGenres
+  loadingGenres,
+  t
 }) => {
   const currentYear = new Date().getFullYear();
   const years = Array.from({ length: 100 }, (_, i) => currentYear - i);
@@ -26,12 +27,12 @@ const FilterPanel = ({
   }, [isOpen, onClose]);
 
   const sortOptions = [
-    { value: 'popularity.desc', label: 'По популярности' },
-    { value: 'vote_average.desc', label: 'По рейтингу' },
-    { value: 'primary_release_date.desc', label: 'По дате (новые)' },
-    { value: 'primary_release_date.asc', label: 'По дате (старые)' },
-    { value: 'title.asc', label: 'По названию (А-Я)' },
-    { value: 'title.desc', label: 'По названию (Я-А)' }
+    { value: 'popularity.desc', label: t.byPopularity },
+    { value: 'vote_average.desc', label: t.byRating },
+    { value: 'primary_release_date.desc', label: t.byDateNew },
+    { value: 'primary_release_date.asc', label: t.byDateOld },
+    { value: 'title.asc', label: t.byTitleAZ },
+    { value: 'title.desc', label: t.byTitleZA }
   ];
 
   const handleChange = (key, value) => {
@@ -67,7 +68,7 @@ const FilterPanel = ({
             <div className="filter-header">
               <div className="filter-title">
                 <Sliders size={20} />
-                <h2>Фильтры</h2>
+                <h2>{t.filters}</h2>
               </div>
               <button className="filter-close" onClick={onClose}>
                 <X size={24} />
@@ -77,35 +78,35 @@ const FilterPanel = ({
             <div className="filter-content">
               {/* Тип контента */}
               <div className="filter-section">
-                <label className="filter-label">Тип контента</label>
+                <label className="filter-label">{t.contentType}</label>
                 <div className="type-toggle">
                   <button
                     className={`type-btn ${filters.type === 'all' ? 'active' : ''}`}
                     onClick={() => handleChange('type', 'all')}
                   >
                     <Globe size={16} />
-                    Все
+                    {t.all}
                   </button>
                   <button
                     className={`type-btn ${filters.type === 'movie' ? 'active' : ''}`}
                     onClick={() => handleChange('type', 'movie')}
                   >
                     <Film size={16} />
-                    Фильмы
+                    {t.movies}
                   </button>
                   <button
                     className={`type-btn ${filters.type === 'tv' ? 'active' : ''}`}
                     onClick={() => handleChange('type', 'tv')}
                   >
                     <Tv size={16} />
-                    Сериалы
+                    {t.tv}
                   </button>
                 </div>
               </div>
 
               {/* Аниме фильтр */}
               <div className="filter-section">
-                <label className="filter-label">Аниме</label>
+                <label className="filter-label">{t.anime}</label>
                 <label className="anime-toggle">
                   <input
                     type="checkbox"
@@ -114,14 +115,14 @@ const FilterPanel = ({
                     className="anime-checkbox"
                   />
                   <span className="checkbox-label">
-                    Только аниме (Япония + Анимация)
+                    {t.animeOnly}
                   </span>
                 </label>
               </div>
 
               {/* Жанр */}
               <div className="filter-section">
-                <label className="filter-label">Жанр</label>
+                <label className="filter-label">{t.genre}</label>
                 <div className="select-wrapper">
                   <select
                     value={filters.genre}
@@ -129,7 +130,7 @@ const FilterPanel = ({
                     className="styled-select"
                     disabled={loadingGenres}
                   >
-                    <option value="">Все жанры</option>
+                    <option value="">{t.allGenres}</option>
                     {genres.map(genre => (
                       <option key={genre.id} value={genre.id}>{genre.name}</option>
                     ))}
@@ -139,14 +140,14 @@ const FilterPanel = ({
 
               {/* Год */}
               <div className="filter-section">
-                <label className="filter-label">Год выпуска</label>
+                <label className="filter-label">{t.year}</label>
                 <div className="select-wrapper">
                   <select
                     value={filters.year}
                     onChange={(e) => handleChange('year', e.target.value)}
                     className="styled-select"
                   >
-                    <option value="">Все годы</option>
+                    <option value="">{t.allYears}</option>
                     {years.map(year => (
                       <option key={year} value={year}>{year}</option>
                     ))}
@@ -157,7 +158,7 @@ const FilterPanel = ({
               {/* Рейтинг */}
               <div className="filter-section">
                 <label className="filter-label">
-                  <Star size={14} /> Минимальный рейтинг: <span className="rating-value">{filters.rating || '0'}</span>
+                  <Star size={14} /> {t.rating}: <span className="rating-value">{filters.rating || '0'}</span>
                 </label>
                 <input
                   type="range"
@@ -176,7 +177,7 @@ const FilterPanel = ({
 
               {/* Сортировка */}
               <div className="filter-section">
-                <label className="filter-label">Сортировка</label>
+                <label className="filter-label">{t.sortBy}</label>
                 <div className="select-wrapper">
                   <select
                     value={filters.sortBy}
@@ -194,10 +195,10 @@ const FilterPanel = ({
             <div className="filter-footer">
               <button className="filter-reset" onClick={handleReset}>
                 <RotateCcw size={16} />
-                Сбросить
+                {t.reset}
               </button>
               <button className="filter-apply" onClick={handleApply}>
-                Применить
+                {t.apply}
               </button>
             </div>
           </motion.div>

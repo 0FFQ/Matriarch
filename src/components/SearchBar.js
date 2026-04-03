@@ -12,7 +12,8 @@ const SearchBar = memo(({
   suggestions,
   onSuggestionClick,
   onFilterClick,
-  hasActiveFilters
+  hasActiveFilters,
+  language
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const inputRef = useRef(null);
@@ -106,9 +107,17 @@ const SearchBar = memo(({
                 }
               }}
               onBlur={handleInputBlur}
+              disabled={loading}
             />
 
-            {query && (
+            {/* Индикатор загрузки */}
+            {loading && (
+              <div className="loading-spinner">
+                <div className="spinner"></div>
+              </div>
+            )}
+
+            {query && !loading && (
               <motion.button
                 type="button"
                 className="clear-btn"
