@@ -1,7 +1,6 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence, useDragControls } from 'framer-motion';
 import { X, Sliders, RotateCcw, Film, Tv, Globe, Star } from 'lucide-react';
-import { useDraggablePosition } from '../hooks/useDraggablePosition';
 
 const FilterPanel = ({
   isOpen,
@@ -14,7 +13,21 @@ const FilterPanel = ({
   t
 }) => {
   const dragControls = useDragControls();
-  const { position, savePosition } = useDraggablePosition('matriarch_filter_pos', isOpen);
+  const panelRef = useRef(null);
+  const [constraints, setConstraints] = useState({ left: 0, right: 0, top: 0, bottom: 0 });
+
+  useEffect(() => {
+    if (isOpen && panelRef.current) {
+      const panelHeight = panelRef.current.offsetHeight;
+      setConstraints({
+        left: -(window.innerWidth - 400),
+        right: 0,
+        top: 0,
+        bottom: Math.max(0, window.innerHeight - 32 - panelHeight)
+      });
+    }
+  }, [isOpen]);
+
   const currentYear = new Date().getFullYear();
   const years = Array.from({ length: 100 }, (_, i) => currentYear - i);
 
@@ -62,23 +75,18 @@ const FilterPanel = ({
     <AnimatePresence>
       {isOpen && (
         <motion.div
+            ref={panelRef}
             className="filter-panel"
             drag
             dragControls={dragControls}
             dragListener={false}
-            dragConstraints={{ left: -window.innerWidth + 400, right: window.innerWidth - 400, top: -window.innerHeight + 100, bottom: window.innerHeight - 100 }}
-            dragElastic={0.1}
+            dragConstraints={constraints}
+            dragElastic={0}
             dragMomentum={false}
-            onDragEnd={(_, info) => {
-              const newX = (position?.x || 0) + info.offset.x;
-              const newY = (position?.y || 0) + info.offset.y;
-              savePosition(newX, newY);
-            }}
-            initial={false}
-            animate={position ? { x: position.x, y: position.y, opacity: 1 } : { x: 0, y: 0, opacity: 0 }}
+            initial={{ x: '100%', opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
             exit={{ x: '100%', opacity: 0 }}
             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-            style={{ position: 'fixed' }}
           >
             <div
               className="filter-header"
