@@ -246,7 +246,6 @@ body.light {
 .menu-item:hover {
   background: rgba(255, 255, 255, 0.08);
   border-color: rgba(255, 255, 255, 0.12);
-  transform: translateX(-4px);
 }
 
 .light .menu-item:hover {
@@ -255,7 +254,7 @@ body.light {
 }
 
 .menu-item:active {
-  transform: translateX(-2px) scale(0.98);
+  transform: scale(0.98);
 }
 
 .menu-item svg {

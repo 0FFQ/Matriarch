@@ -66,7 +66,7 @@ const Sidebar = ({ isOpen, onClose, darkMode, onToggleTheme, language, onToggleL
             </div>
             <div className="menu-section">
               <h3>{t.settings}</h3>
-              <button className="menu-item" onClick={onToggleTheme}>
+              <button className="menu-item" onClick={onToggleTheme} style={{ marginBottom: '8px' }}>
                 {darkMode ? <Sun size={20} /> : <Moon size={20} />}
                 <span>{darkMode ? t.lightTheme : t.darkTheme}</span>
               </button>
