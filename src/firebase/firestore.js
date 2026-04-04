@@ -1,7 +1,29 @@
-import { doc, setDoc, getDoc, onSnapshot, deleteDoc } from 'firebase/firestore';
+import { doc, setDoc, getDoc, onSnapshot, deleteDoc, query, collection, where, getDocs } from 'firebase/firestore';
 import { db } from './auth';
 
 const USERS_COLLECTION = 'users';
+
+/**
+ * Проверить, существует ли документ с данным email
+ * Возвращает userId если найден, null если нет
+ */
+export const findUserByEmail = async (email) => {
+  try {
+    const usersRef = collection(db, USERS_COLLECTION);
+    const q = query(usersRef, where('profile.email', '==', email));
+    const querySnapshot = await getDocs(q);
+    
+    if (!querySnapshot.empty) {
+      const doc = querySnapshot.docs[0];
+      return doc.id;
+    }
+    
+    return null;
+  } catch (error) {
+    console.error('[Firestore] Email search error:', error.message);
+    return null;
+  }
+};
 
 /**
  * Сохранить данные пользователя в Firestore
@@ -11,7 +33,11 @@ export const saveUserData = async (userId, userData) => {
     const userRef = doc(db, USERS_COLLECTION, userId);
     await setDoc(userRef, {
       ...userData,
-      updatedAt: new Date().toISOString()
+      updatedAt: new Date().toISOString(),
+      profile: {
+        ...userData.profile,
+        email: userData.profile?.email || null
+      }
     }, { merge: true });
     console.log('[Firestore] Data saved for user:', userId);
   } catch (error) {

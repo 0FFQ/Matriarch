@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { onAuthChange } from '../firebase/auth';
-import { saveUserData, loadUserData, subscribeToUserData } from '../firebase/firestore';
+import { saveUserData, loadUserData } from '../firebase/firestore';
 
 const UserContext = createContext(null);
 
@@ -12,7 +12,7 @@ const LOCAL_STORAGE_KEYS = {
 };
 
 /**
- * Загрузить данные из localStorage (fallback)
+ * Загрузить данные из localStorage
  */
 const loadFromLocalStorage = () => {
   try {
@@ -33,7 +33,7 @@ const loadFromLocalStorage = () => {
 };
 
 /**
- * Сохранить данные в localStorage (fallback)
+ * Сохранить данные в localStorage
  */
 const saveToLocalStorage = (data) => {
   try {
@@ -47,147 +47,142 @@ const saveToLocalStorage = (data) => {
 };
 
 export const UserProvider = ({ children }) => {
-  const [user, setUser] = useState(null); // Firebase user
-  const [syncEnabled, setSyncEnabled] = useState(false);
-  const unsubscribeRef = useRef(null);
-  
-  // Ссылка для предотвращения бесконечного цикла
-  // Храним последний snapshot данных из Firestore
-  const lastFirestoreSnapshotRef = useRef(null);
-  const saveTimeoutRef = useRef(null);
-
-  // Загружаем данные из localStorage по умолчанию
+  // Загружаем данные из localStorage при инициализации
   const initialData = loadFromLocalStorage();
 
+  const [user, setUser] = useState(null);
+  const [syncEnabled, setSyncEnabled] = useState(false);
   const [profile, setProfile] = useState(initialData.profile);
   const [favorites, setFavorites] = useState(initialData.favorites);
   const [watched, setWatched] = useState(initialData.watched);
   const [watchlist, setWatchlist] = useState(initialData.watchlist);
+  
+  // Используем ref для хранения флага загрузки из Firestore
+  const isLoadingRef = useRef(false);
+  const saveTimeoutRef = useRef(null);
 
-  // Функция для создания хэша данных
-  const createDataSnapshot = useCallback((data) => {
-    return JSON.stringify({
-      profile: data.profile,
-      favorites: data.favorites,
-      watched: data.watched,
-      watchlist: data.watchlist,
-    });
-  }, []);
-
-  // Следим за состоянием аутентификации
+  // === При изменении состояния аутентификации ===
   useEffect(() => {
     const unsubscribe = onAuthChange(async (firebaseUser) => {
       if (firebaseUser) {
-        console.log('[UserContext] ✅ User authenticated:', firebaseUser.email);
+        console.log('[UserContext] ✅ Authenticated:', firebaseUser.email);
         setUser(firebaseUser);
         setSyncEnabled(true);
 
-        // Загружаем данные из Firestore или инициализируем
+        // Загружаем данные из Firestore
+        isLoadingRef.current = true;
         const firestoreData = await loadUserData(firebaseUser.uid);
         
         if (firestoreData) {
-          console.log('[UserContext] 📥 Data loaded from Firestore');
-          // Сохраняем snapshot чтобы не сохранять обратно
-          lastFirestoreSnapshotRef.current = createDataSnapshot(firestoreData);
+          console.log('[UserContext] 📥 Loaded from Firestore:', {
+            profile: firestoreData.profile?.name,
+            favorites: firestoreData.favorites?.length || 0,
+            watched: firestoreData.watched?.length || 0,
+            watchlist: firestoreData.watchlist?.length || 0
+          });
           
-          if (firestoreData.profile) setProfile(firestoreData.profile);
+          // Обновляем состояние данными из Firestore
+          if (firestoreData.profile) {
+            setProfile({
+              ...firestoreData.profile,
+              email: firebaseUser.email
+            });
+          }
           if (firestoreData.favorites) setFavorites(firestoreData.favorites);
           if (firestoreData.watched) setWatched(firestoreData.watched);
           if (firestoreData.watchlist) setWatchlist(firestoreData.watchlist);
         } else {
-          // Первый вход - инициализируем ВСЕМИ данными из localStorage
-          console.log('[UserContext] 🆕 First login, initializing Firestore from localStorage');
-          const localData = loadFromLocalStorage();
-          lastFirestoreSnapshotRef.current = createDataSnapshot(localData);
+          // Первый вход - создаем документ с Google профилем
+          console.log('[UserContext] 🆕 First login, creating Firestore document');
+          const googleProfile = {
+            name: firebaseUser.displayName || '',
+            avatar: firebaseUser.photoURL || '',
+            email: firebaseUser.email || ''
+          };
           
-          await saveUserData(firebaseUser.uid, localData);
-          console.log('[UserContext] ✅ Firestore initialized from localStorage');
+          setProfile(googleProfile);
+          await saveUserData(firebaseUser.uid, {
+            profile: googleProfile,
+            favorites: [],
+            watched: [],
+            watchlist: []
+          });
         }
-
-        // Подписываемся на real-time обновления
-        unsubscribeRef.current = subscribeToUserData(firebaseUser.uid, (data) => {
-          console.log('[UserContext] 🔄 Real-time sync update from Firestore');
-          // Сохраняем snapshot чтобы не сохранять обратно
-          lastFirestoreSnapshotRef.current = createDataSnapshot(data);
-          
-          if (data.profile) setProfile(data.profile);
-          if (data.favorites) setFavorites(data.favorites);
-          if (data.watched) setWatched(data.watched);
-          if (data.watchlist) setWatchlist(data.watchlist);
-        });
+        
+        isLoadingRef.current = false;
       } else {
-        console.log('[UserContext] ❌ User logged out');
+        console.log('[UserContext] ❌ Logged out');
         setUser(null);
         setSyncEnabled(false);
-        lastFirestoreSnapshotRef.current = null;
         
-        // Отписываемся от Firestore
-        if (unsubscribeRef.current) {
-          unsubscribeRef.current();
-          unsubscribeRef.current = null;
-          console.log('[UserContext] Unsubscribed from Firestore');
+        // Очищаем localStorage
+        try {
+          localStorage.removeItem(LOCAL_STORAGE_KEYS.profile);
+          localStorage.removeItem(LOCAL_STORAGE_KEYS.favorites);
+          localStorage.removeItem(LOCAL_STORAGE_KEYS.watched);
+          localStorage.removeItem(LOCAL_STORAGE_KEYS.watchlist);
+          console.log('[UserContext] 🗑️ LocalStorage cleared');
+        } catch (error) {
+          console.error('[UserContext] LocalStorage clear error:', error);
         }
 
-        // НЕ загружаем localStorage при выходе - оставляем текущие state
-        // Это предотвращает лишний rerender
+        // Сбрасываем state
+        setProfile({ name: '', avatar: '' });
+        setFavorites([]);
+        setWatched([]);
+        setWatchlist([]);
       }
     });
 
-    return () => {
-      console.log('[UserContext] Cleanup: unsubscribing from auth');
-      unsubscribe();
-      if (unsubscribeRef.current) {
-        unsubscribeRef.current();
-      }
-      // Очищаем таймер
-      if (saveTimeoutRef.current) {
-        clearTimeout(saveTimeoutRef.current);
-      }
-    };
-  }, [createDataSnapshot]);
+    return () => unsubscribe();
+  }, []);
 
-  // Сохранение в localStorage (всегда)
+  // === Сохранение в localStorage (всегда) ===
   useEffect(() => {
     saveToLocalStorage({ profile, favorites, watched, watchlist });
   }, [profile, favorites, watched, watchlist]);
 
-  // Сохранение в Firestore (только при локальных изменениях)
+  // === Сохранение в Firestore (только если НЕ загружаем) ===
   useEffect(() => {
-    if (!syncEnabled || !user) return;
-    
-    const currentSnapshot = createDataSnapshot({ profile, favorites, watched, watchlist });
-    
-    // Если snapshot совпадает с последним из Firestore - не сохраняем
-    if (lastFirestoreSnapshotRef.current === currentSnapshot) {
-      return;
-    }
-    
-    // Debounce: ждём 500мс перед сохранением
+    // НЕ сохраняем если:
+    // - Пользователь не авторизован
+    // - Идет загрузка из Firestore (чтобы не перезаписать пустыми данными)
+    if (!syncEnabled || !user || isLoadingRef.current) return;
+
+    // Очищаем предыдущий таймер
     if (saveTimeoutRef.current) {
       clearTimeout(saveTimeoutRef.current);
     }
-    
-    saveTimeoutRef.current = setTimeout(() => {
-      console.log('[UserContext] Saving to Firestore (local change)');
-      lastFirestoreSnapshotRef.current = currentSnapshot; // Обновляем snapshot
-      saveUserData(user.uid, { profile, favorites, watched, watchlist }).catch(error => {
-        console.error('[UserContext] Firestore save error:', error);
+
+    // Debounce 500ms
+    saveTimeoutRef.current = setTimeout(async () => {
+      console.log('[UserContext] 💾 Saving to Firestore:', {
+        profile: profile.name,
+        favorites: favorites.length,
+        watched: watched.length,
+        watchlist: watchlist.length
       });
+      
+      try {
+        await saveUserData(user.uid, { profile, favorites, watched, watchlist });
+        console.log('[UserContext] ✅ Save complete');
+      } catch (error) {
+        console.error('[UserContext] ❌ Save error:', error);
+      }
     }, 500);
-    
+
     return () => {
       if (saveTimeoutRef.current) {
         clearTimeout(saveTimeoutRef.current);
       }
     };
-  }, [profile, favorites, watched, watchlist, syncEnabled, user, createDataSnapshot]);
+  }, [profile, favorites, watched, watchlist, syncEnabled, user]);
 
-  // Обновление профиля
+  // === Функции управления списками ===
   const updateProfile = useCallback((newProfile) => {
     setProfile(newProfile);
   }, []);
 
-  // Добавление/удаление из избранного
   const toggleFavorite = useCallback((item) => {
     setFavorites(prev => {
       const exists = prev.find(i => i.id === item.id);
@@ -198,20 +193,17 @@ export const UserProvider = ({ children }) => {
     });
   }, []);
 
-  // Добавление/удаление из просмотренного
   const toggleWatched = useCallback((item) => {
     setWatched(prev => {
       const exists = prev.find(i => i.id === item.id);
       if (exists) {
         return prev.filter(i => i.id !== item.id);
       }
-      // Удаляем из watchlist если добавляем в watched
       setWatchlist(wl => wl.filter(i => i.id !== item.id));
       return [...prev, { ...item, watchedAt: Date.now() }];
     });
   }, []);
 
-  // Добавление/удаление в "Буду смотреть"
   const toggleWatchlist = useCallback((item) => {
     setWatchlist(prev => {
       const exists = prev.find(i => i.id === item.id);
@@ -222,12 +214,10 @@ export const UserProvider = ({ children }) => {
     });
   }, []);
 
-  // Проверка, находится ли элемент в списке
   const isInFavorites = useCallback((id) => favorites.some(i => i.id === id), [favorites]);
   const isInWatched = useCallback((id) => watched.some(i => i.id === id), [watched]);
   const isInWatchlist = useCallback((id) => watchlist.some(i => i.id === id), [watchlist]);
 
-  // Удаление из конкретного списка (для страницы профиля)
   const removeFromFavorites = useCallback((id) => {
     setFavorites(prev => prev.filter(i => i.id !== id));
   }, []);
@@ -255,7 +245,6 @@ export const UserProvider = ({ children }) => {
     removeFromFavorites,
     removeFromWatched,
     removeFromWatchlist,
-    // Firebase sync info
     isAuthenticated: !!user,
     syncEnabled,
     firebaseUser: user,

@@ -74,7 +74,11 @@ const translations = {
     allCategories: 'Все',
     categoryMovies: 'Фильмы',
     categoryTV: 'Сериалы',
-    categoryAnime: 'Аниме'
+    categoryAnime: 'Аниме',
+    syncErrorAccountLinked: 'Этот аккаунт уже привязан к другому пользователю',
+    syncDisabled: 'Синхронизация отключена',
+    logout: 'Выйти',
+    synced: 'Синхронизировано'
   },
   'en-US': {
     appTitle: 'Matriarch - Movies and TV Shows Search',
@@ -135,7 +139,11 @@ const translations = {
     allCategories: 'All',
     categoryMovies: 'Movies',
     categoryTV: 'TV Shows',
-    categoryAnime: 'Anime'
+    categoryAnime: 'Anime',
+    syncErrorAccountLinked: 'This account is already linked to another user',
+    syncDisabled: 'Sync disabled',
+    logout: 'Logout',
+    synced: 'Synced'
   }
 };
 

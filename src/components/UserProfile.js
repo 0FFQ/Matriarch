@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence, useDragControls } from 'framer-motion';
-import { User, Edit2, X, Camera, Heart, Eye, Bookmark, ExternalLink, Trash2, Film, Tv, CheckCircle, Cloud, LogIn } from 'lucide-react';
+import { User, Edit2, X, Camera, Heart, Eye, Bookmark, ExternalLink, Trash2, Film, Tv, CheckCircle, Cloud, LogIn, AlertTriangle } from 'lucide-react';
 import { useUser } from '../context/UserContext';
 import { signInWithGoogle, logout, onAuthChange } from '../firebase/auth';
 
@@ -16,8 +16,10 @@ const UserProfile = ({ t, isOpen, onClose, onBackToMenu }) => {
     removeFromFavorites,
     removeFromWatched,
     removeFromWatchlist,
+    forceSaveToFirestore,
     isAuthenticated,
     syncEnabled,
+    syncError,
   } = useUser();
 
   const [firebaseUser, setFirebaseUser] = useState(null);
@@ -45,6 +47,7 @@ const UserProfile = ({ t, isOpen, onClose, onBackToMenu }) => {
 
   const handleLogout = async () => {
     try {
+      // Выходим из Google (данные уже сохранены в Firestore автоматически через debounce 500ms)
       await logout();
     } catch (error) {
       console.error('Logout error:', error);
@@ -360,6 +363,19 @@ const UserProfile = ({ t, isOpen, onClose, onBackToMenu }) => {
                   <div className="sync-compact-loading">
                     <div className="sync-loading-spinner-small"></div>
                   </div>
+                ) : syncError ? (
+                  <div className="sync-compact-error">
+                    <div className="sync-error-content">
+                      <AlertTriangle size={16} className="sync-error-icon" />
+                      <div className="sync-error-text">
+                        <div className="sync-error-title">{syncError}</div>
+                        <button className="sync-compact-logout" onClick={handleLogout}>
+                          <LogIn size={14} className="rotate-180" />
+                          <span>{t.logout || 'Выйти'}</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
                 ) : firebaseUser ? (
                   <div className="sync-compact-row">
                     <div className="sync-compact-info">
@@ -378,8 +394,17 @@ const UserProfile = ({ t, isOpen, onClose, onBackToMenu }) => {
                       <div className="sync-compact-text">
                         <div className="sync-compact-email">{firebaseUser.email}</div>
                         <div className="sync-compact-status">
-                          <CheckCircle size={10} />
-                          <span>Синхронизировано</span>
+                          {syncEnabled ? (
+                            <>
+                              <CheckCircle size={10} />
+                              <span>{t.synced || 'Синхронизировано'}</span>
+                            </>
+                          ) : (
+                            <>
+                              <AlertTriangle size={10} className="sync-warning" />
+                              <span>{t.syncDisabled || 'Синхронизация отключена'}</span>
+                            </>
+                          )}
                         </div>
                       </div>
                     </div>
