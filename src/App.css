@@ -459,6 +459,7 @@ body.light .home-icon:hover {
 
 .search-icon-right.visible .filter-icon {
   pointer-events: auto;
+  cursor: pointer;
 }
 
 /* Строка поиска */
