@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, memo, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, X, Film, Tv, Sliders } from 'lucide-react';
+import { Search, X, Film, Tv, Sliders, Home } from 'lucide-react';
 
 const SearchBar = memo(({
   query,
@@ -12,6 +12,7 @@ const SearchBar = memo(({
   suggestions,
   onSuggestionClick,
   onFilterClick,
+  onHomeClick,
   hasActiveFilters,
   language
 }) => {
@@ -70,6 +71,9 @@ const SearchBar = memo(({
   useEffect(() => {
     if (query || searchActive) {
       setIsExpanded(true);
+    } else {
+      // Сбрасываем когда поиск очищен и не активен
+      setIsExpanded(false);
     }
   }, [query, searchActive]);
 
@@ -84,6 +88,22 @@ const SearchBar = memo(({
         transition={{ duration: 0.3, ease: "easeOut" }}
         style={{ pointerEvents: isExpanded ? 'none' : 'auto' }}
       />
+
+      {/* Левая иконка: Домой */}
+      <motion.div
+        className={`search-icon-left ${isExpanded ? 'visible' : ''}`}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: isExpanded ? 1 : 0 }}
+        transition={{ duration: 0.2, delay: isExpanded ? 1 : 0 }}
+      >
+        <button
+          className="search-icon-only home-icon"
+          onClick={onHomeClick}
+          type="button"
+        >
+          <Home size={24} />
+        </button>
+      </motion.div>
 
       {/* Строка поиска */}
       <motion.div

@@ -373,6 +373,37 @@ body.light {
   flex-shrink: 0;
 }
 
+/* Левая иконка (Домой) - по умолчанию скрыта */
+.search-icon-left {
+  pointer-events: none;
+  position: absolute;
+  left: 50%;
+  transform: translateX(calc(-50% - 240px - 25px));
+  opacity: 0;
+}
+
+.search-icon-left.visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.home-icon {
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.home-icon:hover {
+  color: #ffffff;
+}
+
+body.light .home-icon {
+  color: #6b6356;
+}
+
+body.light .home-icon:hover {
+  color: #4a4438;
+}
+
 /* Иконка поиска */
 .search-icon-only {
   width: 40px;

@@ -721,6 +721,28 @@ function App() {
             suggestions={suggestions}
             onSuggestionClick={handleSuggestionClick}
             onFilterClick={() => setFilterOpen(prev => !prev)}
+            onHomeClick={() => {
+              // Закрываем все окна
+              setFilterOpen(false);
+              setProfileOpen(false);
+              setMenuOpen(false);
+              
+              // Сбрасываем поиск
+              setQuery('');
+              setSearchActive(false);
+              setResults([]);
+              setCurrentPage(1);
+              
+              // Сбрасываем фильтры
+              setFilters({
+                type: 'all',
+                genre: '',
+                year: '',
+                rating: '',
+                sortBy: 'popularity.desc',
+                animeOnly: false
+              });
+            }}
             hasActiveFilters={hasActiveFilters}
             language={language}
           />
