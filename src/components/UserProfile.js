@@ -1,9 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence, useDragControls } from 'framer-motion';
-import { User, Edit2, X, Camera, Heart, Eye, Bookmark, ExternalLink, Trash2, Film, Tv, CheckCircle, Cloud, LogIn, AlertTriangle, Users } from 'lucide-react';
+import { User, Edit2, X, Camera, Heart, Eye, Bookmark, ExternalLink, Trash2, Film, Tv, CheckCircle, Cloud, LogIn, AlertTriangle, Users, UserPlus, UserMinus, Bell, BellOff } from 'lucide-react';
 import { useUser } from '../context/UserContext';
 import { signInWithGoogle, logout, onAuthChange } from '../firebase/auth';
 import { getAllUsers } from '../firebase/messages';
+import { subscribeToUser, unsubscribeFromUser, isSubscribed, getSubscribersWithUserData } from '../firebase/subscriptions';
 
 const IMAGE_BASE = 'https://image.tmdb.org/t/p/w92';
 
@@ -65,6 +66,19 @@ const UserProfile = ({ t, isOpen, onClose, onBackToMenu }) => {
   const [usersLoading, setUsersLoading] = useState(false);
   const [usersSearch, setUsersSearch] = useState('');
   const [filteredUsers, setFilteredUsers] = useState([]);
+  const [showUsersList, setShowUsersList] = useState(false); // Показывать ли список пользователей
+  const [subscriptionStatuses, setSubscriptionStatuses] = useState({}); // На кого подписан
+  const [subscriptionActionsLoading, setSubscriptionActionsLoading] = useState({}); // Загрузка действий
+  const [usersView, setUsersView] = useState('all'); // 'all', 'subscribed', или 'subscribers'
+  const [subscribersList, setSubscribersList] = useState([]); // Список подписчиков
+  const [subscribersLoading, setSubscribersLoading] = useState(false);
+  
+  // Количество других пользователей (исключая текущего)
+  const otherUsersCount = usersList.filter(u => !firebaseUser || u.id !== firebaseUser.uid).length;
+  const subscribedCount = usersList.filter(u => 
+    (!firebaseUser || u.id !== firebaseUser.uid) && subscriptionStatuses[u.id]
+  ).length;
+  const subscribersCount = subscribersList.length;
   
   const inputRef = useRef(null);
   const fileInputRef = useRef(null);
@@ -102,19 +116,56 @@ const UserProfile = ({ t, isOpen, onClose, onBackToMenu }) => {
     }
   }, [activeTab]);
 
-  // Фильтрация пользователей по поиску
+  // Фильтрация пользователей по поиску и виду
   useEffect(() => {
+    // Если режим "подписчики" - используем список подписчиков
+    if (usersView === 'subscribers') {
+      if (usersSearch.trim() === '') {
+        setFilteredUsers(subscribersList.map(sub => ({
+          id: sub.subscriberId,
+          name: sub.subscriberName,
+          email: sub.subscriberEmail,
+          avatar: sub.subscriberAvatar
+        })));
+      } else {
+        const query = usersSearch.toLowerCase();
+        const filtered = subscribersList
+          .filter(sub =>
+            (sub.subscriberName || '').toLowerCase().includes(query) ||
+            (sub.subscriberEmail || '').toLowerCase().includes(query)
+          )
+          .map(sub => ({
+            id: sub.subscriberId,
+            name: sub.subscriberName,
+            email: sub.subscriberEmail,
+            avatar: sub.subscriberAvatar
+          }));
+        setFilteredUsers(filtered);
+      }
+      return;
+    }
+    
+    // Для "все" и "подписки" - используем usersList
+    let baseUsers = usersList.filter(user => 
+      !firebaseUser || user.id !== firebaseUser.uid
+    );
+    
+    // Если режим "подписанные" - фильтруем только тех на кого подписаны
+    if (usersView === 'subscribed') {
+      baseUsers = baseUsers.filter(user => subscriptionStatuses[user.id]);
+    }
+    
     if (usersSearch.trim() === '') {
-      setFilteredUsers(usersList);
+      setFilteredUsers(baseUsers);
     } else {
       const query = usersSearch.toLowerCase();
-      const filtered = usersList.filter(user =>
+      const filtered = baseUsers.filter(user =>
         user.name?.toLowerCase().includes(query) ||
         user.email?.toLowerCase().includes(query)
       );
       setFilteredUsers(filtered);
     }
-  }, [usersSearch, usersList]);
+  }, [usersSearch, usersList, firebaseUser, usersView, subscriptionStatuses, subscribersList]);
 
   const loadUsers = async () => {
     try {
@@ -124,10 +175,102 @@ const UserProfile = ({ t, isOpen, onClose, onBackToMenu }) => {
       console.log('[UserProfile] Users loaded:', allUsers);
       setUsersList(allUsers);
       setFilteredUsers(allUsers);
+      
+      // Загружаем статусы подписок для всех пользователей
+      if (firebaseUser) {
+        await loadSubscriptionStatuses(allUsers, firebaseUser.uid);
+        // Загружаем подписчиков
+        await loadSubscribers(firebaseUser.uid);
+      }
     } catch (err) {
       console.error('[UserProfile] Error loading users:', err);
     } finally {
       setUsersLoading(false);
+    }
+  };
+
+  const loadSubscribers = async (userId) => {
+    try {
+      console.log('[UserProfile] Loading subscribers...');
+      setSubscribersLoading(true);
+      const subscribers = await getSubscribersWithUserData(userId);
+      console.log('[UserProfile] Subscribers loaded:', subscribers);
+      setSubscribersList(subscribers);
+    } catch (err) {
+      console.error('[UserProfile] Error loading subscribers:', err);
+    } finally {
+      setSubscribersLoading(false);
+    }
+  };
+
+  const loadSubscriptionStatuses = async (users, currentUserId) => {
+    try {
+      const statuses = {};
+      await Promise.all(
+        users.map(async (user) => {
+          if (user.id !== currentUserId) {
+            const isSub = await isSubscribed(currentUserId, user.id);
+            statuses[user.id] = isSub;
+          }
+        })
+      );
+      setSubscriptionStatuses(statuses);
+    } catch (err) {
+      console.error('[UserProfile] Error loading subscription statuses:', err);
+    }
+  };
+
+  const handleSubscribe = async (user) => {
+    if (!firebaseUser) return;
+
+    try {
+      setSubscriptionActionsLoading(prev => ({ ...prev, [user.id]: true }));
+      await subscribeToUser(firebaseUser.uid, user.id, {
+        name: user.name,
+        email: user.email,
+        avatar: user.avatar
+      }, {
+        name: profile.name,
+        email: profile.email,
+        avatar: profile.avatar
+      });
+
+      // Обновляем статус
+      setSubscriptionStatuses(prev => ({
+        ...prev,
+        [user.id]: true
+      }));
+      
+      // Обновляем подписчиков
+      if (firebaseUser) {
+        await loadSubscribers(firebaseUser.uid);
+      }
+    } catch (err) {
+      console.error('[UserProfile] Error subscribing:', err);
+      alert(t === 'ru' ? 'Ошибка при подписке' : 'Error subscribing');
+    } finally {
+      setSubscriptionActionsLoading(prev => ({ ...prev, [user.id]: false }));
+    }
+  };
+
+  const handleUnsubscribe = async (user) => {
+    if (!firebaseUser) return;
+    
+    try {
+      setSubscriptionActionsLoading(prev => ({ ...prev, [user.id]: true }));
+      await unsubscribeFromUser(firebaseUser.uid, user.id);
+      
+      // Обновляем статус
+      setSubscriptionStatuses(prev => {
+        const newStatuses = { ...prev };
+        delete newStatuses[user.id];
+        return newStatuses;
+      });
+    } catch (err) {
+      console.error('[UserProfile] Error unsubscribing:', err);
+      alert(t === 'ru' ? 'Ошибка при отписке' : 'Error unsubscribing');
+    } finally {
+      setSubscriptionActionsLoading(prev => ({ ...prev, [user.id]: false }));
     }
   };
 
@@ -504,7 +647,7 @@ const UserProfile = ({ t, isOpen, onClose, onBackToMenu }) => {
                 >
                   <Users size={14} />
                   <span>{t.users || 'Пользователи'}</span>
-                  {usersList.length > 0 && <span className="tab-badge">{usersList.length}</span>}
+                  {otherUsersCount > 0 && <span className="tab-badge">{otherUsersCount}</span>}
                 </button>
               </div>
             </div>
@@ -552,47 +695,145 @@ const UserProfile = ({ t, isOpen, onClose, onBackToMenu }) => {
             {activeTab === 'users' && (
               <div className="filter-section">
                 <label className="filter-label">{t.users || 'Пользователи'}</label>
-                {/* Поиск пользователей */}
-                <div className="users-search">
-                  <input
-                    type="text"
-                    value={usersSearch}
-                    onChange={(e) => setUsersSearch(e.target.value)}
-                    placeholder={t.searchUsers || 'Поиск пользователей...'}
-                    className="users-search-input"
-                  />
-                </div>
                 
-                {/* Список пользователей */}
-                {usersLoading ? (
-                  <div className="users-loading">
-                    <div className="users-loading-spinner"></div>
-                    <p>{t.loading || 'Загрузка...'}</p>
-                  </div>
-                ) : filteredUsers.length === 0 ? (
-                  <div className="users-empty">
-                    <Users size={48} style={{ opacity: 0.3 }} />
-                    <p>{usersList.length === 0 ? (t.noUsers || 'Пользователи не найдены') : (t.noUsersFound || 'По запросу ничего не найдено')}</p>
-                  </div>
-                ) : (
-                  <div className="users-list">
-                    {filteredUsers.map(user => (
-                      <div key={user.id} className="user-card">
-                        <div className="user-avatar">
-                          {user.avatar ? (
-                            <img src={user.avatar} alt={user.name} />
-                          ) : (
-                            <div className="user-avatar-placeholder">
-                              <User size={24} />
-                            </div>
-                          )}
-                        </div>
-                        <div className="user-info">
-                          <h4>{user.name || (t.anonymous || 'Аноним')}</h4>
-                          <p className="user-email">{user.email}</p>
-                        </div>
+                {/* Кнопка для показа списка пользователей */}
+                <button
+                  className="show-users-btn"
+                  onClick={() => {
+                    setShowUsersList(!showUsersList);
+                    if (!showUsersList && usersList.length === 0) {
+                      loadUsers();
+                    }
+                  }}
+                >
+                  <Users size={18} />
+                  <span>
+                    {showUsersList 
+                      ? (t.hideUsers || 'Скрыть пользователей') 
+                      : `${t.showUsers || 'Показать всех пользователей'}${otherUsersCount > 0 ? ` (${otherUsersCount})` : ''}`
+                    }
+                  </span>
+                  <svg 
+                    className={`chevron-icon ${showUsersList ? 'rotated' : ''}`}
+                    width="20" 
+                    height="20" 
+                    viewBox="0 0 24 24" 
+                    fill="none" 
+                    stroke="currentColor" 
+                    strokeWidth="2" 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round"
+                  >
+                    <polyline points="6 9 12 15 18 9"/>
+                  </svg>
+                </button>
+
+                {/* Выпадающий список пользователей */}
+                {showUsersList && (
+                  <div className="users-dropdown">
+                    {/* Переключатель вида */}
+                    <div className="users-view-toggle">
+                      <button
+                        className={`users-view-btn ${usersView === 'all' ? 'active' : ''}`}
+                        onClick={() => setUsersView('all')}
+                      >
+                        <Users size={14} />
+                        <span>{t.allUsers || 'Все'}</span>
+                        {otherUsersCount > 0 && <span className="view-count">{otherUsersCount}</span>}
+                      </button>
+                      <button
+                        className={`users-view-btn ${usersView === 'subscribed' ? 'active' : ''}`}
+                        onClick={() => setUsersView('subscribed')}
+                      >
+                        <Bell size={14} />
+                        <span>{t.mySubscriptions || 'Мои подписки'}</span>
+                        {subscribedCount > 0 && <span className="view-count">{subscribedCount}</span>}
+                      </button>
+                      <button
+                        className={`users-view-btn ${usersView === 'subscribers' ? 'active' : ''}`}
+                        onClick={() => setUsersView('subscribers')}
+                      >
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+                          <circle cx="9" cy="7" r="4"/>
+                          <path d="M22 8v2"/>
+                          <path d="M22 11a4 4 0 0 1-3 3.87"/>
+                          <path d="M15 16a4 4 0 0 1 0-8"/>
+                        </svg>
+                        <span>{t.subscribers || 'Подписчики'}</span>
+                        {subscribersCount > 0 && <span className="view-count">{subscribersCount}</span>}
+                      </button>
+                    </div>
+                    
+                    {/* Поиск пользователей */}
+                    <div className="users-search">
+                      <input
+                        type="text"
+                        value={usersSearch}
+                        onChange={(e) => setUsersSearch(e.target.value)}
+                        placeholder={t.searchUsers || 'Поиск пользователей...'}
+                        className="users-search-input"
+                      />
+                    </div>
+                    
+                    {/* Список пользователей */}
+                    {(usersLoading || (usersView === 'subscribers' && subscribersLoading)) ? (
+                      <div className="users-loading">
+                        <div className="users-loading-spinner"></div>
+                        <p>{t.loading || 'Загрузка...'}</p>
                       </div>
-                    ))}
+                    ) : filteredUsers.length === 0 ? (
+                      <div className="users-empty">
+                        <Users size={48} style={{ opacity: 0.3 }} />
+                        <p>{otherUsersCount === 0 ? (t.noUsers || 'Пользователи не найдены') : (t.noUsersFound || 'По запросу ничего не найдено')}</p>
+                      </div>
+                    ) : (
+                      <div className="users-list">
+                        {filteredUsers.map(user => {
+                          const isSubscribed = subscriptionStatuses[user.id];
+                          const isLoading = subscriptionActionsLoading[user.id];
+                          
+                          return (
+                            <div key={user.id} className="user-card">
+                              <div className="user-avatar">
+                                {user.avatar ? (
+                                  <img src={user.avatar} alt={user.name} />
+                                ) : (
+                                  <div className="user-avatar-placeholder">
+                                    <User size={24} />
+                                  </div>
+                                )}
+                              </div>
+                              <div className="user-info">
+                                <h4>{user.name || (t.anonymous || 'Аноним')}</h4>
+                                <p className="user-email">{user.email}</p>
+                              </div>
+                              <div className="user-actions">
+                                  {isLoading ? (
+                                    <div className="user-action-loading">
+                                      <div className="action-loading-spinner"></div>
+                                    </div>
+                                  ) : isSubscribed ? (
+                                    <button
+                                      className="unsubscribe-btn"
+                                      onClick={() => handleUnsubscribe(user)}
+                                    >
+                                      <BellOff size={18} />
+                                    </button>
+                                  ) : (
+                                    <button
+                                      className="subscribe-btn"
+                                      onClick={() => handleSubscribe(user)}
+                                    >
+                                      <Bell size={18} />
+                                    </button>
+                                  )}
+                                </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
                   </div>
                 )}
               </div>

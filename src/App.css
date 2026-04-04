@@ -3547,6 +3547,146 @@ body.light .sync-logout-btn {
 }
 
 /* Стили для вкладки пользователей */
+.show-users-btn {
+  width: 100%;
+  padding: 0.875rem 1rem;
+  background: rgba(155, 155, 155, 0.1);
+  border: 1px solid rgba(155, 155, 155, 0.2);
+  border-radius: 12px;
+  color: #888888;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+
+.show-users-btn:hover {
+  background: rgba(155, 155, 155, 0.15);
+  border-color: rgba(155, 155, 155, 0.3);
+  color: #aaaaaa;
+}
+
+.show-users-btn:active {
+  transform: translateY(0);
+}
+
+body.light .show-users-btn {
+  background: rgba(155, 155, 155, 0.05);
+  border-color: rgba(155, 155, 155, 0.15);
+}
+
+body.light .show-users-btn:hover {
+  background: rgba(155, 155, 155, 0.1);
+}
+
+.chevron-icon {
+  margin-left: auto;
+  transition: transform 0.3s ease;
+}
+
+.chevron-icon.rotated {
+  transform: rotate(180deg);
+}
+
+.users-dropdown {
+  margin-top: 0.75rem;
+  animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.users-view-toggle {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.users-view-btn {
+  padding: 0.625rem 0.5rem;
+  background: rgba(155, 155, 155, 0.05);
+  border: 1px solid rgba(155, 155, 155, 0.15);
+  border-radius: 8px;
+  color: #888888;
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+
+.users-view-btn:hover {
+  background: rgba(155, 155, 155, 0.1);
+  border-color: rgba(155, 155, 155, 0.25);
+  color: #aaaaaa;
+}
+
+.users-view-btn.active {
+  background: rgba(155, 155, 155, 0.15);
+  border-color: rgba(155, 155, 155, 0.3);
+  color: #cccccc;
+}
+
+.users-view-btn svg {
+  flex-shrink: 0;
+}
+
+.view-count {
+  background: rgba(155, 155, 155, 0.2);
+  color: #aaaaaa;
+  padding: 0.125rem 0.375rem;
+  border-radius: 10px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  min-width: 1.25rem;
+  text-align: center;
+}
+
+.users-view-btn.active .view-count {
+  background: rgba(155, 155, 155, 0.3);
+  color: #cccccc;
+}
+
+body.light .users-view-btn {
+  background: rgba(0, 0, 0, 0.03);
+  border-color: rgba(0, 0, 0, 0.08);
+}
+
+body.light .users-view-btn:hover {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+body.light .users-view-btn.active {
+  background: rgba(0, 0, 0, 0.1);
+  border-color: rgba(0, 0, 0, 0.15);
+}
+
+body.light .view-count {
+  background: rgba(0, 0, 0, 0.08);
+  color: #6b7280;
+}
+
+body.light .users-view-btn.active .view-count {
+  background: rgba(0, 0, 0, 0.15);
+  color: #4a4438;
+}
 .users-search {
   margin-bottom: 1rem;
 }
@@ -3683,7 +3823,6 @@ body.light .users-list::-webkit-scrollbar-thumb:hover {
 .user-card:hover {
   background: rgba(255, 255, 255, 0.06);
   border-color: rgba(255, 255, 255, 0.1);
-  transform: translateX(2px);
 }
 
 body.light .user-card {
@@ -3750,5 +3889,88 @@ body.light .user-info h4 {
 
 body.light .user-email {
   color: #6b7280;
+}
+
+.user-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.subscribe-btn,
+.unsubscribe-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  border: 1px solid rgba(155, 155, 155, 0.2);
+  background: rgba(155, 155, 155, 0.05);
+  color: #888888;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.subscribe-btn:hover {
+  background: rgba(155, 155, 155, 0.15);
+  border-color: rgba(155, 155, 155, 0.3);
+  color: #aaaaaa;
+}
+
+.unsubscribe-btn {
+  color: #888888;
+}
+
+.unsubscribe-btn:hover {
+  background: rgba(155, 155, 155, 0.15);
+  border-color: rgba(155, 155, 155, 0.3);
+  color: #aaaaaa;
+}
+
+.unsubscribe-btn.active {
+  color: #ef4444;
+}
+
+.unsubscribe-btn.active:hover {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: rgba(239, 68, 68, 0.3);
+  color: #ef4444;
+}
+
+body.light .subscribe-btn,
+body.light .unsubscribe-btn {
+  background: rgba(0, 0, 0, 0.03);
+  border-color: rgba(0, 0, 0, 0.08);
+}
+
+body.light .subscribe-btn:hover {
+  background: rgba(0, 0, 0, 0.08);
+}
+
+body.light .unsubscribe-btn:hover {
+  background: rgba(239, 68, 68, 0.08);
+}
+
+.user-action-loading {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.action-loading-spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  border-top-color: #6366f1;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+
+body.light .action-loading-spinner {
+  border-color: rgba(0, 0, 0, 0.1);
+  border-top-color: #6366f1;
 }
 
