@@ -1,8 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence, useDragControls } from 'framer-motion';
-import { User, Edit2, X, Camera, Heart, Eye, Bookmark, ExternalLink, Trash2, Film, Tv, CheckCircle, Cloud, LogIn, AlertTriangle } from 'lucide-react';
+import { User, Edit2, X, Camera, Heart, Eye, Bookmark, ExternalLink, Trash2, Film, Tv, CheckCircle, Cloud, LogIn, AlertTriangle, Users } from 'lucide-react';
 import { useUser } from '../context/UserContext';
 import { signInWithGoogle, logout, onAuthChange } from '../firebase/auth';
+import { getAllUsers } from '../firebase/messages';
 
 const IMAGE_BASE = 'https://image.tmdb.org/t/p/w92';
 
@@ -58,6 +59,13 @@ const UserProfile = ({ t, isOpen, onClose, onBackToMenu }) => {
   const [editName, setEditName] = useState(profile.name || '');
   const [activeTab, setActiveTab] = useState('favorites');
   const [activeCategory, setActiveCategory] = useState('all'); // all, movie, tv, anime
+  
+  // Состояние для вкладки пользователей
+  const [usersList, setUsersList] = useState([]);
+  const [usersLoading, setUsersLoading] = useState(false);
+  const [usersSearch, setUsersSearch] = useState('');
+  const [filteredUsers, setFilteredUsers] = useState([]);
+  
   const inputRef = useRef(null);
   const fileInputRef = useRef(null);
   const dragControls = useDragControls();
@@ -86,6 +94,42 @@ const UserProfile = ({ t, isOpen, onClose, onBackToMenu }) => {
       inputRef.current.select();
     }
   }, [isEditing]);
+
+  // Загрузка пользователей при переключении на вкладку
+  useEffect(() => {
+    if (activeTab === 'users') {
+      loadUsers();
+    }
+  }, [activeTab]);
+
+  // Фильтрация пользователей по поиску
+  useEffect(() => {
+    if (usersSearch.trim() === '') {
+      setFilteredUsers(usersList);
+    } else {
+      const query = usersSearch.toLowerCase();
+      const filtered = usersList.filter(user =>
+        user.name?.toLowerCase().includes(query) ||
+        user.email?.toLowerCase().includes(query)
+      );
+      setFilteredUsers(filtered);
+    }
+  }, [usersSearch, usersList]);
+
+  const loadUsers = async () => {
+    try {
+      setUsersLoading(true);
+      console.log('[UserProfile] Loading users...');
+      const allUsers = await getAllUsers();
+      console.log('[UserProfile] Users loaded:', allUsers);
+      setUsersList(allUsers);
+      setFilteredUsers(allUsers);
+    } catch (err) {
+      console.error('[UserProfile] Error loading users:', err);
+    } finally {
+      setUsersLoading(false);
+    }
+  };
 
   const handleSave = () => {
     if (editName.trim()) {
@@ -454,6 +498,14 @@ const UserProfile = ({ t, isOpen, onClose, onBackToMenu }) => {
                   <span>{t.watchlist || 'Буду смотреть'}</span>
                   {watchlist.length > 0 && <span className="tab-badge">{watchlist.length}</span>}
                 </button>
+                <button
+                  className={`profile-tab-btn ${activeTab === 'users' ? 'active' : ''}`}
+                  onClick={() => { setActiveTab('users'); }}
+                >
+                  <Users size={14} />
+                  <span>{t.users || 'Пользователи'}</span>
+                  {usersList.length > 0 && <span className="tab-badge">{usersList.length}</span>}
+                </button>
               </div>
             </div>
 
@@ -462,7 +514,7 @@ const UserProfile = ({ t, isOpen, onClose, onBackToMenu }) => {
               <label className="filter-label">{t.categories || 'Категории'}</label>
               <div className="profile-category-row">
                 <button
-                  className={`profile-category-btn ${activeCategory === 'all' ? 'active' : ''}`}
+                  className={`profile-category-btn ${activeCategory !== 'all' ? 'active' : ''}`}
                   onClick={() => setActiveCategory('all')}
                 >
                   {t.allCategories || 'Все'}
@@ -496,7 +548,58 @@ const UserProfile = ({ t, isOpen, onClose, onBackToMenu }) => {
               </div>
             </div>
 
+            {/* Пользователи */}
+            {activeTab === 'users' && (
+              <div className="filter-section">
+                <label className="filter-label">{t.users || 'Пользователи'}</label>
+                {/* Поиск пользователей */}
+                <div className="users-search">
+                  <input
+                    type="text"
+                    value={usersSearch}
+                    onChange={(e) => setUsersSearch(e.target.value)}
+                    placeholder={t.searchUsers || 'Поиск пользователей...'}
+                    className="users-search-input"
+                  />
+                </div>
+                
+                {/* Список пользователей */}
+                {usersLoading ? (
+                  <div className="users-loading">
+                    <div className="users-loading-spinner"></div>
+                    <p>{t.loading || 'Загрузка...'}</p>
+                  </div>
+                ) : filteredUsers.length === 0 ? (
+                  <div className="users-empty">
+                    <Users size={48} style={{ opacity: 0.3 }} />
+                    <p>{usersList.length === 0 ? (t.noUsers || 'Пользователи не найдены') : (t.noUsersFound || 'По запросу ничего не найдено')}</p>
+                  </div>
+                ) : (
+                  <div className="users-list">
+                    {filteredUsers.map(user => (
+                      <div key={user.id} className="user-card">
+                        <div className="user-avatar">
+                          {user.avatar ? (
+                            <img src={user.avatar} alt={user.name} />
+                          ) : (
+                            <div className="user-avatar-placeholder">
+                              <User size={24} />
+                            </div>
+                          )}
+                        </div>
+                        <div className="user-info">
+                          <h4>{user.name || (t.anonymous || 'Аноним')}</h4>
+                          <p className="user-email">{user.email}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* Список фильмов */}
+            {activeTab !== 'users' && (
             <div className="filter-section profile-list-section">
               {currentList.items.length === 0 ? (
                 <div className="profile-list-empty">
@@ -567,6 +670,7 @@ const UserProfile = ({ t, isOpen, onClose, onBackToMenu }) => {
                 </div>
               )}
             </div>
+            )}
           </div>
         </motion.div>
       )}
