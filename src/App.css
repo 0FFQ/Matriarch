@@ -1377,10 +1377,15 @@ body.light {
   padding: 1.5rem;
   flex: 1;
   overflow-y: auto;
+  overflow-x: hidden;
+  min-height: 0;
+  -webkit-overflow-scrolling: touch;
 }
 
 .filter-section {
   margin-bottom: 1.75rem;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .filter-section:last-child {
@@ -2076,6 +2081,7 @@ body.light {
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  box-sizing: border-box;
 }
 
 body.light .profile-panel {
@@ -2094,6 +2100,8 @@ body.light .profile-panel {
   background: rgba(255, 255, 255, 0.03);
   border-radius: 12px;
   border: 1px solid rgba(255, 255, 255, 0.08);
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 body.light .profile-content-wrapper {
@@ -2114,6 +2122,8 @@ body.light .profile-content-wrapper {
   background: rgba(255, 255, 255, 0.03);
   border-radius: 12px;
   border: 1px solid rgba(255, 255, 255, 0.08);
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 body.light .unified-profile-card {
@@ -2126,6 +2136,8 @@ body.light .unified-profile-card {
   display: flex;
   align-items: center;
   gap: 0.75rem;
+  overflow-x: hidden;
+  max-width: 100%;
 }
 
 .profile-avatar-small {
@@ -2362,6 +2374,8 @@ body.light .profile-divider {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  overflow-x: hidden;
+  max-width: 100%;
 }
 
 .sync-compact-info {
@@ -2691,6 +2705,9 @@ body.light .profile-stat-item {
 .profile-tabs-row {
   display: flex;
   gap: 0.5rem;
+  overflow-x: hidden;
+  max-width: 100%;
+  flex-wrap: wrap;
 }
 
 .profile-tab-btn {
@@ -2711,10 +2728,18 @@ body.light .profile-stat-item {
   font-family: inherit;
 }
 
+.profile-tab-btn svg {
+  color: inherit;
+}
+
 body.light .profile-tab-btn {
   background: rgba(0, 0, 0, 0.02);
   border-color: rgba(0, 0, 0, 0.1);
   color: #6b6356;
+}
+
+body.light .profile-tab-btn svg {
+  color: inherit;
 }
 
 .profile-tab-btn:hover {
@@ -2723,22 +2748,38 @@ body.light .profile-tab-btn {
   color: #ffffff;
 }
 
+.profile-tab-btn:hover svg {
+  color: inherit;
+}
+
 body.light .profile-tab-btn:hover {
   background: rgba(0, 0, 0, 0.04);
   border-color: rgba(0, 0, 0, 0.15);
   color: #4a4438;
 }
 
+body.light .profile-tab-btn:hover svg {
+  color: inherit;
+}
+
 .profile-tab-btn.active {
-  background: rgba(107, 114, 120, 0.15);
-  border-color: rgba(107, 114, 120, 0.3);
-  color: #9ca3af;
+  background: rgba(136, 136, 136, 0.15);
+  border-color: rgba(136, 136, 136, 0.3);
+  color: #888888;
+}
+
+.profile-tab-btn.active svg {
+  color: inherit;
 }
 
 body.light .profile-tab-btn.active {
-  background: rgba(107, 114, 120, 0.1);
-  border-color: rgba(107, 114, 120, 0.25);
-  color: #6b7280;
+  background: rgba(107, 107, 107, 0.1);
+  border-color: rgba(107, 107, 107, 0.25);
+  color: #6b6b6b;
+}
+
+body.light .profile-tab-btn.active svg {
+  color: inherit;
 }
 
 .tab-badge {
@@ -2758,13 +2799,95 @@ body.light .tab-badge {
 }
 
 .profile-tab-btn.active .tab-badge {
-  background: rgba(107, 114, 120, 0.3);
+  background: rgba(136, 136, 136, 0.3);
   color: #d1d5db;
 }
 
 body.light .profile-tab-btn.active .tab-badge {
-  background: rgba(107, 114, 120, 0.2);
-  color: #6b7280;
+  background: rgba(107, 107, 107, 0.2);
+  color: #6b6b6b;
+}
+
+/* Category Row */
+.profile-category-row {
+  display: flex;
+  gap: 0.5rem;
+  overflow-x: hidden;
+  max-width: 100%;
+  flex-wrap: wrap;
+}
+
+.profile-category-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  padding: 0.5rem 0.5rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  color: #666666;
+  cursor: pointer;
+  font-size: 0.75rem;
+  font-weight: 600;
+  transition: all 0.2s;
+  font-family: inherit;
+  min-width: 0;
+}
+
+.profile-category-btn svg {
+  color: inherit;
+}
+
+body.light .profile-category-btn {
+  background: rgba(0, 0, 0, 0.02);
+  border-color: rgba(0, 0, 0, 0.08);
+  color: #8b8578;
+}
+
+body.light .profile-category-btn svg {
+  color: inherit;
+}
+
+.profile-category-btn:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+}
+
+.profile-category-btn:hover svg {
+  color: inherit;
+}
+
+body.light .profile-category-btn:hover {
+  background: rgba(0, 0, 0, 0.04);
+  border-color: rgba(0, 0, 0, 0.12);
+  color: #4a4438;
+}
+
+body.light .profile-category-btn:hover svg {
+  color: inherit;
+}
+
+.profile-category-btn.active {
+  background: rgba(136, 136, 136, 0.15);
+  border-color: rgba(136, 136, 136, 0.3);
+  color: #888888;
+}
+
+.profile-category-btn.active svg {
+  color: inherit;
+}
+
+body.light .profile-category-btn.active {
+  background: rgba(107, 107, 107, 0.1);
+  border-color: rgba(107, 107, 107, 0.25);
+  color: #6b6b6b;
+}
+
+body.light .profile-category-btn.active svg {
+  color: inherit;
 }
 
 /* List Section */
@@ -2801,6 +2924,7 @@ body.light .profile-list-empty {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
+  max-width: 100%;
 }
 
 .profile-list-item {
@@ -2812,6 +2936,8 @@ body.light .profile-list-empty {
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 12px;
   transition: all 0.2s;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 body.light .profile-list-item {

@@ -54,6 +54,7 @@ const UserProfile = ({ t, isOpen, onClose }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editName, setEditName] = useState(profile.name || '');
   const [activeTab, setActiveTab] = useState('favorites');
+  const [activeCategory, setActiveCategory] = useState('all'); // all, movie, tv, anime
   const inputRef = useRef(null);
   const fileInputRef = useRef(null);
   const dragControls = useDragControls();
@@ -153,16 +154,56 @@ const UserProfile = ({ t, isOpen, onClose }) => {
   };
 
   const getCurrentList = () => {
+    let items = [];
+    let label = '';
+    let emptyMsg = '';
+
     switch (activeTab) {
       case 'favorites':
-        return { items: favorites, label: t.favorites || 'Избранное', emptyMsg: t.favoritesEmpty || 'В избранном пока пусто' };
+        items = favorites;
+        label = t.favorites || 'Избранное';
+        emptyMsg = t.favoritesEmpty || 'В избранном пока пусто';
+        break;
       case 'watched':
-        return { items: watched, label: t.watched || 'Просмотренное', emptyMsg: t.watchedEmpty || 'Вы ещё ничего не посмотрели' };
+        items = watched;
+        label = t.watched || 'Просмотренное';
+        emptyMsg = t.watchedEmpty || 'Вы ещё ничего не посмотрели';
+        break;
       case 'watchlist':
-        return { items: watchlist, label: t.watchlist || 'Буду смотреть', emptyMsg: t.watchlistEmpty || 'Список "Буду смотреть" пуст' };
+        items = watchlist;
+        label = t.watchlist || 'Буду смотреть';
+        emptyMsg = t.watchlistEmpty || 'Список "Буду смотреть" пуст';
+        break;
       default:
-        return { items: [], label: '', emptyMsg: '' };
+        break;
     }
+
+    // Фильтрация по категории
+    if (activeCategory !== 'all') {
+      items = items.filter(item => {
+        // Определяем, является ли элемент аниме
+        const isAnimation = item.genre_ids?.includes(16);
+        const hasAnimeKeyword = item.title?.toLowerCase().includes('аниме') || 
+                                item.name?.toLowerCase().includes('аниме') || 
+                                item.overview?.toLowerCase().includes('аниме') ||
+                                item.original_language === 'ja';
+        const isAnime = isAnimation && hasAnimeKeyword;
+
+        if (activeCategory === 'anime') {
+          return isAnime;
+        }
+        if (activeCategory === 'tv') {
+          // Сериалы, но не аниме
+          return (item.media_type === 'tv' || item.media_type === undefined) && !isAnime;
+        }
+        if (activeCategory === 'movie') {
+          return item.media_type === 'movie' || item.media_type === undefined;
+        }
+        return true;
+      });
+    }
+
+    return { items, label, emptyMsg };
   };
 
   const currentList = getCurrentList();
@@ -351,7 +392,7 @@ const UserProfile = ({ t, isOpen, onClose }) => {
               <div className="profile-tabs-row">
                 <button
                   className={`profile-tab-btn ${activeTab === 'favorites' ? 'active' : ''}`}
-                  onClick={() => setActiveTab('favorites')}
+                  onClick={() => { setActiveTab('favorites'); setActiveCategory('all'); }}
                 >
                   <Heart size={14} />
                   <span>{t.favorites || 'Избранное'}</span>
@@ -359,7 +400,7 @@ const UserProfile = ({ t, isOpen, onClose }) => {
                 </button>
                 <button
                   className={`profile-tab-btn ${activeTab === 'watched' ? 'active' : ''}`}
-                  onClick={() => setActiveTab('watched')}
+                  onClick={() => { setActiveTab('watched'); setActiveCategory('all'); }}
                 >
                   <Eye size={14} />
                   <span>{t.watched || 'Просмотренное'}</span>
@@ -367,11 +408,45 @@ const UserProfile = ({ t, isOpen, onClose }) => {
                 </button>
                 <button
                   className={`profile-tab-btn ${activeTab === 'watchlist' ? 'active' : ''}`}
-                  onClick={() => setActiveTab('watchlist')}
+                  onClick={() => { setActiveTab('watchlist'); setActiveCategory('all'); }}
                 >
                   <Bookmark size={14} />
                   <span>{t.watchlist || 'Буду смотреть'}</span>
                   {watchlist.length > 0 && <span className="tab-badge">{watchlist.length}</span>}
+                </button>
+              </div>
+            </div>
+
+            {/* Категории */}
+            <div className="filter-section">
+              <label className="filter-label">Категории</label>
+              <div className="profile-category-row">
+                <button
+                  className={`profile-category-btn ${activeCategory === 'all' ? 'active' : ''}`}
+                  onClick={() => setActiveCategory('all')}
+                >
+                  Все
+                </button>
+                <button
+                  className={`profile-category-btn ${activeCategory === 'movie' ? 'active' : ''}`}
+                  onClick={() => setActiveCategory('movie')}
+                >
+                  <Film size={14} />
+                  <span>Фильмы</span>
+                </button>
+                <button
+                  className={`profile-category-btn ${activeCategory === 'tv' ? 'active' : ''}`}
+                  onClick={() => setActiveCategory('tv')}
+                >
+                  <Tv size={14} />
+                  <span>Сериалы</span>
+                </button>
+                <button
+                  className={`profile-category-btn ${activeCategory === 'anime' ? 'active' : ''}`}
+                  onClick={() => setActiveCategory('anime')}
+                >
+                  <span>🎌</span>
+                  <span>Аниме</span>
                 </button>
               </div>
             </div>
