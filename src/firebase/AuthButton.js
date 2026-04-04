@@ -68,9 +68,9 @@ const AuthButton = () => {
           alignItems: 'center',
           gap: '10px',
           padding: '12px',
-          background: 'rgba(16, 185, 129, 0.1)',
+          background: 'rgba(107, 114, 120, 0.1)',
           borderRadius: '10px',
-          border: '1px solid rgba(16, 185, 129, 0.2)'
+          border: '1px solid rgba(107, 114, 120, 0.2)'
         }}>
           {user.photoURL ? (
             <img
@@ -105,7 +105,7 @@ const AuthButton = () => {
             </div>
             <div style={{ 
               fontSize: '11px', 
-              color: '#10b981',
+              color: '#9ca3af',
               display: 'flex',
               alignItems: 'center',
               gap: '4px',
@@ -123,9 +123,9 @@ const AuthButton = () => {
           style={{
             width: '100%',
             padding: '10px',
-            background: 'rgba(239, 68, 68, 0.15)',
-            border: '1px solid rgba(239, 68, 68, 0.3)',
-            color: '#ef4444',
+            background: 'rgba(107, 114, 120, 0.15)',
+            border: '1px solid rgba(107, 114, 120, 0.3)',
+            color: '#6b7280',
             borderRadius: '8px',
             cursor: 'pointer',
             fontSize: '13px',

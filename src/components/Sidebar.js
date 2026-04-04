@@ -1,7 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence, useDragControls } from 'framer-motion';
 import { Sun, Moon, X, Globe, Trash2, Database, User } from 'lucide-react';
-import AuthButton from '../firebase/AuthButton';
 
 const Sidebar = ({ isOpen, onClose, darkMode, onToggleTheme, language, onToggleLanguage, t, cacheStats, onClearCache, onOpenProfile }) => {
   const dragControls = useDragControls();
@@ -99,11 +98,6 @@ const Sidebar = ({ isOpen, onClose, darkMode, onToggleTheme, language, onToggleL
                 </button>
               </div>
             )}
-
-            <div className="menu-section">
-              <h3>Синхронизация</h3>
-              <AuthButton />
-            </div>
           </div>
         </motion.div>
       )}
