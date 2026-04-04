@@ -68,7 +68,13 @@ const translations = {
     cache: 'Кэш',
     cacheActive: 'Активных:',
     cacheSize: 'Размер:',
-    cacheClear: 'Очистить кэш'
+    cacheClear: 'Очистить кэш',
+    lists: 'Списки',
+    categories: 'Категории',
+    allCategories: 'Все',
+    categoryMovies: 'Фильмы',
+    categoryTV: 'Сериалы',
+    categoryAnime: 'Аниме'
   },
   'en-US': {
     appTitle: 'Matriarch - Movies and TV Shows Search',
@@ -123,7 +129,13 @@ const translations = {
     cache: 'Cache',
     cacheActive: 'Active:',
     cacheSize: 'Size:',
-    cacheClear: 'Clear cache'
+    cacheClear: 'Clear cache',
+    lists: 'Lists',
+    categories: 'Categories',
+    allCategories: 'All',
+    categoryMovies: 'Movies',
+    categoryTV: 'TV Shows',
+    categoryAnime: 'Anime'
   }
 };
 
@@ -669,6 +681,10 @@ function App() {
           isOpen={profileOpen}
           onClose={() => setProfileOpen(false)}
           t={t}
+          onBackToMenu={() => {
+            setProfileOpen(false);
+            setMenuOpen(true);
+          }}
         />
 
       <FilterPanel

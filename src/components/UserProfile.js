@@ -6,7 +6,7 @@ import { signInWithGoogle, logout, onAuthChange } from '../firebase/auth';
 
 const IMAGE_BASE = 'https://image.tmdb.org/t/p/w92';
 
-const UserProfile = ({ t, isOpen, onClose }) => {
+const UserProfile = ({ t, isOpen, onClose, onBackToMenu }) => {
   const {
     profile,
     updateProfile,
@@ -234,9 +234,24 @@ const UserProfile = ({ t, isOpen, onClose }) => {
               <User size={20} />
               <h2>{t.profile || 'Профиль'}</h2>
             </div>
-            <button className="filter-close" onClick={onClose}>
-              <X size={24} />
-            </button>
+            <div className="profile-header-buttons">
+              {onBackToMenu && (
+                <button
+                  className="filter-back"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onBackToMenu();
+                  }}
+                >
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M19 12H5M12 19l-7-7 7-7"/>
+                  </svg>
+                </button>
+              )}
+              <button className="filter-close" onClick={onClose}>
+                <X size={24} />
+              </button>
+            </div>
           </div>
 
           <div className="filter-content">
@@ -388,7 +403,7 @@ const UserProfile = ({ t, isOpen, onClose }) => {
 
             {/* Вкладки */}
             <div className="filter-section">
-              <label className="filter-label">Списки</label>
+              <label className="filter-label">{t.lists || 'Списки'}</label>
               <div className="profile-tabs-row">
                 <button
                   className={`profile-tab-btn ${activeTab === 'favorites' ? 'active' : ''}`}
@@ -419,34 +434,39 @@ const UserProfile = ({ t, isOpen, onClose }) => {
 
             {/* Категории */}
             <div className="filter-section">
-              <label className="filter-label">Категории</label>
+              <label className="filter-label">{t.categories || 'Категории'}</label>
               <div className="profile-category-row">
                 <button
                   className={`profile-category-btn ${activeCategory === 'all' ? 'active' : ''}`}
                   onClick={() => setActiveCategory('all')}
                 >
-                  Все
+                  {t.allCategories || 'Все'}
                 </button>
                 <button
                   className={`profile-category-btn ${activeCategory === 'movie' ? 'active' : ''}`}
                   onClick={() => setActiveCategory('movie')}
                 >
                   <Film size={14} />
-                  <span>Фильмы</span>
+                  <span>{t.categoryMovies || 'Фильмы'}</span>
                 </button>
                 <button
                   className={`profile-category-btn ${activeCategory === 'tv' ? 'active' : ''}`}
                   onClick={() => setActiveCategory('tv')}
                 >
                   <Tv size={14} />
-                  <span>Сериалы</span>
+                  <span>{t.categoryTV || 'Сериалы'}</span>
                 </button>
                 <button
                   className={`profile-category-btn ${activeCategory === 'anime' ? 'active' : ''}`}
                   onClick={() => setActiveCategory('anime')}
                 >
-                  <span>🎌</span>
-                  <span>Аниме</span>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/>
+                    <path d="M8 14s1.5 2 4 2 4-2 4-2"/>
+                    <line x1="9" y1="9" x2="9.01" y2="9"/>
+                    <line x1="15" y1="9" x2="15.01" y2="9"/>
+                  </svg>
+                  <span>{t.categoryAnime || 'Аниме'}</span>
                 </button>
               </div>
             </div>
@@ -480,9 +500,23 @@ const UserProfile = ({ t, isOpen, onClose }) => {
                           {item.vote_average > 0 && (
                             <span className="item-rating">★ {formatRating(item.vote_average)}</span>
                           )}
-                          <span className={`item-type ${item.media_type === 'tv' ? 'tv' : 'movie'}`}>
-                            {item.media_type === 'tv' ? (t.tvSeries || 'Сериал') : (t.movie || 'Фильм')}
-                          </span>
+                          {(() => {
+                            const isAnimation = item.genre_ids?.includes(16);
+                            const hasAnimeKeyword = item.title?.toLowerCase().includes('аниме') || 
+                                                    item.name?.toLowerCase().includes('аниме') || 
+                                                    item.overview?.toLowerCase().includes('аниме') ||
+                                                    item.original_language === 'ja';
+                            const isAnime = isAnimation && hasAnimeKeyword;
+                            const itemType = isAnime ? 'anime' : (item.media_type === 'tv' ? 'tv' : 'movie');
+                            
+                            return (
+                              <span className={`item-type ${itemType}`}>
+                                {isAnime ? (t.anime || 'Аниме') : 
+                                 item.media_type === 'tv' ? (t.tvSeries || 'Сериал') : 
+                                 (t.movie || 'Фильм')}
+                              </span>
+                            );
+                          })()}
                         </div>
                       </div>
                       <div className="item-actions">
