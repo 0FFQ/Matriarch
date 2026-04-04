@@ -1808,7 +1808,7 @@ body.light {
 
 /* Индикатор активных фильтров на кнопке */
 .filter-icon.has-filters {
-  color: #667eea !important;
+  color: #9ca3af !important;
   position: relative;
 }
 
@@ -1819,13 +1819,13 @@ body.light {
   right: 6px;
   width: 8px;
   height: 8px;
-  background: #667eea;
+  background: #9ca3af;
   border-radius: 50%;
   border: 2px solid rgba(0, 0, 0, 0.8);
 }
 
 .light .filter-icon.has-filters {
-  color: #667eea !important;
+  color: #9ca3af !important;
 }
 
 .light .filter-icon.has-filters::after {

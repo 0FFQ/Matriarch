@@ -696,7 +696,7 @@ function App() {
             loading={loading}
             suggestions={suggestions}
             onSuggestionClick={handleSuggestionClick}
-            onFilterClick={() => setFilterOpen(true)}
+            onFilterClick={() => setFilterOpen(prev => !prev)}
             hasActiveFilters={hasActiveFilters}
             language={language}
           />
