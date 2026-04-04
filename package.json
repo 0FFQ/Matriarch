@@ -5,6 +5,7 @@
   "homepage": "https://0FFQ.github.io/KIno",
   "dependencies": {
     "axios": "^1.5.1",
+    "firebase": "^12.11.0",
     "framer-motion": "^10.16.4",
     "lucide-react": "^0.288.0",
     "react": "^18.2.0",

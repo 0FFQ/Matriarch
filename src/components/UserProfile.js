@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence, useDragControls } from 'framer-motion';
-import { User, Edit2, X, Camera, Heart, Eye, Bookmark, ExternalLink, Trash2, Film, Tv } from 'lucide-react';
+import { User, Edit2, X, Camera, Heart, Eye, Bookmark, ExternalLink, Trash2, Film, Tv, CheckCircle, Cloud } from 'lucide-react';
 import { useUser } from '../context/UserContext';
 
 const IMAGE_BASE = 'https://image.tmdb.org/t/p/w92';
@@ -15,6 +15,8 @@ const UserProfile = ({ t, isOpen, onClose }) => {
     removeFromFavorites,
     removeFromWatched,
     removeFromWatchlist,
+    isAuthenticated,
+    syncEnabled,
   } = useUser();
 
   const [isEditing, setIsEditing] = useState(false);
@@ -251,6 +253,20 @@ const UserProfile = ({ t, isOpen, onClose }) => {
                     <Bookmark size={16} />
                     <span>{watchlist.length}</span>
                   </div>
+                </div>
+                {/* Индикатор синхронизации */}
+                <div className="sync-status-profile">
+                  {isAuthenticated && syncEnabled ? (
+                    <>
+                      <CheckCircle size={14} color="#10b981" />
+                      <span>Данные синхронизируются</span>
+                    </>
+                  ) : (
+                    <>
+                      <Cloud size={14} color="#6b7280" />
+                      <span>Локальное хранилище</span>
+                    </>
+                  )}
                 </div>
               </div>
             </div>

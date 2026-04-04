@@ -1,4 +1,6 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
+import { onAuthChange } from '../firebase/auth';
+import { saveUserData, loadUserData, subscribeToUserData } from '../firebase/firestore';
 
 const UserContext = createContext(null);
 
@@ -9,66 +11,176 @@ const LOCAL_STORAGE_KEYS = {
   watchlist: 'matriarch_watchlist',
 };
 
+/**
+ * Загрузить данные из localStorage (fallback)
+ */
+const loadFromLocalStorage = () => {
+  try {
+    return {
+      profile: JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEYS.profile) || '{"name":"","avatar":""}'),
+      favorites: JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEYS.favorites) || '[]'),
+      watched: JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEYS.watched) || '[]'),
+      watchlist: JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEYS.watchlist) || '[]'),
+    };
+  } catch {
+    return {
+      profile: { name: '', avatar: '' },
+      favorites: [],
+      watched: [],
+      watchlist: [],
+    };
+  }
+};
+
+/**
+ * Сохранить данные в localStorage (fallback)
+ */
+const saveToLocalStorage = (data) => {
+  try {
+    localStorage.setItem(LOCAL_STORAGE_KEYS.profile, JSON.stringify(data.profile));
+    localStorage.setItem(LOCAL_STORAGE_KEYS.favorites, JSON.stringify(data.favorites));
+    localStorage.setItem(LOCAL_STORAGE_KEYS.watched, JSON.stringify(data.watched));
+    localStorage.setItem(LOCAL_STORAGE_KEYS.watchlist, JSON.stringify(data.watchlist));
+  } catch (error) {
+    console.error('[UserContext] LocalStorage save error:', error);
+  }
+};
+
 export const UserProvider = ({ children }) => {
-  // Профиль пользователя
-  const [profile, setProfile] = useState(() => {
-    try {
-      const saved = localStorage.getItem(LOCAL_STORAGE_KEYS.profile);
-      return saved ? JSON.parse(saved) : { name: '', avatar: '' };
-    } catch {
-      return { name: '', avatar: '' };
-    }
-  });
+  const [user, setUser] = useState(null); // Firebase user
+  const [syncEnabled, setSyncEnabled] = useState(false);
+  const unsubscribeRef = useRef(null);
+  
+  // Ссылка для предотвращения бесконечного цикла
+  // Храним последний snapshot данных из Firestore
+  const lastFirestoreSnapshotRef = useRef(null);
+  const saveTimeoutRef = useRef(null);
 
-  // Избранное
-  const [favorites, setFavorites] = useState(() => {
-    try {
-      const saved = localStorage.getItem(LOCAL_STORAGE_KEYS.favorites);
-      return saved ? JSON.parse(saved) : [];
-    } catch {
-      return [];
-    }
-  });
+  // Загружаем данные из localStorage по умолчанию
+  const initialData = loadFromLocalStorage();
 
-  // Просмотренное
-  const [watched, setWatched] = useState(() => {
-    try {
-      const saved = localStorage.getItem(LOCAL_STORAGE_KEYS.watched);
-      return saved ? JSON.parse(saved) : [];
-    } catch {
-      return [];
-    }
-  });
+  const [profile, setProfile] = useState(initialData.profile);
+  const [favorites, setFavorites] = useState(initialData.favorites);
+  const [watched, setWatched] = useState(initialData.watched);
+  const [watchlist, setWatchlist] = useState(initialData.watchlist);
 
-  // Буду смотреть
-  const [watchlist, setWatchlist] = useState(() => {
-    try {
-      const saved = localStorage.getItem(LOCAL_STORAGE_KEYS.watchlist);
-      return saved ? JSON.parse(saved) : [];
-    } catch {
-      return [];
-    }
-  });
+  // Функция для создания хэша данных
+  const createDataSnapshot = useCallback((data) => {
+    return JSON.stringify({
+      profile: data.profile,
+      favorites: data.favorites,
+      watched: data.watched,
+      watchlist: data.watchlist,
+    });
+  }, []);
 
-  // Сохранение профиля
+  // Следим за состоянием аутентификации
   useEffect(() => {
-    localStorage.setItem(LOCAL_STORAGE_KEYS.profile, JSON.stringify(profile));
-  }, [profile]);
+    const unsubscribe = onAuthChange(async (firebaseUser) => {
+      if (firebaseUser) {
+        console.log('[UserContext] ✅ User authenticated:', firebaseUser.email);
+        setUser(firebaseUser);
+        setSyncEnabled(true);
 
-  // Сохранение избранного
-  useEffect(() => {
-    localStorage.setItem(LOCAL_STORAGE_KEYS.favorites, JSON.stringify(favorites));
-  }, [favorites]);
+        // Загружаем данные из Firestore или инициализируем
+        const firestoreData = await loadUserData(firebaseUser.uid);
+        
+        if (firestoreData) {
+          console.log('[UserContext] 📥 Data loaded from Firestore');
+          // Сохраняем snapshot чтобы не сохранять обратно
+          lastFirestoreSnapshotRef.current = createDataSnapshot(firestoreData);
+          
+          if (firestoreData.profile) setProfile(firestoreData.profile);
+          if (firestoreData.favorites) setFavorites(firestoreData.favorites);
+          if (firestoreData.watched) setWatched(firestoreData.watched);
+          if (firestoreData.watchlist) setWatchlist(firestoreData.watchlist);
+        } else {
+          // Первый вход - инициализируем ВСЕМИ данными из localStorage
+          console.log('[UserContext] 🆕 First login, initializing Firestore from localStorage');
+          const localData = loadFromLocalStorage();
+          lastFirestoreSnapshotRef.current = createDataSnapshot(localData);
+          
+          await saveUserData(firebaseUser.uid, localData);
+          console.log('[UserContext] ✅ Firestore initialized from localStorage');
+        }
 
-  // Сохранение просмотренного
-  useEffect(() => {
-    localStorage.setItem(LOCAL_STORAGE_KEYS.watched, JSON.stringify(watched));
-  }, [watched]);
+        // Подписываемся на real-time обновления
+        unsubscribeRef.current = subscribeToUserData(firebaseUser.uid, (data) => {
+          console.log('[UserContext] 🔄 Real-time sync update from Firestore');
+          // Сохраняем snapshot чтобы не сохранять обратно
+          lastFirestoreSnapshotRef.current = createDataSnapshot(data);
+          
+          if (data.profile) setProfile(data.profile);
+          if (data.favorites) setFavorites(data.favorites);
+          if (data.watched) setWatched(data.watched);
+          if (data.watchlist) setWatchlist(data.watchlist);
+        });
+      } else {
+        console.log('[UserContext] ❌ User logged out');
+        setUser(null);
+        setSyncEnabled(false);
+        lastFirestoreSnapshotRef.current = null;
+        
+        // Отписываемся от Firestore
+        if (unsubscribeRef.current) {
+          unsubscribeRef.current();
+          unsubscribeRef.current = null;
+          console.log('[UserContext] Unsubscribed from Firestore');
+        }
 
-  // Сохранение списка "Буду смотреть"
+        // НЕ загружаем localStorage при выходе - оставляем текущие state
+        // Это предотвращает лишний rerender
+      }
+    });
+
+    return () => {
+      console.log('[UserContext] Cleanup: unsubscribing from auth');
+      unsubscribe();
+      if (unsubscribeRef.current) {
+        unsubscribeRef.current();
+      }
+      // Очищаем таймер
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+      }
+    };
+  }, [createDataSnapshot]);
+
+  // Сохранение в localStorage (всегда)
   useEffect(() => {
-    localStorage.setItem(LOCAL_STORAGE_KEYS.watchlist, JSON.stringify(watchlist));
-  }, [watchlist]);
+    saveToLocalStorage({ profile, favorites, watched, watchlist });
+  }, [profile, favorites, watched, watchlist]);
+
+  // Сохранение в Firestore (только при локальных изменениях)
+  useEffect(() => {
+    if (!syncEnabled || !user) return;
+    
+    const currentSnapshot = createDataSnapshot({ profile, favorites, watched, watchlist });
+    
+    // Если snapshot совпадает с последним из Firestore - не сохраняем
+    if (lastFirestoreSnapshotRef.current === currentSnapshot) {
+      return;
+    }
+    
+    // Debounce: ждём 500мс перед сохранением
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current);
+    }
+    
+    saveTimeoutRef.current = setTimeout(() => {
+      console.log('[UserContext] Saving to Firestore (local change)');
+      lastFirestoreSnapshotRef.current = currentSnapshot; // Обновляем snapshot
+      saveUserData(user.uid, { profile, favorites, watched, watchlist }).catch(error => {
+        console.error('[UserContext] Firestore save error:', error);
+      });
+    }, 500);
+    
+    return () => {
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+      }
+    };
+  }, [profile, favorites, watched, watchlist, syncEnabled, user, createDataSnapshot]);
 
   // Обновление профиля
   const updateProfile = useCallback((newProfile) => {
@@ -143,6 +255,10 @@ export const UserProvider = ({ children }) => {
     removeFromFavorites,
     removeFromWatched,
     removeFromWatchlist,
+    // Firebase sync info
+    isAuthenticated: !!user,
+    syncEnabled,
+    firebaseUser: user,
   };
 
   return <UserContext.Provider value={value}>{children}</UserContext.Provider>;
