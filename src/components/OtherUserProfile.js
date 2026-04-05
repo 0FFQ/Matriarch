@@ -128,7 +128,7 @@ const OtherUserProfile = ({ t, isOpen, onClose, userId, onShareContent, onOpenCh
           ) : userProfile ? (
             <>
               {/* Header */}
-              <div className="relative p-6 bg-gradient-to-r from-blue-500 to-purple-600">
+              <div className="relative p-6 bg-gradient-to-r from-gray-500 to-gray-600">
                 <button
                   onClick={onClose}
                   className="absolute top-4 right-4 p-2 hover:bg-white/20 rounded-lg transition-colors"
@@ -179,7 +179,7 @@ const OtherUserProfile = ({ t, isOpen, onClose, userId, onShareContent, onOpenCh
                       onClick={() => setActiveTab(tab)}
                       className={`px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 ${
                         activeTab === tab
-                          ? 'bg-blue-500 text-white'
+                          ? 'bg-gray-500 text-white'
                           : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
                       }`}
                     >

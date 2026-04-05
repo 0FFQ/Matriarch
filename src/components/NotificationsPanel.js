@@ -100,7 +100,7 @@ const NotificationsPanel = ({ t, isOpen, onClose, onSelectNotification }) => {
   const getNotificationIcon = (type) => {
     switch (type) {
       case 'content_shared':
-        return <Film className="w-5 h-5 text-blue-500" />;
+        return <Film className="w-5 h-5 text-gray-500" />;
       case 'message':
         return <MessageSquare className="w-5 h-5 text-green-500" />;
       default:
@@ -119,7 +119,7 @@ const NotificationsPanel = ({ t, isOpen, onClose, onSelectNotification }) => {
         className="absolute top-16 right-4 w-96 bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 overflow-hidden z-50"
       >
         {/* Header */}
-        <div className="p-4 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-blue-500 to-purple-600">
+        <div className="p-4 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-gray-500 to-gray-600">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Bell className="w-5 h-5 text-white" />
@@ -146,7 +146,7 @@ const NotificationsPanel = ({ t, isOpen, onClose, onSelectNotification }) => {
           <div className="px-4 py-2 bg-gray-50 dark:bg-gray-700/50 border-b border-gray-200 dark:border-gray-700">
             <button
               onClick={handleMarkAllAsRead}
-              className="text-sm text-blue-500 hover:text-blue-600 flex items-center gap-1"
+              className="text-sm text-gray-500 hover:text-gray-600 flex items-center gap-1"
             >
               <CheckCheck className="w-4 h-4" />
               {t === 'ru' ? 'Прочитать все' : 'Mark all as read'}
@@ -172,7 +172,7 @@ const NotificationsPanel = ({ t, isOpen, onClose, onSelectNotification }) => {
                   initial={{ opacity: 0, x: -10 }}
                   animate={{ opacity: 1, x: 0 }}
                   className={`p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors cursor-pointer ${
-                    !notif.read ? 'bg-blue-50 dark:bg-blue-900/20' : ''
+                    !notif.read ? 'bg-gray-100 dark:bg-gray-700/30' : ''
                   }`}
                   onClick={() => handleNotificationClick(notif)}
                 >
@@ -187,7 +187,7 @@ const NotificationsPanel = ({ t, isOpen, onClose, onSelectNotification }) => {
                           {notif.title}
                         </h4>
                         {!notif.read && (
-                          <span className="flex-shrink-0 w-2 h-2 bg-blue-500 rounded-full mt-1.5"></span>
+                          <span className="flex-shrink-0 w-2 h-2 bg-gray-500 rounded-full mt-1.5"></span>
                         )}
                       </div>
                       <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">

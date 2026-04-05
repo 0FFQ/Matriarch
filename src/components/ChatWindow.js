@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence, useDragControls } from 'framer-motion';
-import { ArrowLeft, Send, MessageSquare, X } from 'lucide-react';
+import { ArrowLeft, Send, MessageSquare, X, SendHorizonal } from 'lucide-react';
 import { subscribeToMessages, sendMessage, markMessagesAsRead } from '../firebase/messages';
 import { useUser } from '../context/UserContext';
 import MessageBubble from './MessageBubble';
@@ -231,24 +231,26 @@ const ChatWindow = ({ chatId, otherUser, onBack, t, isOpen, onClose }) => {
             <textarea
               ref={inputRef}
               className="chat-input"
-              placeholder={t.typeMessage || 'Введите сообщение...'}
+              placeholder={t.typeMessage || 'Сообщение'}
               value={newMessage}
               onChange={(e) => setNewMessage(e.target.value)}
               onKeyDown={handleKeyDown}
               rows={1}
               maxLength={2000}
             />
-            <button
-              className="chat-send-btn"
-              onClick={handleSend}
-              disabled={!newMessage.trim() || isSending}
-            >
-              {isSending ? (
-                <div className="sending-spinner" />
-              ) : (
-                <Send size={20} />
-              )}
-            </button>
+            <div className="chat-send-wrapper">
+              <button
+                className="chat-send-btn"
+                onClick={handleSend}
+                disabled={!newMessage.trim() || isSending}
+              >
+                {isSending ? (
+                  <div className="sending-spinner" />
+                ) : (
+                  <SendHorizonal size={20} />
+                )}
+              </button>
+            </div>
           </div>
         </motion.div>
       )}

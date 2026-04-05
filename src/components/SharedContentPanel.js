@@ -114,7 +114,7 @@ const SharedContentPanel = ({ t, isOpen, onClose, onSelectContent }) => {
                 onClick={() => setActiveTab('received')}
                 className={`flex-1 px-4 py-2 rounded-lg font-medium transition-colors flex items-center justify-center gap-2 ${
                   activeTab === 'received'
-                    ? 'bg-blue-500 text-white'
+                    ? 'bg-gray-500 text-white'
                     : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
                 }`}
               >
@@ -130,7 +130,7 @@ const SharedContentPanel = ({ t, isOpen, onClose, onSelectContent }) => {
                 onClick={() => setActiveTab('sent')}
                 className={`flex-1 px-4 py-2 rounded-lg font-medium transition-colors flex items-center justify-center gap-2 ${
                   activeTab === 'sent'
-                    ? 'bg-blue-500 text-white'
+                    ? 'bg-gray-500 text-white'
                     : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
                 }`}
               >
@@ -241,7 +241,7 @@ const SharedContentCard = ({ item, t, onView, onDelete, isOwner, formatDate }) =
               {content.title}
             </h4>
             {!item.read && !isOwner && (
-              <span className="flex-shrink-0 w-2 h-2 bg-blue-500 rounded-full mt-2"></span>
+              <span className="flex-shrink-0 w-2 h-2 bg-gray-500 rounded-full mt-2"></span>
             )}
           </div>
 
@@ -251,7 +251,7 @@ const SharedContentCard = ({ item, t, onView, onDelete, isOwner, formatDate }) =
               {content.vote_average?.toFixed(1) || 'N/A'}
             </span>
             <span>{content.release_date?.split('-')[0] || '—'}</span>
-            <span className="px-2 py-0.5 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 rounded text-xs">
+            <span className="px-2 py-0.5 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded text-xs">
               {mediaType === 'movie' 
                 ? (t === 'ru' ? 'Фильм' : 'Movie') 
                 : (t === 'ru' ? 'Сериал' : 'TV Show')}
@@ -271,7 +271,7 @@ const SharedContentCard = ({ item, t, onView, onDelete, isOwner, formatDate }) =
             <div className="flex gap-2">
               <button
                 onClick={() => onView(item)}
-                className="px-3 py-1.5 bg-blue-500 text-white text-sm rounded-lg hover:bg-blue-600 transition-colors flex items-center gap-1"
+                className="px-3 py-1.5 bg-gray-500 text-white text-sm rounded-lg hover:bg-gray-600 transition-colors flex items-center gap-1"
               >
                 <Eye className="w-3 h-3" />
                 {t === 'ru' ? 'Посмотреть' : 'View'}
