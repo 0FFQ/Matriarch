@@ -3,7 +3,6 @@ import {
   addDoc,
   query,
   where,
-  orderBy,
   onSnapshot,
   serverTimestamp,
   doc,
@@ -69,10 +68,10 @@ export const sendMessage = async (chatId, senderId, senderProfile, text) => {
 export const subscribeToMessages = (chatId, callback) => {
   try {
     const messagesRef = collection(db, MESSAGES_COLLECTION);
+    // Используем только where без orderBy чтобы избежать необходимости в индексе
     const q = query(
       messagesRef,
-      where('chatId', '==', chatId),
-      orderBy('createdAt', 'asc')
+      where('chatId', '==', chatId)
     );
 
     let isAlive = true;
@@ -83,13 +82,18 @@ export const subscribeToMessages = (chatId, callback) => {
       snapshot.forEach((doc) => {
         messages.push({ id: doc.id, ...doc.data() });
       });
+      // Сортируем на клиенте по createdAt
+      messages.sort((a, b) => {
+        const timeA = a.createdAt?.toMillis ? a.createdAt.toMillis() : 0;
+        const timeB = b.createdAt?.toMillis ? b.createdAt.toMillis() : 0;
+        return timeA - timeB;
+      });
       callback(messages);
     }, (error) => {
       // Игнорируем все ошибки "Unexpected state" и связанные с внутренним состоянием
-      if (error.message?.includes('Unexpected state') || 
+      if (error.message?.includes('Unexpected state') ||
           error.message?.includes('INTERNAL ASSERTION FAILED') ||
           error.code === 'internal') {
-        // Это внутренние ошибка Firestore, которая не влияет на работу приложения
         return;
       }
       console.error('[Messages] Subscribe error:', error.message);
@@ -116,10 +120,10 @@ export const subscribeToMessages = (chatId, callback) => {
 export const subscribeToUserChats = (userId, callback) => {
   try {
     const chatsRef = collection(db, CHATS_COLLECTION);
+    // Используем только where без orderBy чтобы избежать необходимости в индексе
     const q = query(
       chatsRef,
-      where('participants', 'array-contains', userId),
-      orderBy('updatedAt', 'desc')
+      where('participants', 'array-contains', userId)
     );
 
     let isAlive = true;
@@ -130,13 +134,18 @@ export const subscribeToUserChats = (userId, callback) => {
       snapshot.forEach((doc) => {
         chats.push({ id: doc.id, ...doc.data() });
       });
+      // Сортируем на клиенте по updatedAt (новые сверху)
+      chats.sort((a, b) => {
+        const timeA = a.updatedAt?.toMillis ? a.updatedAt.toMillis() : 0;
+        const timeB = b.updatedAt?.toMillis ? b.updatedAt.toMillis() : 0;
+        return timeB - timeA;
+      });
       callback(chats);
     }, (error) => {
       // Игнорируем все ошибки "Unexpected state" и связанные с внутренним состоянием
-      if (error.message?.includes('Unexpected state') || 
+      if (error.message?.includes('Unexpected state') ||
           error.message?.includes('INTERNAL ASSERTION FAILED') ||
           error.code === 'internal') {
-        // Это внутренние ошибка Firestore, которая не влияет на работу приложения
         return;
       }
       console.error('[Chats] Subscribe error:', error.message);

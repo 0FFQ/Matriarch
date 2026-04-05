@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, User, MessageSquare, X, Eye, Heart, Bookmark } from 'lucide-react';
-import { getAllUsers } from '../firebase/messages';
+import { getAllUsers, initializeChat } from '../firebase/messages';
 import { getUserProfile } from '../firebase/social';
-import { initializeChat } from '../firebase/messages';
+import { useUser } from '../context/UserContext';
 
 const IMAGE_BASE = 'https://image.tmdb.org/t/p/w92';
 
 const UsersList = ({ t, isOpen, onClose, onViewProfile, onOpenChat }) => {
+  const { firebaseUser, profile } = useUser();
   const [users, setUsers] = useState([]);
   const [filteredUsers, setFilteredUsers] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -16,10 +17,10 @@ const UsersList = ({ t, isOpen, onClose, onViewProfile, onOpenChat }) => {
 
   // Загружаем всех пользователей
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen && firebaseUser) {
       loadUsers();
     }
-  }, [isOpen]);
+  }, [isOpen, firebaseUser]);
 
   const loadUsers = async () => {
     try {
@@ -52,8 +53,9 @@ const UsersList = ({ t, isOpen, onClose, onViewProfile, onOpenChat }) => {
 
   const handleStartChat = async (user) => {
     try {
-      // Инициализируем чат
-      const chatId = await initializeChat(user.id, user.name, user);
+      if (!firebaseUser || !profile) return;
+      // Инициализируем чат с правильными аргументами
+      const chatId = await initializeChat(firebaseUser.uid, user.id, profile, user);
       if (onOpenChat) {
         onOpenChat(chatId, user);
       }

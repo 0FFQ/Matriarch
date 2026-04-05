@@ -72,7 +72,7 @@ export const UserProvider = ({ children }) => {
         // Загружаем данные из Firestore
         isLoadingRef.current = true;
         const firestoreData = await loadUserData(firebaseUser.uid);
-        
+
         if (firestoreData) {
           console.log('[UserContext] 📥 Loaded from Firestore:', {
             profile: firestoreData.profile?.name,
@@ -80,7 +80,7 @@ export const UserProvider = ({ children }) => {
             watched: firestoreData.watched?.length || 0,
             watchlist: firestoreData.watchlist?.length || 0
           });
-          
+
           // Обновляем состояние данными из Firestore
           if (firestoreData.profile) {
             setProfile({
@@ -99,7 +99,7 @@ export const UserProvider = ({ children }) => {
             avatar: firebaseUser.photoURL || '',
             email: firebaseUser.email || ''
           };
-          
+
           setProfile(googleProfile);
           await saveUserData(firebaseUser.uid, {
             profile: googleProfile,
@@ -107,6 +107,7 @@ export const UserProvider = ({ children }) => {
             watched: [],
             watchlist: []
           });
+          console.log('[UserContext] ✅ User document created in Firestore');
         }
         
         isLoadingRef.current = false;

@@ -3,7 +3,6 @@ import {
   addDoc,
   query,
   where,
-  orderBy,
   onSnapshot,
   serverTimestamp,
   doc,
@@ -73,8 +72,7 @@ export const subscribeToSharedContent = (userId, callback) => {
     const sharedRef = collection(db, SHARED_CONTENT_COLLECTION);
     const q = query(
       sharedRef,
-      where('sharedWith', '==', userId),
-      orderBy('sharedAt', 'desc')
+      where('sharedWith', '==', userId)
     );
 
     let isAlive = true;
@@ -84,6 +82,11 @@ export const subscribeToSharedContent = (userId, callback) => {
       const sharedItems = [];
       snapshot.forEach((doc) => {
         sharedItems.push({ id: doc.id, ...doc.data() });
+      });
+      sharedItems.sort((a, b) => {
+        const timeA = a.sharedAt?.toMillis ? a.sharedAt.toMillis() : 0;
+        const timeB = b.sharedAt?.toMillis ? b.sharedAt.toMillis() : 0;
+        return timeB - timeA;
       });
       callback(sharedItems);
     }, (error) => {
@@ -117,8 +120,7 @@ export const subscribeToUserSharedContent = (userId, callback) => {
     const sharedRef = collection(db, SHARED_CONTENT_COLLECTION);
     const q = query(
       sharedRef,
-      where('sharedBy', '==', userId),
-      orderBy('sharedAt', 'desc')
+      where('sharedBy', '==', userId)
     );
 
     let isAlive = true;
@@ -128,6 +130,11 @@ export const subscribeToUserSharedContent = (userId, callback) => {
       const sharedItems = [];
       snapshot.forEach((doc) => {
         sharedItems.push({ id: doc.id, ...doc.data() });
+      });
+      sharedItems.sort((a, b) => {
+        const timeA = a.sharedAt?.toMillis ? a.sharedAt.toMillis() : 0;
+        const timeB = b.sharedAt?.toMillis ? b.sharedAt.toMillis() : 0;
+        return timeB - timeA;
       });
       callback(sharedItems);
     }, (error) => {
@@ -191,8 +198,7 @@ export const subscribeToNotifications = (userId, callback) => {
     const notifRef = collection(db, NOTIFICATIONS_COLLECTION);
     const q = query(
       notifRef,
-      where('userId', '==', userId),
-      orderBy('createdAt', 'desc')
+      where('userId', '==', userId)
     );
 
     let isAlive = true;
@@ -202,6 +208,11 @@ export const subscribeToNotifications = (userId, callback) => {
       const notifications = [];
       snapshot.forEach((doc) => {
         notifications.push({ id: doc.id, ...doc.data() });
+      });
+      notifications.sort((a, b) => {
+        const timeA = a.createdAt?.toMillis ? a.createdAt.toMillis() : 0;
+        const timeB = b.createdAt?.toMillis ? b.createdAt.toMillis() : 0;
+        return timeB - timeA;
       });
       callback(notifications);
     }, (error) => {

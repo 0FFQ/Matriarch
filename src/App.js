@@ -9,7 +9,9 @@ import MenuToggle from './components/MenuToggle';
 import Sidebar from './components/Sidebar';
 import FilterPanel from './components/FilterPanel';
 import UserProfile from './components/UserProfile';
-import { UserProvider } from './context/UserContext';
+import SocialFeatures from './components/SocialFeatures';
+import MessengerButton from './components/MessengerButton';
+import { UserProvider, useUser } from './context/UserContext';
 import { cachedRequest, setCache, getCache, getCacheStats, clearAllCache } from './utils/cache';
 import './App.css';
 
@@ -78,7 +80,29 @@ const translations = {
     syncErrorAccountLinked: 'Этот аккаунт уже привязан к другому пользователю',
     syncDisabled: 'Синхронизация отключена',
     logout: 'Выйти',
-    synced: 'Синхронизировано'
+    synced: 'Синхронизировано',
+    // Мессенджер
+    messenger: 'Мессенджер',
+    noMessagesYet: 'Пока нет сообщений',
+    startConversation: 'Начните общение!',
+    typeMessage: 'Введите сообщение...',
+    noChats: 'Нет чатов',
+    startNewChat: 'Начать новый чат',
+    newChat: 'Новый чат',
+    selectUser: 'Выберите собеседника',
+    searchUser: 'Поиск по имени или email...',
+    noUsersFound: 'Пользователи не найдены',
+    users: 'Пользователи',
+    notifications: 'Уведомления',
+    noNotifications: 'Нет уведомлений',
+    sharedContent: 'Поделённый контент',
+    noSharedContent: 'Никто не делился контентом',
+    share: 'Поделиться',
+    shareWith: 'Поделиться с',
+    shareMessage: 'Сообщение (необязательно)',
+    shareSent: 'Контент отправлен!',
+    markAllRead: 'Прочитать все',
+    unreadMessages: 'непрочитанных сообщений'
   },
   'en-US': {
     appTitle: 'Matriarch - Movies and TV Shows Search',
@@ -143,7 +167,29 @@ const translations = {
     syncErrorAccountLinked: 'This account is already linked to another user',
     syncDisabled: 'Sync disabled',
     logout: 'Logout',
-    synced: 'Synced'
+    synced: 'Synced',
+    // Messenger
+    messenger: 'Messenger',
+    noMessagesYet: 'No messages yet',
+    startConversation: 'Start a conversation!',
+    typeMessage: 'Type a message...',
+    noChats: 'No chats',
+    startNewChat: 'Start new chat',
+    newChat: 'New chat',
+    selectUser: 'Select a user',
+    searchUser: 'Search by name or email...',
+    noUsersFound: 'No users found',
+    users: 'Users',
+    notifications: 'Notifications',
+    noNotifications: 'No notifications',
+    sharedContent: 'Shared content',
+    noSharedContent: 'No shared content yet',
+    share: 'Share',
+    shareWith: 'Share with',
+    shareMessage: 'Message (optional)',
+    shareSent: 'Content sent!',
+    markAllRead: 'Mark all as read',
+    unreadMessages: 'unread messages'
   }
 };
 
@@ -152,6 +198,17 @@ const BASE_URL = 'https://api.themoviedb.org/3';
 const IMAGE_BASE = 'https://image.tmdb.org/t/p/w500';
 
 function App() {
+  return (
+    <UserProvider>
+      <AppContent />
+    </UserProvider>
+  );
+}
+
+function AppContent() {
+  // Получаем firebaseUser из UserContext
+  const { firebaseUser } = useUser();
+
   // Состояние поиска
   const [query, setQuery] = useState('');
   const [suggestions, setSuggestions] = useState([]);
@@ -215,6 +272,21 @@ function App() {
   // Кэширование
   const [cacheStats, setCacheStats] = useState(null);
   const [lastFromCache, setLastFromCache] = useState(false);
+
+  // Мессенджер
+  const [chatOpen, setChatOpen] = useState(false);
+  const [chatListOpen, setChatListOpen] = useState(false);
+  const [activeChatId, setActiveChatId] = useState(null);
+  const [activeChatUser, setActiveChatUser] = useState(null);
+  const [usersOpen, setUsersOpen] = useState(false);
+  const [viewingUserId, setViewingUserId] = useState(null);
+  const [viewingUserProfile, setViewingUserProfile] = useState(false);
+  const [sharedContentOpen, setSharedContentOpen] = useState(false);
+  const [shareModalOpen, setShareModalOpen] = useState(false);
+  const [shareContentItem, setShareContentItem] = useState(null);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const [unreadChats, setUnreadChats] = useState(0);
+  const [unreadNotifications, setUnreadNotifications] = useState(0);
 
   const debounceRef = useRef(null);
 
@@ -664,8 +736,7 @@ function App() {
   const showAtom = !searchActive || (results.length === 0 && !loading);
 
   return (
-    <UserProvider>
-      <div className={`app ${darkMode ? 'dark' : 'light'}`}>
+    <div className={`app ${darkMode ? 'dark' : 'light'}`}>
         <MenuToggle isOpen={menuOpen} onClick={() => setMenuOpen(!menuOpen)} />
         {menuOpen && <div className="sidebar-overlay" onClick={() => setMenuOpen(false)} />}
         {profileOpen && <div className="sidebar-overlay" onClick={() => setProfileOpen(false)} />}
@@ -694,6 +765,36 @@ function App() {
             setMenuOpen(true);
           }}
         />
+
+      <SocialFeatures
+        t={t}
+        usersOpen={usersOpen}
+        setUsersOpen={setUsersOpen}
+        viewingUserId={viewingUserId}
+        setViewingUserId={setViewingUserId}
+        viewingUserProfile={viewingUserProfile}
+        setViewingUserProfile={setViewingUserProfile}
+        chatOpen={chatOpen}
+        setChatOpen={setChatOpen}
+        chatListOpen={chatListOpen}
+        setChatListOpen={setChatListOpen}
+        activeChatId={activeChatId}
+        setActiveChatId={setActiveChatId}
+        activeChatUser={activeChatUser}
+        setActiveChatUser={setActiveChatUser}
+        sharedContentOpen={sharedContentOpen}
+        setSharedContentOpen={setSharedContentOpen}
+        shareModalOpen={shareModalOpen}
+        setShareModalOpen={setShareModalOpen}
+        shareContentItem={shareContentItem}
+        setShareContentItem={setShareContentItem}
+        notificationsOpen={notificationsOpen}
+        setNotificationsOpen={setNotificationsOpen}
+        unreadChats={unreadChats}
+        setUnreadChats={setUnreadChats}
+        unreadNotifications={unreadNotifications}
+        setUnreadNotifications={setUnreadNotifications}
+      />
 
       <FilterPanel
         isOpen={filterOpen}
@@ -838,8 +939,18 @@ function App() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Кнопка мессенджера (отображается только когда пользователь авторизован) */}
+      {firebaseUser && (
+        <MessengerButton
+          onClick={() => {
+            setChatListOpen(true);
+            setChatOpen(false);
+          }}
+          unreadCount={unreadChats + unreadNotifications}
+        />
+      )}
     </div>
-    </UserProvider>
   );
 }
 

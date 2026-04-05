@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useUser } from '../context/UserContext';
 import { subscribeToUserChats } from '../firebase/messages';
-import { getUnreadNotificationsCount, subscribeToNotifications } from '../firebase/social';
+import { getUnreadNotificationsCount, subscribeToNotifications, shareContent, getUserProfile } from '../firebase/social';
 import UsersList from './UsersList';
 import OtherUserProfile from './OtherUserProfile';
 import ChatList from './ChatList';
