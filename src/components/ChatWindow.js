@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useDragControls } from 'framer-motion';
+import { ArrowLeft, Send, MessageSquare, X } from 'lucide-react';
 import { subscribeToMessages, sendMessage, markMessagesAsRead } from '../firebase/messages';
 import { useUser } from '../context/UserContext';
 import MessageBubble from './MessageBubble';
 
-const ChatWindow = ({ chatId, otherUser, onBack, t }) => {
+const ChatWindow = ({ chatId, otherUser, onBack, t, isOpen, onClose }) => {
   const { firebaseUser, profile } = useUser();
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
@@ -12,9 +13,36 @@ const ChatWindow = ({ chatId, otherUser, onBack, t }) => {
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
 
+  const dragControls = useDragControls();
+  const panelRef = useRef(null);
+  const [constraints, setConstraints] = useState({ left: 0, right: 0, top: 0, bottom: 0 });
+
+  useEffect(() => {
+    if (isOpen && panelRef.current) {
+      const panelHeight = panelRef.current.offsetHeight;
+      setConstraints({
+        left: -(window.innerWidth - 500),
+        right: 0,
+        top: 0,
+        bottom: Math.max(0, window.innerHeight - 32 - panelHeight)
+      });
+    }
+  }, [isOpen]);
+
+  // Обработка Escape
+  useEffect(() => {
+    const handleEscape = (e) => {
+      if (e.key === 'Escape' && isOpen) {
+        onClose();
+      }
+    };
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, [isOpen, onClose]);
+
   // Подписка на сообщения
   useEffect(() => {
-    if (!chatId) return;
+    if (!chatId || !isOpen) return;
 
     let unsubscribe = null;
     let isSubscribed = true;
@@ -36,17 +64,12 @@ const ChatWindow = ({ chatId, otherUser, onBack, t }) => {
     return () => {
       isSubscribed = false;
       if (unsubscribe) {
-        try {
-          unsubscribe();
-        } catch (error) {
-          console.warn('[ChatWindow] Unsubscribe error:', error);
-        }
+        try { unsubscribe(); } catch (error) {}
         unsubscribe = null;
       }
-      // Принудительно очищаем состояние
       setMessages([]);
     };
-  }, [chatId]);
+  }, [chatId, isOpen]);
 
   // Автоматическая прокрутка к последнему сообщению
   useEffect(() => {
@@ -55,15 +78,18 @@ const ChatWindow = ({ chatId, otherUser, onBack, t }) => {
 
   // Пометить сообщения как прочитанные при открытии чата
   useEffect(() => {
-    if (chatId && firebaseUser) {
+    if (chatId && firebaseUser && isOpen) {
       markMessagesAsRead(chatId, firebaseUser.uid);
     }
-  }, [chatId, firebaseUser]);
+  }, [chatId, firebaseUser, isOpen]);
 
   // Фокус на поле ввода при открытии
   useEffect(() => {
-    inputRef.current?.focus();
-  }, []);
+    if (isOpen) {
+      const timer = setTimeout(() => inputRef.current?.focus(), 100);
+      return () => clearTimeout(timer);
+    }
+  }, [isOpen]);
 
   // Отправка сообщения
   const handleSend = useCallback(async () => {
@@ -73,7 +99,7 @@ const ChatWindow = ({ chatId, otherUser, onBack, t }) => {
     try {
       await sendMessage(chatId, firebaseUser.uid, profile, newMessage);
       setNewMessage('');
-      inputRef.current?.focus();
+      setTimeout(() => inputRef.current?.focus(), 50);
     } catch (error) {
       console.error('[ChatWindow] Send error:', error);
     } finally {
@@ -97,9 +123,9 @@ const ChatWindow = ({ chatId, otherUser, onBack, t }) => {
   };
 
   // Группировка сообщений по дате
-  const groupMessagesByDate = (messages) => {
+  const groupMessagesByDate = (msgs) => {
     const groups = {};
-    messages.forEach((msg) => {
+    msgs.forEach((msg) => {
       const date = msg.createdAt?.toDate ? msg.createdAt.toDate() : new Date();
       const dateKey = date.toLocaleDateString('ru-RU', {
         day: 'numeric',
@@ -116,101 +142,117 @@ const ChatWindow = ({ chatId, otherUser, onBack, t }) => {
 
   const groupedMessages = groupMessagesByDate(messages);
 
+  if (!isOpen) return null;
+
   return (
-    <motion.div
-      className="chat-window"
-      initial={{ x: '100%', opacity: 0 }}
-      animate={{ x: 0, opacity: 1 }}
-      exit={{ x: '100%', opacity: 0 }}
-      transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-    >
-      {/* Заголовок чата */}
-      <div className="chat-window-header">
-        <button className="chat-back-btn" onClick={onBack}>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="20" height="20">
-            <path d="M19 12H5M12 19l-7-7 7-7"/>
-          </svg>
-        </button>
-        <div className="chat-window-user">
-          <div className="chat-window-avatar">
-            {otherUser.avatar ? (
-              <img src={otherUser.avatar} alt={otherUser.name} />
-            ) : (
-              <div className="chat-window-avatar-placeholder">
-                {(otherUser.name || '?')[0].toUpperCase()}
-              </div>
-            )}
-          </div>
-          <div className="chat-window-info">
-            <div className="chat-window-name">{otherUser.name || otherUser.email}</div>
-            <div className="chat-window-status">
-              {messages.length > 0 ? 'онлайн' : 'не в сети'}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Сообщения */}
-      <div className="chat-messages">
-        {messages.length === 0 ? (
-          <div className="chat-empty">
-            <svg viewBox="0 0 24 24" fill="currentColor" width="48" height="48">
-              <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z"/>
-            </svg>
-            <p>{t.noMessagesYet || 'Пока нет сообщений'}</p>
-            <p className="chat-empty-hint">
-              {t.startConversation || 'Начните общение!'}
-            </p>
-          </div>
-        ) : (
-          Object.entries(groupedMessages).map(([date, dateMessages]) => (
-            <div key={date} className="chat-messages-group">
-              <div className="chat-date-divider">
-                <span>{date}</span>
-              </div>
-              <AnimatePresence>
-                {dateMessages.map((message) => (
-                  <MessageBubble
-                    key={message.id}
-                    message={message}
-                    isOwn={message.senderId === firebaseUser?.uid}
-                    formatTime={formatMessageTime}
-                  />
-                ))}
-              </AnimatePresence>
-            </div>
-          ))
-        )}
-        <div ref={messagesEndRef} />
-      </div>
-
-      {/* Поле ввода */}
-      <div className="chat-input-area">
-        <textarea
-          ref={inputRef}
-          className="chat-input"
-          placeholder={t.typeMessage || 'Введите сообщение...'}
-          value={newMessage}
-          onChange={(e) => setNewMessage(e.target.value)}
-          onKeyDown={handleKeyDown}
-          rows={1}
-          maxLength={2000}
-        />
-        <button
-          className="chat-send-btn"
-          onClick={handleSend}
-          disabled={!newMessage.trim() || isSending}
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div
+          ref={panelRef}
+          className="chat-window"
+          drag
+          dragControls={dragControls}
+          dragListener={false}
+          dragConstraints={constraints}
+          dragElastic={0}
+          dragMomentum={false}
+          initial={{ x: '100%', opacity: 0 }}
+          animate={{ x: 0, opacity: 1 }}
+          exit={{ x: '100%', opacity: 0 }}
+          transition={{ type: 'spring', damping: 25, stiffness: 200 }}
         >
-          {isSending ? (
-            <div className="sending-spinner" />
-          ) : (
-            <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
-              <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
-            </svg>
-          )}
-        </button>
-      </div>
-    </motion.div>
+          {/* Заголовок чата */}
+          <div
+            className="chat-window-header"
+            onPointerDown={(e) => dragControls.start(e)}
+            style={{ cursor: 'grab' }}
+          >
+            <div className="chat-window-user">
+              <button className="chat-back-btn" onClick={onBack}>
+                <ArrowLeft size={20} />
+              </button>
+              <div className="chat-window-avatar">
+                {otherUser.avatar ? (
+                  <img src={otherUser.avatar} alt={otherUser.name} />
+                ) : (
+                  <div className="chat-window-avatar-placeholder">
+                    {(otherUser.name || '?')[0].toUpperCase()}
+                  </div>
+                )}
+              </div>
+              <div className="chat-window-info">
+                <div className="chat-window-name">{otherUser.name || otherUser.email}</div>
+                <div className="chat-window-status">
+                  {messages.length > 0 ? 'онлайн' : 'не в сети'}
+                </div>
+              </div>
+            </div>
+            <button className="chat-close-btn" onClick={onClose}>
+              <X size={24} />
+            </button>
+          </div>
+
+          {/* Сообщения */}
+          <div className="chat-messages">
+            {messages.length === 0 ? (
+              <div className="chat-empty">
+                <div className="chat-empty-icon">
+                  <MessageSquare size={48} />
+                </div>
+                <p>{t.noMessagesYet || 'Пока нет сообщений'}</p>
+                <p className="chat-empty-hint">
+                  {t.startConversation || 'Начните общение!'}
+                </p>
+              </div>
+            ) : (
+              Object.entries(groupedMessages).map(([date, dateMessages]) => (
+                <div key={date} className="chat-messages-group">
+                  <div className="chat-date-divider">
+                    <span>{date}</span>
+                  </div>
+                  <AnimatePresence>
+                    {dateMessages.map((message) => (
+                      <MessageBubble
+                        key={message.id}
+                        message={message}
+                        isOwn={message.senderId === firebaseUser?.uid}
+                        formatTime={formatMessageTime}
+                      />
+                    ))}
+                  </AnimatePresence>
+                </div>
+              ))
+            )}
+            <div ref={messagesEndRef} />
+          </div>
+
+          {/* Поле ввода */}
+          <div className="chat-input-area">
+            <textarea
+              ref={inputRef}
+              className="chat-input"
+              placeholder={t.typeMessage || 'Введите сообщение...'}
+              value={newMessage}
+              onChange={(e) => setNewMessage(e.target.value)}
+              onKeyDown={handleKeyDown}
+              rows={1}
+              maxLength={2000}
+            />
+            <button
+              className="chat-send-btn"
+              onClick={handleSend}
+              disabled={!newMessage.trim() || isSending}
+            >
+              {isSending ? (
+                <div className="sending-spinner" />
+              ) : (
+                <Send size={20} />
+              )}
+            </button>
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 };
 

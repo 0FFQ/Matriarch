@@ -45,15 +45,37 @@ export const sendMessage = async (chatId, senderId, senderProfile, text) => {
     const docRef = await addDoc(collection(db, MESSAGES_COLLECTION), messageData);
 
     // Обновляем документ чата (последнее сообщение, время)
+    // Отправитель автоматически прочитывает своё сообщение
     const chatRef = doc(db, CHATS_COLLECTION, chatId);
-    await setDoc(chatRef, {
-      participants: chatId.split('_'),
-      lastMessage: text.trim().substring(0, 100),
-      lastMessageTime: serverTimestamp(),
-      lastSenderId: senderId,
-      lastSenderName: senderProfile.name || 'Anonymous',
-      updatedAt: serverTimestamp()
-    }, { merge: true });
+    const chatSnap = await getDoc(chatRef);
+
+    if (chatSnap.exists()) {
+      const data = chatSnap.data();
+      if (data.lastMessageReadBy) {
+        // lastMessageReadBy существует — обновляем точечно
+        await updateDoc(chatRef, {
+          participants: chatId.split('_'),
+          lastMessage: text.trim().substring(0, 100),
+          lastMessageTime: serverTimestamp(),
+          lastSenderId: senderId,
+          lastSenderName: senderProfile.name || 'Anonymous',
+          [`lastMessageReadBy.${senderId}`]: true,
+          updatedAt: serverTimestamp()
+        });
+      } else {
+        // lastMessageReadBy нет — создаём
+        await updateDoc(chatRef, {
+          participants: chatId.split('_'),
+          lastMessage: text.trim().substring(0, 100),
+          lastMessageTime: serverTimestamp(),
+          lastSenderId: senderId,
+          lastSenderName: senderProfile.name || 'Anonymous',
+          lastMessageReadBy: { [senderId]: true },
+          updatedAt: serverTimestamp()
+        });
+      }
+    }
+    // Если документ не существует — он будет создан через initializeChat
 
     return docRef.id;
   } catch (error) {
@@ -171,44 +193,26 @@ export const subscribeToUserChats = (userId, callback) => {
  */
 export const getAllUsers = async () => {
   try {
-    console.log('[Users] Starting to fetch users...');
     const usersRef = collection(db, USERS_COLLECTION);
-    
-    // Пробуем с orderBy и limit для обхода ограничений
     const q = query(usersRef, limit(100));
     const snapshot = await getDocs(q);
-    
-    console.log('[Users] Found documents:', snapshot.size);
     const users = [];
-    
+
     snapshot.forEach((doc) => {
       const data = doc.data();
-      console.log('[Users] Document data:', doc.id, data);
-      
-      // Пробуем разные варианты структуры данных
       const profile = data.profile || data;
       const email = profile.email || data.email || '';
       const name = profile.name || data.name || '';
       const avatar = profile.avatar || data.avatar || '';
       
       if (email || name) {
-        users.push({
-          id: doc.id,
-          name: name,
-          email: email,
-          avatar: avatar,
-          ...profile,
-          ...data
-        });
+        users.push({ id: doc.id, name, email, avatar, ...profile, ...data });
       }
     });
-    
-    console.log('[Users] Total users found:', users.length, users);
+
     return users;
   } catch (error) {
     console.error('[Users] Fetch error:', error.message);
-    console.error('[Users] Error code:', error.code);
-    console.error('[Users] Full error:', error);
     return [];
   }
 };
@@ -219,20 +223,47 @@ export const getAllUsers = async () => {
 export const markMessagesAsRead = async (chatId, userId) => {
   try {
     const messagesRef = collection(db, MESSAGES_COLLECTION);
+    // Запрашиваем все сообщения чата без составного where (чтобы не требовать индекс)
     const q = query(
       messagesRef,
-      where('chatId', '==', chatId),
-      where('senderId', '!=', userId),
-      where('read', '==', false)
+      where('chatId', '==', chatId)
     );
 
     const snapshot = await getDocs(q);
-    const batch = [];
-    snapshot.forEach((doc) => {
-      batch.push(updateDoc(doc.ref, { read: true }));
+    if (snapshot.empty) return;
+
+    const unreadMessages = [];
+    snapshot.forEach((docSnap) => {
+      const data = docSnap.data();
+      // Фильтруем на клиенте: не от текущего пользователя и не прочитанные
+      if (data.senderId !== userId && data.read !== true) {
+        unreadMessages.push(docSnap.ref);
+      }
     });
 
-    await Promise.all(batch);
+    if (unreadMessages.length === 0) return;
+
+    // Помечаем как прочитанные
+    await Promise.all(
+      unreadMessages.map((ref) => updateDoc(ref, { read: true }))
+    );
+
+    // Обновляем документ чата — помечаем что текущий пользователь прочитал последнее сообщение
+    const chatRef = doc(db, CHATS_COLLECTION, chatId);
+    const chatSnap = await getDoc(chatRef);
+
+    if (chatSnap.exists()) {
+      const data = chatSnap.data();
+      if (data.lastMessageReadBy) {
+        await updateDoc(chatRef, {
+          [`lastMessageReadBy.${userId}`]: true
+        });
+      } else {
+        await updateDoc(chatRef, {
+          lastMessageReadBy: { [userId]: true }
+        });
+      }
+    }
   } catch (error) {
     console.error('[Messages] Mark as read error:', error.message);
   }
@@ -244,15 +275,21 @@ export const markMessagesAsRead = async (chatId, userId) => {
 export const getUnreadCount = async (chatId, userId) => {
   try {
     const messagesRef = collection(db, MESSAGES_COLLECTION);
+    // Только chatId без составного индекса
     const q = query(
       messagesRef,
-      where('chatId', '==', chatId),
-      where('senderId', '!=', userId),
-      where('read', '==', false)
+      where('chatId', '==', chatId)
     );
 
     const snapshot = await getDocs(q);
-    return snapshot.size;
+    let count = 0;
+    snapshot.forEach((docSnap) => {
+      const data = docSnap.data();
+      if (data.senderId !== userId && data.read !== true) {
+        count++;
+      }
+    });
+    return count;
   } catch (error) {
     console.error('[Messages] Unread count error:', error.message);
     return 0;
@@ -273,6 +310,10 @@ export const initializeChat = async (userId1, userId2, profile1, profile2) => {
       participantProfiles: {
         [userId1]: { name: profile1.name, avatar: profile1.avatar, email: profile1.email },
         [userId2]: { name: profile2.name, avatar: profile2.avatar, email: profile2.email }
+      },
+      lastMessageReadBy: {
+        [userId1]: true,
+        [userId2]: true
       },
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp()

@@ -1,14 +1,15 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import { Check, CheckCheck } from 'lucide-react';
 
 const MessageBubble = ({ message, isOwn, formatTime }) => {
   return (
     <motion.div
       className={`message-bubble ${isOwn ? 'own' : 'other'}`}
-      initial={{ opacity: 0, y: 20, scale: 0.9 }}
+      initial={{ opacity: 0, y: 10, scale: 0.97 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.9 }}
-      transition={{ duration: 0.2 }}
+      exit={{ opacity: 0, scale: 0.97 }}
+      transition={{ duration: 0.15, ease: 'easeOut' }}
     >
       {!isOwn && (
         <div className="message-sender">
@@ -29,16 +30,9 @@ const MessageBubble = ({ message, isOwn, formatTime }) => {
           {isOwn && (
             <span className={`message-status ${message.read ? 'read' : 'sent'}`}>
               {message.read ? (
-                // Две галочки (прочитано)
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" width="14" height="14">
-                  <path d="M1 13l5 5L17 7"/>
-                  <path d="M7 13l5 5L23 7"/>
-                </svg>
+                <CheckCheck size={14} />
               ) : (
-                // Одна галочка (отправлено)
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" width="14" height="14">
-                  <path d="M5 13l4 4L19 7"/>
-                </svg>
+                <Check size={14} />
               )}
             </span>
           )}

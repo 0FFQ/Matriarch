@@ -1,18 +1,51 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { motion, useDragControls } from 'framer-motion';
+import { X, Plus, MessageSquare, ArrowLeft, Search, Check, CheckCheck } from 'lucide-react';
 import { subscribeToUserChats, getAllUsers, initializeChat } from '../firebase/messages';
 import { useUser } from '../context/UserContext';
 
-const ChatList = ({ onSelectChat, onBack, t }) => {
+const ChatList = ({ onSelectChat, onBack, t, isOpen, onClose }) => {
   const { firebaseUser, profile } = useUser();
   const [chats, setChats] = useState([]);
   const [allUsers, setAllUsers] = useState([]);
   const [showUserPicker, setShowUserPicker] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [searchPickerQuery, setSearchPickerQuery] = useState('');
+
+  const dragControls = useDragControls();
+  const panelRef = useRef(null);
+  const [constraints, setConstraints] = useState({ left: 0, right: 0, top: 0, bottom: 0 });
+
+  useEffect(() => {
+    if (isOpen && panelRef.current) {
+      const panelHeight = panelRef.current.offsetHeight;
+      setConstraints({
+        left: -(window.innerWidth - 420),
+        right: 0,
+        top: 0,
+        bottom: Math.max(0, window.innerHeight - 32 - panelHeight)
+      });
+    }
+  }, [isOpen]);
+
+  // Обработка Escape
+  useEffect(() => {
+    const handleEscape = (e) => {
+      if (e.key === 'Escape' && isOpen) {
+        if (showUserPicker) {
+          setShowUserPicker(false);
+        } else {
+          onClose();
+        }
+      }
+    };
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, [isOpen, showUserPicker, onClose]);
 
   // Подписка на чаты пользователя
   useEffect(() => {
-    if (!firebaseUser) return;
+    if (!firebaseUser || !isOpen) return;
 
     let unsubscribe = null;
     let isSubscribed = true;
@@ -34,27 +67,27 @@ const ChatList = ({ onSelectChat, onBack, t }) => {
     return () => {
       isSubscribed = false;
       if (unsubscribe) {
-        try {
-          unsubscribe();
-        } catch (error) {
-          console.warn('[ChatList] Unsubscribe error:', error);
-        }
+        try { unsubscribe(); } catch (error) {}
         unsubscribe = null;
       }
-      // Принудительно очищаем состояние
       setChats([]);
     };
-  }, [firebaseUser]);
+  }, [firebaseUser, isOpen]);
 
   // Загрузка всех пользователей
   useEffect(() => {
+    if (!firebaseUser || !isOpen) return;
+
     const loadUsers = async () => {
-      const users = await getAllUsers();
-      // Исключаем текущего пользователя
-      setAllUsers(users.filter(u => u.id !== firebaseUser?.uid));
+      try {
+        const users = await getAllUsers();
+        setAllUsers(users.filter(u => u.id !== firebaseUser?.uid));
+      } catch (error) {
+        console.error('[ChatList] Load users error:', error);
+      }
     };
     loadUsers();
-  }, [firebaseUser]);
+  }, [firebaseUser, isOpen]);
 
   // Начать новый чат
   const startNewChat = useCallback(async (targetUser) => {
@@ -67,13 +100,15 @@ const ChatList = ({ onSelectChat, onBack, t }) => {
       targetUser
     );
 
+    setShowUserPicker(false);
+    setSearchPickerQuery('');
     onSelectChat(chatId, targetUser);
   }, [firebaseUser, profile, onSelectChat]);
 
   // Фильтрация пользователей по поиску
   const filteredUsers = allUsers.filter(user =>
-    user.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    user.email?.toLowerCase().includes(searchQuery.toLowerCase())
+    user.name?.toLowerCase().includes(searchPickerQuery.toLowerCase()) ||
+    user.email?.toLowerCase().includes(searchPickerQuery.toLowerCase())
   );
 
   // Получить собеседника из чата
@@ -101,122 +136,180 @@ const ChatList = ({ onSelectChat, onBack, t }) => {
     }
   };
 
+  if (!isOpen) return null;
+
   return (
+    <>
     <motion.div
+      ref={panelRef}
       className="messenger-panel"
+      drag
+      dragControls={dragControls}
+      dragListener={false}
+      dragConstraints={constraints}
+      dragElastic={0}
+      dragMomentum={false}
       initial={{ x: '100%', opacity: 0 }}
       animate={{ x: 0, opacity: 1 }}
       exit={{ x: '100%', opacity: 0 }}
       transition={{ type: 'spring', damping: 25, stiffness: 200 }}
     >
-      {/* Заголовок */}
-      <div className="messenger-header">
-        <button className="messenger-back-btn" onClick={onBack}>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="20" height="20">
-            <path d="M19 12H5M12 19l-7-7 7-7"/>
-          </svg>
-        </button>
-        <h2>{t.messenger || 'Мессенджер'}</h2>
-        <button
-          className="messenger-new-chat-btn"
-          onClick={() => setShowUserPicker(!showUserPicker)}
-          title={t.newChat || 'Новый чат'}
-        >
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="20" height="20">
-            <path d="M12 5v14M5 12h14"/>
-          </svg>
-        </button>
-      </div>
-
-      {/* Список чатов */}
-      <div className="messenger-chat-list">
-        <AnimatePresence>
-          {chats.length === 0 && (
-            <motion.div
-              className="messenger-empty"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-            >
-              <svg viewBox="0 0 24 24" fill="currentColor" width="64" height="64">
-                <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z"/>
-              </svg>
-              <p>{t.noChats || 'Нет чатов'}</p>
-              <button onClick={() => setShowUserPicker(true)}>
-                {t.startNewChat || 'Начать новый чат'}
-              </button>
-            </motion.div>
-          )}
-
-          {chats.map((chat) => {
-            const otherUser = getOtherParticipant(chat);
-            if (!otherUser) return null;
-
-            return (
-              <motion.div
-                key={chat.id}
-                className="messenger-chat-item"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                onClick={() => onSelectChat(chat.id, otherUser)}
-                whileTap={{ scale: 0.98 }}
+          {/* Заголовок */}
+          <div
+            className="messenger-header"
+            onPointerDown={(e) => dragControls.start(e)}
+            style={{ cursor: 'grab' }}
+          >
+            <div className="messenger-title">
+              <MessageSquare size={20} />
+              <h2>{t.messenger || 'Мессенджер'}</h2>
+            </div>
+            <div className="messenger-buttons">
+              <button
+                className="messenger-new-chat-btn"
+                onClick={() => setShowUserPicker(true)}
+                title={t.newChat || 'Новый чат'}
               >
-                <div className="chat-avatar">
-                  {otherUser.avatar ? (
-                    <img src={otherUser.avatar} alt={otherUser.name} />
-                  ) : (
-                    <div className="chat-avatar-placeholder">
-                      {(otherUser.name || '?')[0].toUpperCase()}
-                    </div>
-                  )}
+                <Plus size={20} />
+              </button>
+              {onBack ? (
+                <button className="messenger-back-btn" onClick={onBack}>
+                  <ArrowLeft size={20} />
+                </button>
+              ) : (
+                <button className="messenger-close-btn" onClick={onClose}>
+                  <X size={24} />
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* Поиск по чатам */}
+          <div className="messenger-search">
+            <Search size={16} />
+            <input
+              type="text"
+              placeholder={t.searchUser || 'Поиск...'}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+
+          {/* Список чатов */}
+          <div className="messenger-chat-list">
+            {chats.length === 0 ? (
+              <motion.div
+                className="messenger-empty"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+              >
+                <div className="messenger-empty-icon">
+                  <MessageSquare size={48} />
                 </div>
-                <div className="chat-info">
-                  <div className="chat-name">{otherUser.name || otherUser.email}</div>
-                  <div className="chat-last-message">
-                    {chat.lastMessage || (t.startConversation || 'Начните общение...')}
-                  </div>
-                </div>
-                <div className="chat-meta">
-                  <span className="chat-time">
-                    {formatTime(chat.lastMessageTime || chat.updatedAt)}
-                  </span>
-                </div>
+                <p>{t.noChats || 'Нет чатов'}</p>
+                <button onClick={() => setShowUserPicker(true)}>
+                  {t.startNewChat || 'Начать новый чат'}
+                </button>
               </motion.div>
-            );
-          })}
-        </AnimatePresence>
-      </div>
+            ) : (
+              chats.map((chat, index) => {
+                const otherUser = getOtherParticipant(chat);
+                if (!otherUser) return null;
+
+                const matchesSearch = searchQuery === '' ||
+                  otherUser.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                  otherUser.email?.toLowerCase().includes(searchQuery.toLowerCase());
+
+                if (!matchesSearch) return null;
+
+                const chatKey = chat.id ? `chat-${chat.id}` : `chat-idx-${index}`;
+                const lastMsgText = chat.lastMessage || (t.startConversation || 'Начните общение...');
+                const isOwnLast = chat.lastSenderId === firebaseUser?.uid;
+                const isRead = !!chat.lastMessageReadBy?.[otherUser.id];
+
+                return (
+                  <motion.div
+                    key={chatKey}
+                    className="messenger-chat-item"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    onClick={() => onSelectChat(chat.id, otherUser)}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    <div className="chat-avatar">
+                      {otherUser.avatar ? (
+                        <img src={otherUser.avatar} alt={otherUser.name} />
+                      ) : (
+                        <div className="chat-avatar-placeholder">
+                          {(otherUser.name || '?')[0].toUpperCase()}
+                        </div>
+                      )}
+                    </div>
+                    <div className="chat-info">
+                      <div className="chat-name">{otherUser.name || otherUser.email}</div>
+                      <div className="chat-last-message-row">
+                        <div className="chat-last-message">
+                          {lastMsgText}
+                        </div>
+                        {/* Статус прочтения последнего сообщения */}
+                        {isOwnLast && (
+                          <span className={`chat-read-status ${isRead ? 'read' : 'sent'}`}>
+                            {isRead ? (
+                              <CheckCheck size={14} />
+                            ) : (
+                              <Check size={14} />
+                            )}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <div className="chat-meta">
+                      <span className="chat-time">
+                        {formatTime(chat.lastMessageTime || chat.updatedAt)}
+                      </span>
+                    </div>
+                  </motion.div>
+                );
+              })
+            )}
+          </div>
+        </motion.div>
 
       {/* Выбор пользователя для нового чата */}
-      <AnimatePresence>
-        {showUserPicker && (
-          <motion.div
-            className="user-picker-overlay"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={() => setShowUserPicker(false)}
-          >
+      {showUserPicker && (
+        <motion.div
+          className="user-picker-overlay"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          onClick={() => { setShowUserPicker(false); setSearchPickerQuery(''); }}
+        >
             <motion.div
               className="user-picker"
-              initial={{ y: '100%' }}
-              animate={{ y: 0 }}
-              exit={{ y: '100%' }}
+              initial={{ y: '100%', opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: '100%', opacity: 0 }}
               transition={{ type: 'spring', damping: 25, stiffness: 200 }}
               onClick={(e) => e.stopPropagation()}
             >
               <div className="user-picker-header">
                 <h3>{t.selectUser || 'Выберите собеседника'}</h3>
-                <button onClick={() => setShowUserPicker(false)}>✕</button>
+                <button onClick={() => { setShowUserPicker(false); setSearchPickerQuery(''); }}>
+                  <X size={20} />
+                </button>
               </div>
 
-              <input
-                type="text"
-                className="user-picker-search"
-                placeholder={t.searchUser || 'Поиск по имени или email...'}
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
+              <div className="user-picker-search-wrapper">
+                <Search size={16} />
+                <input
+                  type="text"
+                  className="user-picker-search"
+                  placeholder={t.searchUser || 'Поиск по имени или email...'}
+                  value={searchPickerQuery}
+                  onChange={(e) => setSearchPickerQuery(e.target.value)}
+                />
+              </div>
 
               <div className="user-picker-list">
                 {filteredUsers.length === 0 ? (
@@ -250,8 +343,7 @@ const ChatList = ({ onSelectChat, onBack, t }) => {
             </motion.div>
           </motion.div>
         )}
-      </AnimatePresence>
-    </motion.div>
+    </>
   );
 };
 

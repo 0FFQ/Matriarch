@@ -38,7 +38,6 @@ export const getCache = (endpoint, params = {}) => {
       return null;
     }
     
-    console.log(`[Cache] HIT: ${endpoint}`);
     return { data, fromCache: true };
   } catch (error) {
     console.warn('[Cache] Get error:', error.message);
@@ -68,7 +67,6 @@ export const setCache = (endpoint, params, data, ttl = DEFAULT_TTL) => {
     }
     
     localStorage.setItem(key, serialized);
-    console.log(`[Cache] SET: ${endpoint} (TTL: ${ttl / 1000 / 60}min)`);
   } catch (error) {
     console.warn('[Cache] Set error:', error.message);
     // Если localStorage полон, очищаем старые записи
@@ -85,7 +83,6 @@ export const removeCache = (endpoint, params = {}) => {
   try {
     const key = createCacheKey(endpoint, params);
     localStorage.removeItem(key);
-    console.log(`[Cache] REMOVE: ${endpoint}`);
   } catch (error) {
     console.warn('[Cache] Remove error:', error.message);
   }
@@ -104,7 +101,6 @@ export const clearAllCache = () => {
       }
     }
     keysToRemove.forEach(key => localStorage.removeItem(key));
-    console.log('[Cache] ALL CLEARED');
   } catch (error) {
     console.warn('[Cache] Clear all error:', error.message);
   }
@@ -137,7 +133,6 @@ export const clearExpiredCache = () => {
     }
     
     keysToRemove.forEach(key => localStorage.removeItem(key));
-    console.log(`[Cache] Expired cleared: ${keysToRemove.length} items`);
   } catch (error) {
     console.warn('[Cache] Clear expired error:', error.message);
   }
@@ -173,8 +168,6 @@ const clearOldestCache = () => {
     // Удаляем 50% самых старых записей
     const toRemove = entries.slice(0, Math.ceil(entries.length / 2));
     toRemove.forEach(({ key }) => localStorage.removeItem(key));
-    
-    console.log(`[Cache] Oldest cleared: ${toRemove.length} items`);
   } catch (error) {
     console.warn('[Cache] Clear oldest error:', error.message);
   }
@@ -232,7 +225,6 @@ export const cachedRequest = async (axios, baseurl, endpoint, params = {}, heade
   }
   
   // Если нет в кэше, делаем запрос
-  console.log(`[Cache] MISS: ${endpoint}`);
   const response = await axios.get(`${baseurl}${endpoint}`, {
     params,
     headers

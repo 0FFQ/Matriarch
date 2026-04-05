@@ -43,24 +43,19 @@ console.error = (...args) => {
 // Вход через Google
 export const signInWithGoogle = async () => {
   try {
-    // Если уже авторизован - просто возвращаем пользователя
     if (auth.currentUser) {
-      console.log('[Auth] Already signed in:', auth.currentUser.displayName);
       return auth.currentUser;
     }
 
     const result = await signInWithPopup(auth, googleProvider);
     const user = result.user;
-    console.log('[Auth] Signed in:', user.displayName);
     return user;
   } catch (error) {
-    // Если пользователь закрыл окно - не показываем ошибку
-    if (error.code === 'auth/popup-closed-by-user') {
-      console.log('[Auth] Popup closed by user');
-      return null;
+    if (error.code !== 'auth/popup-closed-by-user') {
+      console.error('[Auth] Sign in error:', error.message);
+      throw error;
     }
-    console.error('[Auth] Sign in error:', error.message);
-    throw error;
+    return null;
   }
 };
 
@@ -68,7 +63,6 @@ export const signInWithGoogle = async () => {
 export const logout = async () => {
   try {
     await signOut(auth);
-    console.log('[Auth] Signed out');
   } catch (error) {
     console.error('[Auth] Logout error:', error.message);
     throw error;
@@ -78,12 +72,6 @@ export const logout = async () => {
 // Слушатель состояния аутентификации
 export const onAuthChange = (callback) => {
   return onAuthStateChanged(auth, (user) => {
-    // Логируем состояние с контекстом
-    if (user) {
-      console.log(`[Auth] State changed: authenticated (${user.email})`);
-    } else {
-      console.log('[Auth] State changed: not authenticated');
-    }
     callback(user);
   });
 };

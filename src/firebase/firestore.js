@@ -39,7 +39,6 @@ export const saveUserData = async (userId, userData) => {
         email: userData.profile?.email || null
       }
     }, { merge: true });
-    console.log('[Firestore] Data saved for user:', userId);
   } catch (error) {
     console.error('[Firestore] Save error:', error.message);
     throw error;
@@ -53,12 +52,10 @@ export const loadUserData = async (userId) => {
   try {
     const userRef = doc(db, USERS_COLLECTION, userId);
     const docSnap = await getDoc(userRef);
-    
+
     if (docSnap.exists()) {
-      console.log('[Firestore] Data loaded for user:', userId);
       return docSnap.data();
     } else {
-      console.log('[Firestore] No data for user:', userId);
       return null;
     }
   } catch (error) {
@@ -73,10 +70,9 @@ export const loadUserData = async (userId) => {
 export const subscribeToUserData = (userId, callback) => {
   try {
     const userRef = doc(db, USERS_COLLECTION, userId);
-    
+
     const unsubscribe = onSnapshot(userRef, (docSnap) => {
       if (docSnap.exists()) {
-        console.log('[Firestore] Real-time update received');
         callback(docSnap.data());
       }
     }, (error) => {
@@ -97,7 +93,6 @@ export const deleteUserData = async (userId) => {
   try {
     const userRef = doc(db, USERS_COLLECTION, userId);
     await deleteDoc(userRef);
-    console.log('[Firestore] User data deleted:', userId);
   } catch (error) {
     console.error('[Firestore] Delete error:', error.message);
     throw error;
@@ -109,7 +104,7 @@ export const deleteUserData = async (userId) => {
  */
 export const initializeUserData = async (userId, profile) => {
   const existingData = await loadUserData(userId);
-  
+
   if (!existingData) {
     await saveUserData(userId, {
       profile: profile || { name: '', avatar: '' },
@@ -118,8 +113,7 @@ export const initializeUserData = async (userId, profile) => {
       watchlist: [],
       createdAt: new Date().toISOString()
     });
-    console.log('[Firestore] User data initialized');
   }
-  
+
   return loadUserData(userId);
 };

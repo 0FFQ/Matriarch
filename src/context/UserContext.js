@@ -65,7 +65,6 @@ export const UserProvider = ({ children }) => {
   useEffect(() => {
     const unsubscribe = onAuthChange(async (firebaseUser) => {
       if (firebaseUser) {
-        console.log('[UserContext] ✅ Authenticated:', firebaseUser.email);
         setUser(firebaseUser);
         setSyncEnabled(true);
 
@@ -74,13 +73,6 @@ export const UserProvider = ({ children }) => {
         const firestoreData = await loadUserData(firebaseUser.uid);
 
         if (firestoreData) {
-          console.log('[UserContext] 📥 Loaded from Firestore:', {
-            profile: firestoreData.profile?.name,
-            favorites: firestoreData.favorites?.length || 0,
-            watched: firestoreData.watched?.length || 0,
-            watchlist: firestoreData.watchlist?.length || 0
-          });
-
           // Обновляем состояние данными из Firestore
           if (firestoreData.profile) {
             setProfile({
@@ -93,7 +85,6 @@ export const UserProvider = ({ children }) => {
           if (firestoreData.watchlist) setWatchlist(firestoreData.watchlist);
         } else {
           // Первый вход - создаем документ с Google профилем
-          console.log('[UserContext] 🆕 First login, creating Firestore document');
           const googleProfile = {
             name: firebaseUser.displayName || '',
             avatar: firebaseUser.photoURL || '',
@@ -107,7 +98,6 @@ export const UserProvider = ({ children }) => {
             watched: [],
             watchlist: []
           });
-          console.log('[UserContext] ✅ User document created in Firestore');
         }
         
         isLoadingRef.current = false;
@@ -122,7 +112,6 @@ export const UserProvider = ({ children }) => {
           localStorage.removeItem(LOCAL_STORAGE_KEYS.favorites);
           localStorage.removeItem(LOCAL_STORAGE_KEYS.watched);
           localStorage.removeItem(LOCAL_STORAGE_KEYS.watchlist);
-          console.log('[UserContext] 🗑️ LocalStorage cleared');
         } catch (error) {
           console.error('[UserContext] LocalStorage clear error:', error);
         }
@@ -157,18 +146,10 @@ export const UserProvider = ({ children }) => {
 
     // Debounce 500ms
     saveTimeoutRef.current = setTimeout(async () => {
-      console.log('[UserContext] 💾 Saving to Firestore:', {
-        profile: profile.name,
-        favorites: favorites.length,
-        watched: watched.length,
-        watchlist: watchlist.length
-      });
-      
       try {
         await saveUserData(user.uid, { profile, favorites, watched, watchlist });
-        console.log('[UserContext] ✅ Save complete');
       } catch (error) {
-        console.error('[UserContext] ❌ Save error:', error);
+        console.error('[UserContext] Save error:', error);
       }
     }, 500);
 

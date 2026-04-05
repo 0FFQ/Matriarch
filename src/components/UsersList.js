@@ -1,11 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Search, User, MessageSquare, X, Eye, Heart, Bookmark } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence, useDragControls } from 'framer-motion';
+import { Search, User, MessageSquare, X, Eye } from 'lucide-react';
 import { getAllUsers, initializeChat } from '../firebase/messages';
-import { getUserProfile } from '../firebase/social';
 import { useUser } from '../context/UserContext';
-
-const IMAGE_BASE = 'https://image.tmdb.org/t/p/w92';
 
 const UsersList = ({ t, isOpen, onClose, onViewProfile, onOpenChat }) => {
   const { firebaseUser, profile } = useUser();
@@ -14,6 +11,33 @@ const UsersList = ({ t, isOpen, onClose, onViewProfile, onOpenChat }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  const dragControls = useDragControls();
+  const panelRef = useRef(null);
+  const [constraints, setConstraints] = useState({ left: 0, right: 0, top: 0, bottom: 0 });
+
+  useEffect(() => {
+    if (isOpen && panelRef.current) {
+      const panelHeight = panelRef.current.offsetHeight;
+      setConstraints({
+        left: -(window.innerWidth - 420),
+        right: 0,
+        top: 0,
+        bottom: Math.max(0, window.innerHeight - 32 - panelHeight)
+      });
+    }
+  }, [isOpen]);
+
+  // Обработка Escape
+  useEffect(() => {
+    const handleEscape = (e) => {
+      if (e.key === 'Escape' && isOpen) {
+        onClose();
+      }
+    };
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, [isOpen, onClose]);
 
   // Загружаем всех пользователей
   useEffect(() => {
@@ -43,7 +67,7 @@ const UsersList = ({ t, isOpen, onClose, onViewProfile, onOpenChat }) => {
       setFilteredUsers(users);
     } else {
       const query = searchQuery.toLowerCase();
-      const filtered = users.filter(user => 
+      const filtered = users.filter(user =>
         user.name?.toLowerCase().includes(query) ||
         user.email?.toLowerCase().includes(query)
       );
@@ -54,7 +78,6 @@ const UsersList = ({ t, isOpen, onClose, onViewProfile, onOpenChat }) => {
   const handleStartChat = async (user) => {
     try {
       if (!firebaseUser || !profile) return;
-      // Инициализируем чат с правильными аргументами
       const chatId = await initializeChat(firebaseUser.uid, user.id, profile, user);
       if (onOpenChat) {
         onOpenChat(chatId, user);
@@ -68,120 +91,111 @@ const UsersList = ({ t, isOpen, onClose, onViewProfile, onOpenChat }) => {
 
   return (
     <AnimatePresence>
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center"
-        onClick={onClose}
-      >
+      {isOpen && (
         <motion.div
-          initial={{ scale: 0.9, opacity: 0, y: 20 }}
-          animate={{ scale: 1, opacity: 1, y: 0 }}
-          exit={{ scale: 0.9, opacity: 0, y: 20 }}
-          transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-          className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[80vh] overflow-hidden"
-          onClick={(e) => e.stopPropagation()}
+          ref={panelRef}
+          className="users-list-panel"
+          drag
+          dragControls={dragControls}
+          dragListener={false}
+          dragConstraints={constraints}
+          dragElastic={0}
+          dragMomentum={false}
+          initial={{ x: '100%', opacity: 0 }}
+          animate={{ x: 0, opacity: 1 }}
+          exit={{ x: '100%', opacity: 0 }}
+          transition={{ type: 'spring', damping: 25, stiffness: 200 }}
         >
           {/* Header */}
-          <div className="p-6 border-b border-gray-200 dark:border-gray-700">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-                {t === 'ru' ? 'Пользователи' : 'Users'}
-              </h2>
-              <button
-                onClick={onClose}
-                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
-              >
-                <X className="w-5 h-5 text-gray-600 dark:text-gray-400" />
-              </button>
+          <div
+            className="users-list-header"
+            onPointerDown={(e) => dragControls.start(e)}
+            style={{ cursor: 'grab' }}
+          >
+            <div className="users-list-title">
+              <User size={20} />
+              <h2>{t?.users || 'Пользователи'}</h2>
             </div>
+            <button className="users-list-close" onClick={onClose}>
+              <X size={24} />
+            </button>
+          </div>
 
-            {/* Search */}
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder={t === 'ru' ? 'Поиск пользователей...' : 'Search users...'}
-                className="w-full pl-10 pr-4 py-3 bg-gray-100 dark:bg-gray-700 border-0 rounded-xl text-gray-900 dark:text-white placeholder-gray-500 focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
+          {/* Search */}
+          <div className="users-list-search">
+            <Search size={16} />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder={t === 'ru' ? 'Поиск пользователей...' : 'Search users...'}
+            />
           </div>
 
           {/* Users List */}
-          <div className="overflow-y-auto max-h-[calc(80vh-180px)]">
+          <div className="users-list-content">
             {loading ? (
-              <div className="p-8 text-center text-gray-500 dark:text-gray-400">
-                {t === 'ru' ? 'Загрузка...' : 'Loading...'}
+              <div className="users-list-loading">
+                <div className="loading-spinner"></div>
+                <p>{t === 'ru' ? 'Загрузка...' : 'Loading...'}</p>
               </div>
             ) : error ? (
-              <div className="p-8 text-center text-red-500">
-                {error}
+              <div className="users-list-error">
+                <p>{error}</p>
+                <button onClick={loadUsers}>Повторить</button>
               </div>
             ) : filteredUsers.length === 0 ? (
-              <div className="p-8 text-center text-gray-500 dark:text-gray-400">
-                {t === 'ru' ? 'Пользователи не найдены' : 'No users found'}
+              <div className="users-list-empty">
+                <User size={48} />
+                <p>{t === 'ru' ? 'Пользователи не найдены' : 'No users found'}</p>
               </div>
             ) : (
-              <div className="divide-y divide-gray-200 dark:divide-gray-700">
-                {filteredUsers.map((user) => (
-                  <div
-                    key={user.id}
-                    className="p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
-                  >
-                    <div className="flex items-center gap-4">
-                      {/* Avatar */}
-                      <div className="relative">
-                        {user.avatar ? (
-                          <img
-                            src={user.avatar}
-                            alt={user.name}
-                            className="w-14 h-14 rounded-full object-cover"
-                          />
-                        ) : (
-                          <div className="w-14 h-14 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
-                            <User className="w-7 h-7 text-white" />
-                          </div>
-                        )}
+              filteredUsers.map((user) => (
+                <motion.div
+                  key={user.id}
+                  className="users-list-item"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  whileHover={{ scale: 1.01 }}
+                  whileTap={{ scale: 0.99 }}
+                >
+                  <div className="users-list-item-avatar">
+                    {user.avatar ? (
+                      <img src={user.avatar} alt={user.name} />
+                    ) : (
+                      <div className="users-list-item-avatar-placeholder">
+                        {(user.name || '?')[0].toUpperCase()}
                       </div>
-
-                      {/* Info */}
-                      <div className="flex-1 min-w-0">
-                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white truncate">
-                          {user.name || t === 'ru' ? 'Аноним' : 'Anonymous'}
-                        </h3>
-                        <p className="text-sm text-gray-500 dark:text-gray-400 truncate">
-                          {user.email}
-                        </p>
-                      </div>
-
-                      {/* Actions */}
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => onViewProfile && onViewProfile(user.id)}
-                          className="p-2 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors"
-                          title={t === 'ru' ? 'Профиль' : 'Profile'}
-                        >
-                          <Eye className="w-5 h-5 text-gray-600 dark:text-gray-400" />
-                        </button>
-                        <button
-                          onClick={() => handleStartChat(user)}
-                          className="p-2 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors"
-                          title={t === 'ru' ? 'Чат' : 'Chat'}
-                        >
-                          <MessageSquare className="w-5 h-5 text-gray-600 dark:text-gray-400" />
-                        </button>
-                      </div>
-                    </div>
+                    )}
                   </div>
-                ))}
-              </div>
+                  <div className="users-list-item-info">
+                    <div className="users-list-item-name">
+                      {user.name || (t === 'ru' ? 'Аноним' : 'Anonymous')}
+                    </div>
+                    <div className="users-list-item-email">{user.email}</div>
+                  </div>
+                  <div className="users-list-item-actions">
+                    <button
+                      className="users-list-item-btn"
+                      onClick={() => onViewProfile && onViewProfile(user.id)}
+                      title={t === 'ru' ? 'Профиль' : 'Profile'}
+                    >
+                      <Eye size={18} />
+                    </button>
+                    <button
+                      className="users-list-item-btn users-list-item-btn-primary"
+                      onClick={() => handleStartChat(user)}
+                      title={t === 'ru' ? 'Чат' : 'Chat'}
+                    >
+                      <MessageSquare size={18} />
+                    </button>
+                  </div>
+                </motion.div>
+              ))
             )}
           </div>
         </motion.div>
-      </motion.div>
+      )}
     </AnimatePresence>
   );
 };

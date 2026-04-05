@@ -47,11 +47,19 @@ const SocialFeatures = ({
     if (!firebaseUser) return;
 
     const unsubscribe = subscribeToUserChats(firebaseUser.uid, (chats) => {
-      // Подсчитываем непрочитанные сообщения
+      // Подсчитываем непрочитанные:
+      // Чат непрочитан если lastSenderId !== firebaseUser.uid И чат не прочитан (нет в lastMessageReadBy или activeChatId)
       let unread = 0;
       chats.forEach(chat => {
+        // Если последнее сообщение от другого пользователя
         if (chat.lastSenderId !== firebaseUser.uid) {
-          unread++;
+          // Проверяем, прочитал ли текущий пользователь это сообщение
+          const hasRead = chat.lastMessageReadBy?.[firebaseUser.uid] === true;
+          // Если чат сейчас открыт — не считаем
+          const isActive = chat.id === activeChatId;
+          if (!hasRead && !isActive) {
+            unread++;
+          }
         }
       });
       setUnreadChats(unread);
@@ -60,7 +68,7 @@ const SocialFeatures = ({
     return () => {
       if (unsubscribe) unsubscribe();
     };
-  }, [firebaseUser]);
+  }, [firebaseUser, activeChatId]);
 
   // Подписка на уведомления
   useEffect(() => {
@@ -160,19 +168,24 @@ const SocialFeatures = ({
       />
 
       {/* Окно чата */}
-      {chatOpen && activeChatId && (
-        <ChatWindow
-          t={t}
-          chatId={activeChatId}
-          otherUser={activeChatUser}
-          onBack={() => {
-            setChatOpen(false);
-            setActiveChatId(null);
-            setActiveChatUser(null);
-            setChatListOpen(true);
-          }}
-        />
-      )}
+      <ChatWindow
+        t={t}
+        chatId={activeChatId}
+        otherUser={activeChatUser}
+        isOpen={chatOpen}
+        onClose={() => {
+          setChatOpen(false);
+          setActiveChatId(null);
+          setActiveChatUser(null);
+          setChatListOpen(true);
+        }}
+        onBack={() => {
+          setChatOpen(false);
+          setActiveChatId(null);
+          setActiveChatUser(null);
+          setChatListOpen(true);
+        }}
+      />
 
       {/* Панель общего контента */}
       <SharedContentPanel
