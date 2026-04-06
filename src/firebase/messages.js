@@ -10,186 +10,219 @@ import {
   setDoc,
   updateDoc,
   getDocs,
-  limit
-} from 'firebase/firestore';
-import { db } from './auth';
+  limit,
+} from "firebase/firestore";
+import { db } from "./auth";
 
-const MESSAGES_COLLECTION = 'messages';
-const CHATS_COLLECTION = 'chats';
-const USERS_COLLECTION = 'users';
+const MESSAGES_COLLECTION = "messages";
+const CHATS_COLLECTION = "chats";
+const USERS_COLLECTION = "users";
+
+// ============================================
+// Утилиты
+// ============================================
 
 /**
- * Получить ID чата между двумя пользователями (отсортированный для уникальности)
+ * Получить ID чата между двумя пользователями
+ * (отсортированный для уникальности)
  */
 const getChatId = (userId1, userId2) => {
-  return userId1 < userId2 ? `${userId1}_${userId2}` : `${userId2}_${userId1}`;
+  return userId1 < userId2
+    ? `${userId1}_${userId2}`
+    : `${userId2}_${userId1}`;
 };
 
 /**
- * Отправить сообщение
+ * Проверка на ошибку внутреннего состояния Firebase
+ */
+const isInternalFirebaseError = (error) => {
+  const message = error?.message || "";
+  return (
+    message.includes("Unexpected state") ||
+    message.includes("INTERNAL ASSERTION FAILED") ||
+    error?.code === "internal"
+  );
+};
+
+/**
+ * Безопасная отписка от snapshot
+ */
+const safeUnsubscribe = (unsubscribe) => {
+  try {
+    unsubscribe();
+  } catch {
+    // Игнорируем ошибки при отписке
+  }
+};
+
+// ============================================
+// Отправка сообщений
+// ============================================
+
+/**
+ * Отправить сообщение в чат
  */
 export const sendMessage = async (chatId, senderId, senderProfile, text) => {
   try {
     const messageData = {
       chatId,
       senderId,
-      senderName: senderProfile.name || 'Anonymous',
-      senderAvatar: senderProfile.avatar || '',
-      senderEmail: senderProfile.email || '',
+      senderName: senderProfile.name || "Anonymous",
+      senderAvatar: senderProfile.avatar || "",
+      senderEmail: senderProfile.email || "",
       text: text.trim(),
       createdAt: serverTimestamp(),
-      read: false
+      read: false,
     };
 
-    // Добавляем сообщение в коллекцию сообщений
-    const docRef = await addDoc(collection(db, MESSAGES_COLLECTION), messageData);
+    // Добавляем сообщение в коллекцию
+    const docRef = await addDoc(
+      collection(db, MESSAGES_COLLECTION),
+      messageData
+    );
 
-    // Обновляем документ чата (последнее сообщение, время)
-    // Отправитель автоматически прочитывает своё сообщение
+    // Обновляем документ чата
     const chatRef = doc(db, CHATS_COLLECTION, chatId);
     const chatSnap = await getDoc(chatRef);
 
     if (chatSnap.exists()) {
-      const data = chatSnap.data();
-      if (data.lastMessageReadBy) {
-        // lastMessageReadBy существует — обновляем точечно
-        await updateDoc(chatRef, {
-          participants: chatId.split('_'),
-          lastMessage: text.trim().substring(0, 100),
-          lastMessageTime: serverTimestamp(),
-          lastSenderId: senderId,
-          lastSenderName: senderProfile.name || 'Anonymous',
-          [`lastMessageReadBy.${senderId}`]: true,
-          updatedAt: serverTimestamp()
-        });
+      const updateData = {
+        participants: chatId.split("_"),
+        lastMessage: text.trim().substring(0, 100),
+        lastMessageTime: serverTimestamp(),
+        lastSenderId: senderId,
+        lastSenderName: senderProfile.name || "Anonymous",
+        updatedAt: serverTimestamp(),
+      };
+
+      // Обновляем статус прочтения для отправителя
+      if (chatSnap.data().lastMessageReadBy) {
+        updateData[`lastMessageReadBy.${senderId}`] = true;
       } else {
-        // lastMessageReadBy нет — создаём
-        await updateDoc(chatRef, {
-          participants: chatId.split('_'),
-          lastMessage: text.trim().substring(0, 100),
-          lastMessageTime: serverTimestamp(),
-          lastSenderId: senderId,
-          lastSenderName: senderProfile.name || 'Anonymous',
-          lastMessageReadBy: { [senderId]: true },
-          updatedAt: serverTimestamp()
-        });
+        updateData.lastMessageReadBy = { [senderId]: true };
       }
+
+      await updateDoc(chatRef, updateData);
     }
-    // Если документ не существует — он будет создан через initializeChat
 
     return docRef.id;
   } catch (error) {
-    console.error('[Messages] Send error:', error.message);
+    console.error("[Messages] Send error:", error.message);
     throw error;
   }
 };
 
+// ============================================
+// Подписки на сообщения и чаты (real-time)
+// ============================================
+
 /**
- * Подписаться на сообщения в чате (real-time)
+ * Подписаться на сообщения в чате
  */
 export const subscribeToMessages = (chatId, callback) => {
   try {
     const messagesRef = collection(db, MESSAGES_COLLECTION);
-    // Используем только where без orderBy чтобы избежать необходимости в индексе
-    const q = query(
-      messagesRef,
-      where('chatId', '==', chatId)
-    );
+    const q = query(messagesRef, where("chatId", "==", chatId));
 
     let isAlive = true;
 
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      if (!isAlive) return;
-      const messages = [];
-      snapshot.forEach((doc) => {
-        messages.push({ id: doc.id, ...doc.data() });
-      });
-      // Сортируем на клиенте по createdAt
-      messages.sort((a, b) => {
-        const timeA = a.createdAt?.toMillis ? a.createdAt.toMillis() : 0;
-        const timeB = b.createdAt?.toMillis ? b.createdAt.toMillis() : 0;
-        return timeA - timeB;
-      });
-      callback(messages);
-    }, (error) => {
-      // Игнорируем все ошибки "Unexpected state" и связанные с внутренним состоянием
-      if (error.message?.includes('Unexpected state') ||
-          error.message?.includes('INTERNAL ASSERTION FAILED') ||
-          error.code === 'internal') {
-        return;
-      }
-      console.error('[Messages] Subscribe error:', error.message);
-    });
+    const unsubscribe = onSnapshot(
+      q,
+      (snapshot) => {
+        if (!isAlive) return;
 
-    // Возвращаем обёртку, которая проверяет isAlive
+        const messages = [];
+        snapshot.forEach((doc) => {
+          messages.push({ id: doc.id, ...doc.data() });
+        });
+
+        // Сортируем на клиенте по времени создания
+        messages.sort((a, b) => {
+          const timeA = a.createdAt?.toMillis
+            ? a.createdAt.toMillis()
+            : 0;
+          const timeB = b.createdAt?.toMillis
+            ? b.createdAt.toMillis()
+            : 0;
+          return timeA - timeB;
+        });
+
+        callback(messages);
+      },
+      (error) => {
+        if (!isInternalFirebaseError(error)) {
+          console.error("[Messages] Subscribe error:", error.message);
+        }
+      }
+    );
+
+    // Возвращаем обёртку с проверкой isAlive
     return () => {
       isAlive = false;
-      try {
-        unsubscribe();
-      } catch (e) {
-        // Игнорируем ошибки при отписке
-      }
+      safeUnsubscribe(unsubscribe);
     };
   } catch (error) {
-    console.error('[Messages] Subscribe setup error:', error.message);
-    return () => {}; // Возвращаем пустую функцию вместо null
+    console.error("[Messages] Subscribe setup error:", error.message);
+    return () => {};
   }
 };
 
 /**
- * Подписаться на все чаты пользователя (real-time)
+ * Подписаться на все чаты пользователя
  */
 export const subscribeToUserChats = (userId, callback) => {
   try {
     const chatsRef = collection(db, CHATS_COLLECTION);
-    // Используем только where без orderBy чтобы избежать необходимости в индексе
-    const q = query(
-      chatsRef,
-      where('participants', 'array-contains', userId)
-    );
+    const q = query(chatsRef, where("participants", "array-contains", userId));
 
     let isAlive = true;
 
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      if (!isAlive) return;
-      const chats = [];
-      snapshot.forEach((doc) => {
-        chats.push({ id: doc.id, ...doc.data() });
-      });
-      // Сортируем на клиенте по updatedAt (новые сверху)
-      chats.sort((a, b) => {
-        const timeA = a.updatedAt?.toMillis ? a.updatedAt.toMillis() : 0;
-        const timeB = b.updatedAt?.toMillis ? b.updatedAt.toMillis() : 0;
-        return timeB - timeA;
-      });
-      callback(chats);
-    }, (error) => {
-      // Игнорируем все ошибки "Unexpected state" и связанные с внутренним состоянием
-      if (error.message?.includes('Unexpected state') ||
-          error.message?.includes('INTERNAL ASSERTION FAILED') ||
-          error.code === 'internal') {
-        return;
-      }
-      console.error('[Chats] Subscribe error:', error.message);
-    });
+    const unsubscribe = onSnapshot(
+      q,
+      (snapshot) => {
+        if (!isAlive) return;
 
-    // Возвращаем обёртку, которая проверяет isAlive
+        const chats = [];
+        snapshot.forEach((doc) => {
+          chats.push({ id: doc.id, ...doc.data() });
+        });
+
+        // Сортируем на клиенте (новые сверху)
+        chats.sort((a, b) => {
+          const timeA = a.updatedAt?.toMillis
+            ? a.updatedAt.toMillis()
+            : 0;
+          const timeB = b.updatedAt?.toMillis
+            ? b.updatedAt.toMillis()
+            : 0;
+          return timeB - timeA;
+        });
+
+        callback(chats);
+      },
+      (error) => {
+        if (!isInternalFirebaseError(error)) {
+          console.error("[Chats] Subscribe error:", error.message);
+        }
+      }
+    );
+
     return () => {
       isAlive = false;
-      try {
-        unsubscribe();
-      } catch (e) {
-        // Игнорируем ошибки при отписке
-      }
+      safeUnsubscribe(unsubscribe);
     };
   } catch (error) {
-    console.error('[Chats] Subscribe setup error:', error.message);
-    return () => {}; // Возвращаем пустую функцию вместо null
+    console.error("[Chats] Subscribe setup error:", error.message);
+    return () => {};
   }
 };
 
+// ============================================
+// Управление пользователями
+// ============================================
+
 /**
- * Получить список всех пользователей (для поиска собеседника)
+ * Получить список всех пользователей
  */
 export const getAllUsers = async () => {
   try {
@@ -201,10 +234,11 @@ export const getAllUsers = async () => {
     snapshot.forEach((doc) => {
       const data = doc.data();
       const profile = data.profile || data;
-      const email = profile.email || data.email || '';
-      const name = profile.name || data.name || '';
-      const avatar = profile.avatar || data.avatar || '';
-      
+
+      const email = profile.email || data.email || "";
+      const name = profile.name || data.name || "";
+      const avatar = profile.avatar || data.avatar || "";
+
       if (email || name) {
         users.push({ id: doc.id, name, email, avatar, ...profile, ...data });
       }
@@ -212,10 +246,14 @@ export const getAllUsers = async () => {
 
     return users;
   } catch (error) {
-    console.error('[Users] Fetch error:', error.message);
+    console.error("[Users] Fetch error:", error.message);
     return [];
   }
 };
+
+// ============================================
+// Статус прочтения сообщений
+// ============================================
 
 /**
  * Пометить сообщения как прочитанные
@@ -223,19 +261,15 @@ export const getAllUsers = async () => {
 export const markMessagesAsRead = async (chatId, userId) => {
   try {
     const messagesRef = collection(db, MESSAGES_COLLECTION);
-    // Запрашиваем все сообщения чата без составного where (чтобы не требовать индекс)
-    const q = query(
-      messagesRef,
-      where('chatId', '==', chatId)
-    );
+    const q = query(messagesRef, where("chatId", "==", chatId));
 
     const snapshot = await getDocs(q);
     if (snapshot.empty) return;
 
+    // Фильтруем непрочитанные сообщения не от текущего пользователя
     const unreadMessages = [];
     snapshot.forEach((docSnap) => {
       const data = docSnap.data();
-      // Фильтруем на клиенте: не от текущего пользователя и не прочитанные
       if (data.senderId !== userId && data.read !== true) {
         unreadMessages.push(docSnap.ref);
       }
@@ -248,24 +282,19 @@ export const markMessagesAsRead = async (chatId, userId) => {
       unreadMessages.map((ref) => updateDoc(ref, { read: true }))
     );
 
-    // Обновляем документ чата — помечаем что текущий пользователь прочитал последнее сообщение
+    // Обновляем статус прочтения в документе чата
     const chatRef = doc(db, CHATS_COLLECTION, chatId);
     const chatSnap = await getDoc(chatRef);
 
     if (chatSnap.exists()) {
-      const data = chatSnap.data();
-      if (data.lastMessageReadBy) {
-        await updateDoc(chatRef, {
-          [`lastMessageReadBy.${userId}`]: true
-        });
-      } else {
-        await updateDoc(chatRef, {
-          lastMessageReadBy: { [userId]: true }
-        });
-      }
+      const updateData = chatSnap.data().lastMessageReadBy
+        ? { [`lastMessageReadBy.${userId}`]: true }
+        : { lastMessageReadBy: { [userId]: true } };
+
+      await updateDoc(chatRef, updateData);
     }
   } catch (error) {
-    console.error('[Messages] Mark as read error:', error.message);
+    console.error("[Messages] Mark as read error:", error.message);
   }
 };
 
@@ -275,31 +304,38 @@ export const markMessagesAsRead = async (chatId, userId) => {
 export const getUnreadCount = async (chatId, userId) => {
   try {
     const messagesRef = collection(db, MESSAGES_COLLECTION);
-    // Только chatId без составного индекса
-    const q = query(
-      messagesRef,
-      where('chatId', '==', chatId)
-    );
+    const q = query(messagesRef, where("chatId", "==", chatId));
 
     const snapshot = await getDocs(q);
     let count = 0;
+
     snapshot.forEach((docSnap) => {
       const data = docSnap.data();
       if (data.senderId !== userId && data.read !== true) {
         count++;
       }
     });
+
     return count;
   } catch (error) {
-    console.error('[Messages] Unread count error:', error.message);
+    console.error("[Messages] Unread count error:", error.message);
     return 0;
   }
 };
 
+// ============================================
+// Инициализация чатов
+// ============================================
+
 /**
  * Инициализировать чат между двумя пользователями
  */
-export const initializeChat = async (userId1, userId2, profile1, profile2) => {
+export const initializeChat = async (
+  userId1,
+  userId2,
+  profile1,
+  profile2
+) => {
   const chatId = getChatId(userId1, userId2);
   const chatRef = doc(db, CHATS_COLLECTION, chatId);
 
@@ -308,15 +344,23 @@ export const initializeChat = async (userId1, userId2, profile1, profile2) => {
     await setDoc(chatRef, {
       participants: [userId1, userId2],
       participantProfiles: {
-        [userId1]: { name: profile1.name, avatar: profile1.avatar, email: profile1.email },
-        [userId2]: { name: profile2.name, avatar: profile2.avatar, email: profile2.email }
+        [userId1]: {
+          name: profile1.name,
+          avatar: profile1.avatar,
+          email: profile1.email,
+        },
+        [userId2]: {
+          name: profile2.name,
+          avatar: profile2.avatar,
+          email: profile2.email,
+        },
       },
       lastMessageReadBy: {
         [userId1]: true,
-        [userId2]: true
+        [userId2]: true,
       },
       createdAt: serverTimestamp(),
-      updatedAt: serverTimestamp()
+      updatedAt: serverTimestamp(),
     });
   }
 
@@ -331,5 +375,5 @@ export default {
   markMessagesAsRead,
   getUnreadCount,
   initializeChat,
-  getChatId
+  getChatId,
 };

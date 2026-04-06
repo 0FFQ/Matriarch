@@ -1,15 +1,27 @@
-import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
-import { onAuthChange } from '../firebase/auth';
-import { saveUserData, loadUserData } from '../firebase/firestore';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useCallback,
+  useRef,
+} from "react";
+import { onAuthChange } from "../firebase/auth";
+import { saveUserData, loadUserData } from "../firebase/firestore";
 
 const UserContext = createContext(null);
 
+// Ключи для localStorage
 const LOCAL_STORAGE_KEYS = {
-  profile: 'matriarch_profile',
-  favorites: 'matriarch_favorites',
-  watched: 'matriarch_watched',
-  watchlist: 'matriarch_watchlist',
+  profile: "matriarch_profile",
+  favorites: "matriarch_favorites",
+  watched: "matriarch_watched",
+  watchlist: "matriarch_watchlist",
 };
+
+// ============================================
+// LocalStorage утилиты
+// ============================================
 
 /**
  * Загрузить данные из localStorage
@@ -17,14 +29,23 @@ const LOCAL_STORAGE_KEYS = {
 const loadFromLocalStorage = () => {
   try {
     return {
-      profile: JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEYS.profile) || '{"name":"","avatar":""}'),
-      favorites: JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEYS.favorites) || '[]'),
-      watched: JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEYS.watched) || '[]'),
-      watchlist: JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEYS.watchlist) || '[]'),
+      profile: JSON.parse(
+        localStorage.getItem(LOCAL_STORAGE_KEYS.profile) ||
+          '{"name":"","avatar":""}'
+      ),
+      favorites: JSON.parse(
+        localStorage.getItem(LOCAL_STORAGE_KEYS.favorites) || "[]"
+      ),
+      watched: JSON.parse(
+        localStorage.getItem(LOCAL_STORAGE_KEYS.watched) || "[]"
+      ),
+      watchlist: JSON.parse(
+        localStorage.getItem(LOCAL_STORAGE_KEYS.watchlist) || "[]"
+      ),
     };
   } catch {
     return {
-      profile: { name: '', avatar: '' },
+      profile: { name: "", avatar: "" },
       favorites: [],
       watched: [],
       watchlist: [],
@@ -37,31 +58,52 @@ const loadFromLocalStorage = () => {
  */
 const saveToLocalStorage = (data) => {
   try {
-    localStorage.setItem(LOCAL_STORAGE_KEYS.profile, JSON.stringify(data.profile));
-    localStorage.setItem(LOCAL_STORAGE_KEYS.favorites, JSON.stringify(data.favorites));
-    localStorage.setItem(LOCAL_STORAGE_KEYS.watched, JSON.stringify(data.watched));
-    localStorage.setItem(LOCAL_STORAGE_KEYS.watchlist, JSON.stringify(data.watchlist));
+    localStorage.setItem(
+      LOCAL_STORAGE_KEYS.profile,
+      JSON.stringify(data.profile)
+    );
+    localStorage.setItem(
+      LOCAL_STORAGE_KEYS.favorites,
+      JSON.stringify(data.favorites)
+    );
+    localStorage.setItem(
+      LOCAL_STORAGE_KEYS.watched,
+      JSON.stringify(data.watched)
+    );
+    localStorage.setItem(
+      LOCAL_STORAGE_KEYS.watchlist,
+      JSON.stringify(data.watchlist)
+    );
   } catch (error) {
-    console.error('[UserContext] LocalStorage save error:', error);
+    console.error("[UserContext] LocalStorage save error:", error);
   }
 };
 
+// ============================================
+// Провайдер
+// ============================================
+
 export const UserProvider = ({ children }) => {
-  // Загружаем данные из localStorage при инициализации
+  // Загружаем начальные данные из localStorage
   const initialData = loadFromLocalStorage();
 
+  // Состояние
   const [user, setUser] = useState(null);
   const [syncEnabled, setSyncEnabled] = useState(false);
   const [profile, setProfile] = useState(initialData.profile);
   const [favorites, setFavorites] = useState(initialData.favorites);
   const [watched, setWatched] = useState(initialData.watched);
   const [watchlist, setWatchlist] = useState(initialData.watchlist);
-  
-  // Используем ref для хранения флага загрузки из Firestore
+
+  // Ref для отслеживания загрузки из Firestore
   const isLoadingRef = useRef(false);
   const saveTimeoutRef = useRef(null);
 
-  // === При изменении состояния аутентификации ===
+  // ============================================
+  // Аутентификация
+  // ============================================
+
+  // При изменении состояния аутентификации
   useEffect(() => {
     const unsubscribe = onAuthChange(async (firebaseUser) => {
       if (firebaseUser) {
@@ -77,18 +119,20 @@ export const UserProvider = ({ children }) => {
           if (firestoreData.profile) {
             setProfile({
               ...firestoreData.profile,
-              email: firebaseUser.email
+              email: firebaseUser.email,
             });
           }
-          if (firestoreData.favorites) setFavorites(firestoreData.favorites);
+          if (firestoreData.favorites)
+            setFavorites(firestoreData.favorites);
           if (firestoreData.watched) setWatched(firestoreData.watched);
-          if (firestoreData.watchlist) setWatchlist(firestoreData.watchlist);
+          if (firestoreData.watchlist)
+            setWatchlist(firestoreData.watchlist);
         } else {
-          // Первый вход - создаем документ с Google профилем
+          // Первый вход — создаём документ с Google-профилем
           const googleProfile = {
-            name: firebaseUser.displayName || '',
-            avatar: firebaseUser.photoURL || '',
-            email: firebaseUser.email || ''
+            name: firebaseUser.displayName || "",
+            avatar: firebaseUser.photoURL || "",
+            email: firebaseUser.email || "",
           };
 
           setProfile(googleProfile);
@@ -96,28 +140,30 @@ export const UserProvider = ({ children }) => {
             profile: googleProfile,
             favorites: [],
             watched: [],
-            watchlist: []
+            watchlist: [],
           });
         }
-        
+
         isLoadingRef.current = false;
       } else {
-        console.log('[UserContext] ❌ Logged out');
+        console.log("[UserContext] ❌ Logged out");
         setUser(null);
         setSyncEnabled(false);
-        
+
         // Очищаем localStorage
         try {
-          localStorage.removeItem(LOCAL_STORAGE_KEYS.profile);
-          localStorage.removeItem(LOCAL_STORAGE_KEYS.favorites);
-          localStorage.removeItem(LOCAL_STORAGE_KEYS.watched);
-          localStorage.removeItem(LOCAL_STORAGE_KEYS.watchlist);
+          Object.values(LOCAL_STORAGE_KEYS).forEach((key) =>
+            localStorage.removeItem(key)
+          );
         } catch (error) {
-          console.error('[UserContext] LocalStorage clear error:', error);
+          console.error(
+            "[UserContext] LocalStorage clear error:",
+            error
+          );
         }
 
-        // Сбрасываем state
-        setProfile({ name: '', avatar: '' });
+        // Сбрасываем состояние
+        setProfile({ name: "", avatar: "" });
         setFavorites([]);
         setWatched([]);
         setWatchlist([]);
@@ -127,16 +173,20 @@ export const UserProvider = ({ children }) => {
     return () => unsubscribe();
   }, []);
 
-  // === Сохранение в localStorage (всегда) ===
+  // ============================================
+  // Синхронизация данных
+  // ============================================
+
+  // Сохранение в localStorage (всегда)
   useEffect(() => {
     saveToLocalStorage({ profile, favorites, watched, watchlist });
   }, [profile, favorites, watched, watchlist]);
 
-  // === Сохранение в Firestore (только если НЕ загружаем) ===
+  // Сохранение в Firestore (только если НЕ загружаем)
   useEffect(() => {
     // НЕ сохраняем если:
     // - Пользователь не авторизован
-    // - Идет загрузка из Firestore (чтобы не перезаписать пустыми данными)
+    // - Идёт загрузка из Firestore
     if (!syncEnabled || !user || isLoadingRef.current) return;
 
     // Очищаем предыдущий таймер
@@ -147,9 +197,14 @@ export const UserProvider = ({ children }) => {
     // Debounce 500ms
     saveTimeoutRef.current = setTimeout(async () => {
       try {
-        await saveUserData(user.uid, { profile, favorites, watched, watchlist });
+        await saveUserData(user.uid, {
+          profile,
+          favorites,
+          watched,
+          watchlist,
+        });
       } catch (error) {
-        console.error('[UserContext] Save error:', error);
+        console.error("[UserContext] Save error:", error);
       }
     }, 500);
 
@@ -160,57 +215,76 @@ export const UserProvider = ({ children }) => {
     };
   }, [profile, favorites, watched, watchlist, syncEnabled, user]);
 
-  // === Функции управления списками ===
+  // ============================================
+  // Функции управления списками
+  // ============================================
+
   const updateProfile = useCallback((newProfile) => {
     setProfile(newProfile);
   }, []);
 
   const toggleFavorite = useCallback((item) => {
-    setFavorites(prev => {
-      const exists = prev.find(i => i.id === item.id);
+    setFavorites((prev) => {
+      const exists = prev.find((i) => i.id === item.id);
       if (exists) {
-        return prev.filter(i => i.id !== item.id);
+        return prev.filter((i) => i.id !== item.id);
       }
       return [...prev, { ...item, addedAt: Date.now() }];
     });
   }, []);
 
   const toggleWatched = useCallback((item) => {
-    setWatched(prev => {
-      const exists = prev.find(i => i.id === item.id);
+    setWatched((prev) => {
+      const exists = prev.find((i) => i.id === item.id);
       if (exists) {
-        return prev.filter(i => i.id !== item.id);
+        return prev.filter((i) => i.id !== item.id);
       }
-      setWatchlist(wl => wl.filter(i => i.id !== item.id));
+      // Удаляем из watchlist при добавлении в просмотренные
+      setWatchlist((wl) => wl.filter((i) => i.id !== item.id));
       return [...prev, { ...item, watchedAt: Date.now() }];
     });
   }, []);
 
   const toggleWatchlist = useCallback((item) => {
-    setWatchlist(prev => {
-      const exists = prev.find(i => i.id === item.id);
+    setWatchlist((prev) => {
+      const exists = prev.find((i) => i.id === item.id);
       if (exists) {
-        return prev.filter(i => i.id !== item.id);
+        return prev.filter((i) => i.id !== item.id);
       }
       return [...prev, { ...item, addedAt: Date.now() }];
     });
   }, []);
 
-  const isInFavorites = useCallback((id) => favorites.some(i => i.id === id), [favorites]);
-  const isInWatched = useCallback((id) => watched.some(i => i.id === id), [watched]);
-  const isInWatchlist = useCallback((id) => watchlist.some(i => i.id === id), [watchlist]);
+  // Проверки наличия в списках
+  const isInFavorites = useCallback(
+    (id) => favorites.some((i) => i.id === id),
+    [favorites]
+  );
+  const isInWatched = useCallback(
+    (id) => watched.some((i) => i.id === id),
+    [watched]
+  );
+  const isInWatchlist = useCallback(
+    (id) => watchlist.some((i) => i.id === id),
+    [watchlist]
+  );
 
+  // Удаление из списков
   const removeFromFavorites = useCallback((id) => {
-    setFavorites(prev => prev.filter(i => i.id !== id));
+    setFavorites((prev) => prev.filter((i) => i.id !== id));
   }, []);
 
   const removeFromWatched = useCallback((id) => {
-    setWatched(prev => prev.filter(i => i.id !== id));
+    setWatched((prev) => prev.filter((i) => i.id !== id));
   }, []);
 
   const removeFromWatchlist = useCallback((id) => {
-    setWatchlist(prev => prev.filter(i => i.id !== id));
+    setWatchlist((prev) => prev.filter((i) => i.id !== id));
   }, []);
+
+  // ============================================
+  // Контекст
+  // ============================================
 
   const value = {
     profile,
@@ -232,13 +306,19 @@ export const UserProvider = ({ children }) => {
     firebaseUser: user,
   };
 
-  return <UserContext.Provider value={value}>{children}</UserContext.Provider>;
+  return (
+    <UserContext.Provider value={value}>{children}</UserContext.Provider>
+  );
 };
+
+// ============================================
+// Хук
+// ============================================
 
 export const useUser = () => {
   const context = useContext(UserContext);
   if (!context) {
-    throw new Error('useUser must be used within a UserProvider');
+    throw new Error("useUser must be used within a UserProvider");
   }
   return context;
 };

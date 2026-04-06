@@ -1,89 +1,115 @@
-import { initializeApp } from 'firebase/app';
-import { 
-  getAuth, 
-  GoogleAuthProvider, 
-  signInWithPopup, 
-  signOut, 
+import { initializeApp } from "firebase/app";
+import {
+  getAuth,
+  GoogleAuthProvider,
+  signInWithPopup,
+  signOut,
   onAuthStateChanged,
   setPersistence,
-  browserLocalPersistence
-} from 'firebase/auth';
-import { getFirestore } from 'firebase/firestore';
-import firebaseConfig from './config';
+  browserLocalPersistence,
+} from "firebase/auth";
+import { getFirestore } from "firebase/firestore";
+import firebaseConfig from "./config";
 
+// ============================================
 // Инициализация Firebase
+// ============================================
 const app = initializeApp(firebaseConfig);
-
-// Инициализация Firebase сервисов
 export const auth = getAuth(app);
 export const db = getFirestore(app);
 export const googleProvider = new GoogleAuthProvider();
 
-// Настраиваем провайдер Google
+// Настройка провайдера Google
 googleProvider.setCustomParameters({
-  // Показывать аккаунт по умолчанию (без выбора если один аккаунт)
-  prompt: 'select_account'
+  prompt: "select_account",
 });
 
-// Устанавливаем персистентность (сохранение сессии)
-setPersistence(auth, browserLocalPersistence).catch(error => {
-  console.error('[Auth] Persistence error:', error.message);
+// Установка персистентности (сохранение сессии)
+setPersistence(auth, browserLocalPersistence).catch((error) => {
+  console.error("[Auth] Persistence error:", error.message);
 });
 
-// Подавляем Cross-Origin-Opener-Policy warnings (это просто шум от Firebase SDK)
-const originalError = console.error;
+// ============================================
+// Подавление Cross-Origin-Opener-Policy warnings
+// (это шум от Firebase SDK, не влияющий на работу)
+// ============================================
+const originalConsoleError = console.error;
 console.error = (...args) => {
   const message = args[0];
-  if (typeof message === 'string' && message.includes('Cross-Origin-Opener-Policy')) {
-    return; // Игнорируем эти предупреждения
+  if (
+    typeof message === "string" &&
+    message.includes("Cross-Origin-Opener-Policy")
+  ) {
+    return;
   }
-  originalError.apply(console, args);
+  originalConsoleError.apply(console, args);
 };
 
-// Вход через Google
+// ============================================
+// Аутентификация
+// ============================================
+
+/**
+ * Войти через Google
+ * @returns {object|null} Объект пользователя или null
+ */
 export const signInWithGoogle = async () => {
   try {
+    // Если уже авторизован — возвращаем текущего пользователя
     if (auth.currentUser) {
       return auth.currentUser;
     }
 
     const result = await signInWithPopup(auth, googleProvider);
-    const user = result.user;
-    return user;
+    return result.user;
   } catch (error) {
-    if (error.code !== 'auth/popup-closed-by-user') {
-      console.error('[Auth] Sign in error:', error.message);
+    if (error.code !== "auth/popup-closed-by-user") {
+      console.error("[Auth] Sign in error:", error.message);
       throw error;
     }
     return null;
   }
 };
 
-// Выход
+/**
+ * Выйти из аккаунта
+ */
 export const logout = async () => {
   try {
     await signOut(auth);
   } catch (error) {
-    console.error('[Auth] Logout error:', error.message);
+    console.error("[Auth] Logout error:", error.message);
     throw error;
   }
 };
 
-// Слушатель состояния аутентификации
+/**
+ * Подписаться на изменение состояния аутентификации
+ * @param {function} callback - Функция обратного вызова
+ * @returns {function} Функция отписки
+ */
 export const onAuthChange = (callback) => {
   return onAuthStateChanged(auth, (user) => {
     callback(user);
   });
 };
 
-// Получить текущего пользователя
+/**
+ * Получить текущего авторизованного пользователя
+ * @returns {object|null}
+ */
 export const getCurrentUser = () => {
   return auth.currentUser;
 };
 
-// Проверить, сохранён ли аккаунт
+/**
+ * Проверить, сохранён ли аккаунт в localStorage
+ * @returns {boolean}
+ */
 export const hasSavedAccount = () => {
-  return !!localStorage.getItem('firebase:authUser:' + firebaseConfig.apiKey);
+  return !!localStorage.getItem(
+    "firebase:authUser:" + firebaseConfig.apiKey
+  );
 };
 
 export default app;
