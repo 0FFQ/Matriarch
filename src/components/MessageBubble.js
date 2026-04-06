@@ -1,34 +1,69 @@
-import React from 'react';
-import { motion } from 'framer-motion';
-import { Check, CheckCheck } from 'lucide-react';
+import React from "react";
+import { motion } from "framer-motion";
+import { Check, CheckCheck } from "lucide-react";
+import SharedContentBubble from "./SharedContentBubble";
 
-const MessageBubble = ({ message, isOwn, formatTime }) => {
+/**
+ * Пузырь сообщения (текст + опционально прикреплённый контент)
+ * @param {function} props.onOpenContent - Callback: открыть карточку фильма на сайте
+ */
+const MessageBubble = ({ message, isOwn, formatTime, onOpenContent }) => {
+  // Проверяем, есть ли прикреплённый контент
+  const hasSharedContent =
+    message.contentType === "shared_media" && message.content;
+
   return (
     <motion.div
-      className={`message-bubble ${isOwn ? 'own' : 'other'}`}
+      className={`message-bubble ${isOwn ? "own" : "other"}`}
       initial={{ opacity: 0, y: 10, scale: 0.97 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, scale: 0.97 }}
-      transition={{ duration: 0.15, ease: 'easeOut' }}
+      transition={{ duration: 0.15, ease: "easeOut" }}
     >
+      {/* Аватар отправителя (для чужих сообщений) */}
       {!isOwn && (
         <div className="message-sender">
           {message.senderAvatar ? (
-            <img src={message.senderAvatar} alt={message.senderName} className="message-avatar" />
+            <img
+              src={message.senderAvatar}
+              alt={message.senderName}
+              className="message-avatar"
+            />
           ) : (
             <div className="message-avatar-placeholder">
-              {(message.senderName || '?')[0].toUpperCase()}
+              {(message.senderName || "?")[0].toUpperCase()}
             </div>
           )}
           <span className="message-sender-name">{message.senderName}</span>
         </div>
       )}
+
       <div className="message-content">
-        <p className="message-text">{message.text}</p>
+        {/* Прикреплённый контент (если есть) */}
+        {hasSharedContent && (
+          <SharedContentBubble
+            content={message.content}
+            isOwn={isOwn}
+            onOpenOnSite={onOpenContent}
+          />
+        )}
+
+        {/* Текстовое сообщение */}
+        {message.text && (
+          <p className="message-text">{message.text}</p>
+        )}
+
+        {/* Мета-информация */}
         <div className="message-meta">
-          <span className="message-time">{formatTime(message.createdAt)}</span>
+          <span className="message-time">
+            {formatTime(message.createdAt)}
+          </span>
           {isOwn && (
-            <span className={`message-status ${message.read ? 'read' : 'sent'}`}>
+            <span
+              className={`message-status ${
+                message.read ? "read" : "sent"
+              }`}
+            >
               {message.read ? (
                 <CheckCheck size={14} />
               ) : (

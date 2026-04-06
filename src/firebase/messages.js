@@ -324,6 +324,89 @@ export const getUnreadCount = async (chatId, userId) => {
 };
 
 // ============================================
+// Отправка контента в чат
+// ============================================
+
+/**
+ * Отправить фильм/сериал в чат как сообщение с прикреплённым контентом
+ * @param {string} chatId - ID чата
+ * @param {string} senderId - ID отправителя
+ * @param {object} senderProfile - Профиль отправителя
+ * @param {object} contentItem - Элемент контента (фильм/сериал)
+ * @param {string} message - Дополнительное сообщение
+ */
+export const shareContentToChat = async (
+  chatId,
+  senderId,
+  senderProfile,
+  contentItem,
+  message = ""
+) => {
+  try {
+    const messageData = {
+      chatId,
+      senderId,
+      senderName: senderProfile.name || "Anonymous",
+      senderAvatar: senderProfile.avatar || "",
+      senderEmail: senderProfile.email || "",
+      text: message.trim(),
+      contentType: "shared_media",
+      content: {
+        id: contentItem.id,
+        title: contentItem.title || contentItem.name,
+        poster_path: contentItem.poster_path,
+        media_type:
+          contentItem.media_type ||
+          (contentItem.first_air_date ? "tv" : "movie"),
+        overview: contentItem.overview,
+        vote_average: contentItem.vote_average,
+        release_date:
+          contentItem.release_date || contentItem.first_air_date,
+      },
+      createdAt: serverTimestamp(),
+      read: false,
+    };
+
+    // Добавляем сообщение в коллекцию
+    const docRef = await addDoc(
+      collection(db, MESSAGES_COLLECTION),
+      messageData
+    );
+
+    // Обновляем документ чата
+    const chatRef = doc(db, CHATS_COLLECTION, chatId);
+    const chatSnap = await getDoc(chatRef);
+
+    if (chatSnap.exists()) {
+      const contentTitle = messageData.content.title;
+      const updateData = {
+        participants: chatId.split("_"),
+        lastMessage: message.trim()
+          ? message.trim().substring(0, 100)
+          : `🎬 ${contentTitle}`,
+        lastMessageTime: serverTimestamp(),
+        lastSenderId: senderId,
+        lastSenderName: senderProfile.name || "Anonymous",
+        updatedAt: serverTimestamp(),
+      };
+
+      if (chatSnap.data().lastMessageReadBy) {
+        updateData[`lastMessageReadBy.${senderId}`] = true;
+      } else {
+        updateData.lastMessageReadBy = { [senderId]: true };
+      }
+
+      await updateDoc(chatRef, updateData);
+    }
+
+    return docRef.id;
+  } catch (error) {
+    console.error("[Messages] Share content error:", error.message);
+    throw error;
+  }
+};
+
+// ============================================
 // Инициализация чатов
 // ============================================
 
@@ -374,6 +457,7 @@ export default {
   getAllUsers,
   markMessagesAsRead,
   getUnreadCount,
+  shareContentToChat,
   initializeChat,
   getChatId,
 };

@@ -5,7 +5,7 @@ import { subscribeToMessages, sendMessage, markMessagesAsRead } from '../firebas
 import { useUser } from '../context/UserContext';
 import MessageBubble from './MessageBubble';
 
-const ChatWindow = ({ chatId, otherUser, onBack, t, isOpen, onClose }) => {
+const ChatWindow = ({ chatId, otherUser, onBack, t, isOpen, onClose, onSelectContent }) => {
   const { firebaseUser, profile } = useUser();
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
@@ -217,6 +217,7 @@ const ChatWindow = ({ chatId, otherUser, onBack, t, isOpen, onClose }) => {
                         message={message}
                         isOwn={message.senderId === firebaseUser?.uid}
                         formatTime={formatMessageTime}
+                        onOpenContent={onSelectContent}
                       />
                     ))}
                   </AnimatePresence>

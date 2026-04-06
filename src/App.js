@@ -11,6 +11,7 @@ import FilterPanel from './components/FilterPanel';
 import UserProfile from './components/UserProfile';
 import SocialFeatures from './components/SocialFeatures';
 import MessengerButton from './components/MessengerButton';
+import ShareToChatModal from './components/ShareToChatModal';
 import { UserProvider, useUser } from './context/UserContext';
 import { cachedRequest, setCache, getCache, getCacheStats, clearAllCache } from './utils/cache';
 import './App.css';
@@ -287,6 +288,10 @@ function AppContent() {
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [unreadChats, setUnreadChats] = useState(0);
   const [unreadNotifications, setUnreadNotifications] = useState(0);
+
+  // Шаринг контента в чат
+  const [shareToChatOpen, setShareToChatOpen] = useState(false);
+  const [shareToChatContent, setShareToChatContent] = useState(null);
 
   const debounceRef = useRef(null);
 
@@ -794,6 +799,19 @@ function AppContent() {
         setUnreadChats={setUnreadChats}
         unreadNotifications={unreadNotifications}
         setUnreadNotifications={setUnreadNotifications}
+        onSelectSharedContent={(content) => {
+          // Закрываем чат
+          setChatOpen(false);
+          setActiveChatId(null);
+          setActiveChatUser(null);
+          setChatListOpen(true);
+          // Ищем фильм по названию
+          const title = content.title || '';
+          if (title) {
+            setQuery(title);
+            searchByText(title);
+          }
+        }}
       />
 
       <FilterPanel
@@ -874,6 +892,10 @@ function AppContent() {
             imageBase={IMAGE_BASE}
             onSelect={getTrailer}
             fromCache={lastFromCache}
+            onShareInChat={(item) => {
+              setShareToChatContent(item);
+              setShareToChatOpen(true);
+            }}
           />
         )}
       </AnimatePresence>
@@ -950,6 +972,23 @@ function AppContent() {
           unreadCount={unreadChats + unreadNotifications}
         />
       )}
+
+      {/* Модалка шаринга в чат */}
+      <ShareToChatModal
+        t={t}
+        isOpen={shareToChatOpen}
+        onClose={() => {
+          setShareToChatOpen(false);
+          setShareToChatContent(null);
+        }}
+        contentItem={shareToChatContent}
+        onChatOpen={(chatId, user) => {
+          setActiveChatId(chatId);
+          setActiveChatUser(user);
+          setChatOpen(true);
+          setChatListOpen(false);
+        }}
+      />
     </div>
   );
 }

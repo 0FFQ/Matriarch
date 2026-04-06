@@ -8,7 +8,7 @@ const IMAGE_BASE = "https://image.tmdb.org/t/p/w500";
 /**
  * Список результатов поиска
  */
-const ResultsList = memo(({ results, imageBase = IMAGE_BASE, onSelect, fromCache }) => {
+const ResultsList = memo(({ results, imageBase = IMAGE_BASE, onSelect, fromCache, onShareInChat }) => {
   const isSingleResult = results.length === 1;
 
   /**
@@ -94,7 +94,7 @@ const ResultsList = memo(({ results, imageBase = IMAGE_BASE, onSelect, fromCache
                 alt={item.title || item.name}
                 loading="lazy"
               />
-              <MovieActions item={item} />
+              <MovieActions item={item} onShareInChat={onShareInChat} />
             </div>
 
             {/* Информация */}

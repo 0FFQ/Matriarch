@@ -38,7 +38,8 @@ const SocialFeatures = ({
   unreadChats,
   setUnreadChats,
   unreadNotifications,
-  setUnreadNotifications
+  setUnreadNotifications,
+  onSelectSharedContent
 }) => {
   const { firebaseUser, profile } = useUser();
 
@@ -185,6 +186,7 @@ const SocialFeatures = ({
           setActiveChatUser(null);
           setChatListOpen(true);
         }}
+        onSelectContent={onSelectSharedContent}
       />
 
       {/* Панель общего контента */}
