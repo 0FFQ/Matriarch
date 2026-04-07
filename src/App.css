@@ -5724,18 +5724,11 @@ body.light .share-to-chat-content-info {
   border-bottom-color: rgba(0, 0, 0, 0.06);
 }
 
-.share-to-chat-content-poster {
-  width: 40px;
-  height: 60px;
-  object-fit: cover;
-  border-radius: 6px;
-  flex-shrink: 0;
-}
-
 .share-to-chat-content-meta {
   display: flex;
   flex-direction: column;
   gap: 4px;
+  flex: 1;
 }
 
 .share-to-chat-content-type {
@@ -6053,12 +6046,12 @@ body.light .share-to-chat-quick-send-hint {
 /* Светлая тема */
 body.light .share-poster-btn {
   background: rgba(0, 0, 0, 0.15);
-  color: #333333;
+  color: #ffffff;
 }
 
 body.light .share-poster-btn:hover {
   background: rgba(0, 0, 0, 0.3);
-  color: #1f2937;
+  color: #ffffff;
 }
 
 

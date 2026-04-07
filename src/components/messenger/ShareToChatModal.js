@@ -5,8 +5,6 @@ import { getAllUsers, initializeChat, shareContentToChat } from "../../firebase/
 import { subscribeToUserChats } from "../../firebase/messages";
 import { useUser } from "../../context/UserContext";
 
-const IMAGE_BASE = "https://image.tmdb.org/t/p/w54";
-
 /**
  * Модальное окно для отправки фильма/сериала в чат
  * @param {function} props.onChatOpen - Callback: открыть чат с получателем (chatId, user)
@@ -185,13 +183,6 @@ const ShareToChatModal = ({
           {/* Информация о контенте */}
           {contentTitle && (
             <div className="share-to-chat-content-info">
-              {contentItem?.poster_path && (
-                <img
-                  src={`${IMAGE_BASE}${contentItem.poster_path}`}
-                  alt={contentTitle}
-                  className="share-to-chat-content-poster"
-                />
-              )}
               <div className="share-to-chat-content-meta">
                 <span className="share-to-chat-content-type">
                   {mediaType === "movie" ? (

@@ -23,6 +23,22 @@ const SharedContentBubble = ({ content, isOwn, onOpenOnSite, t }) => {
     ? content.vote_average.toFixed(1)
     : "—";
 
+  // Формируем URL постера с проверкой
+  const posterUrl = content.poster_path 
+    ? `${IMAGE_BASE}${content.poster_path}`
+    : null;
+
+  // Логируем для отладки
+  React.useEffect(() => {
+    console.log('[SharedContentBubble] Content:', {
+      id: content.id,
+      title: content.title,
+      hasPoster: !!content.poster_path,
+      posterPath: content.poster_path,
+      posterUrl,
+    });
+  }, [content]);
+
   const handleOpenKinopoisk = () => {
     const title = content.title;
     const type = mediaType === "tv" ? (t?.tvSeries || 'TV Series') : (t?.movie || 'Movie');
@@ -58,11 +74,17 @@ const SharedContentBubble = ({ content, isOwn, onOpenOnSite, t }) => {
           }
         }}
       >
-        {content.poster_path ? (
+        {posterUrl ? (
           <img
-            src={`${IMAGE_BASE}${content.poster_path}`}
-            alt={content.title}
+            src={posterUrl}
+            alt={content.title || "Shared content"}
             loading="lazy"
+            onError={(e) => {
+              console.error('[SharedContentBubble] Failed to load poster:', posterUrl);
+              e.target.style.display = 'none';
+              const placeholder = e.target.parentElement.querySelector('.shared-content-poster-placeholder');
+              if (placeholder) placeholder.style.display = 'flex';
+            }}
           />
         ) : (
           <div className="shared-content-poster-placeholder">

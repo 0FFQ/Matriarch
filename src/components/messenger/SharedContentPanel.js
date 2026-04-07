@@ -207,6 +207,11 @@ const SharedContentPanel = ({ t, isOpen, onClose, onSelectContent }) => {
 const SharedContentCard = ({ item, t, onView, onDelete, isOwner, formatDate }) => {
   const content = item.content;
   const mediaType = content.media_type || 'movie';
+  
+  // Формируем URL постера с проверкой
+  const posterUrl = content.poster_path 
+    ? `${IMAGE_BASE}${content.poster_path}`
+    : null;
 
   return (
     <motion.div
@@ -217,14 +222,20 @@ const SharedContentCard = ({ item, t, onView, onDelete, isOwner, formatDate }) =
       <div className="flex gap-4 p-4">
         {/* Poster */}
         <div className="flex-shrink-0 w-24">
-          {content.poster_path ? (
+          {posterUrl ? (
             <img
-              src={`${IMAGE_BASE}${content.poster_path}`}
-              alt={content.title}
+              src={posterUrl}
+              alt={content.title || "Shared content"}
               className="w-full h-36 object-cover rounded-lg"
+              onError={(e) => {
+                console.error('[SharedContentCard] Failed to load poster:', posterUrl);
+                e.target.style.display = 'none';
+                const placeholder = e.target.parentElement.querySelector('.poster-placeholder');
+                if (placeholder) placeholder.style.display = 'flex';
+              }}
             />
           ) : (
-            <div className="w-full h-36 bg-gray-200 dark:bg-gray-600 rounded-lg flex items-center justify-center">
+            <div className="w-full h-36 bg-gray-200 dark:bg-gray-600 rounded-lg flex items-center justify-center poster-placeholder">
               {mediaType === 'movie' ? (
                 <Film className="w-8 h-8 text-gray-400" />
               ) : (
