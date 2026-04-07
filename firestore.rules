@@ -3,55 +3,119 @@ service cloud.firestore {
   match /databases/{database}/documents {
 
     // ============================================
+    // Вспомогательные функции
+    // ============================================
+
+    // Проверить, что пользователь авторизован
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Проверить, что данные соответствуют ожидаемой схеме
+    function isValidUserData(data) {
+      return data.profile is map &&
+             (data.profile.name is string || data.profile.name == null) &&
+             (data.profile.avatar is string || data.profile.avatar == null) &&
+             (data.profile.email is string || data.profile.email == null) &&
+             (data.favorites is list || data.favorites == null) &&
+             (data.watched is list || data.watched == null) &&
+             (data.watchlist is list || data.watchlist == null);
+    }
+
+    // Проверить, что сообщение валидно
+    function isValidMessage(data) {
+      return data.text is string && data.text.size() <= 2000 &&
+             data.senderId == request.auth.uid &&
+             data.chatId is string &&
+             (data.contentType == null || data.contentType is string);
+    }
+
+    // Проверить, что чат валиден
+    function isValidChat(data) {
+      return data.participants is list &&
+             data.participants.size() == 2 &&
+             request.auth.uid in data.participants;
+    }
+
+    // ============================================
     // Пользователи (users)
     // ============================================
-    // - Чтение/листинг: все авторизованные
-    // - Запись: только владелец документа
     match /users/{userId} {
-      allow read, list: if request.auth != null;
-      allow write: if request.auth != null && request.auth.uid == userId;
+      allow read: if isAuthenticated() && request.auth.uid == userId;
+      allow create: if isAuthenticated() && request.auth.uid == userId && isValidUserData(request.resource.data);
+      allow update: if isAuthenticated() && request.auth.uid == userId && isValidUserData(request.resource.data);
+      allow delete: if isAuthenticated() && request.auth.uid == userId;
     }
 
     // ============================================
     // Подписки (subscriptions)
     // ============================================
-    // Авторизованные могут управлять своими подписками
     match /subscriptions/{subscriptionId} {
-      allow read: if request.auth != null;
-      allow create: if request.auth != null;
-      allow update, delete: if request.auth != null;
+      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
     }
 
     // ============================================
     // Сообщения (messages)
     // ============================================
-    // Участники чата могут читать и писать
     match /messages/{messageId} {
-      allow read, write: if request.auth != null;
+      // Читать могут только участники чата
+      allow read: if isAuthenticated() &&
+                     request.auth.uid in get(/databases/$(database)/documents/chats/$(resource.data.chatId)).data.participants;
+
+      // Создавать могут только авторизованные с валидными данными
+      allow create: if isAuthenticated() && isValidMessage(request.resource.data);
+
+      // Обновлять (например, пометить прочитанным) — только участники чата
+      allow update: if isAuthenticated() &&
+                       request.auth.uid in get(/databases/$(database)/documents/chats/$(resource.data.chatId)).data.participants;
+
+      // Удалять может только автор сообщения
+      allow delete: if isAuthenticated() && resource.data.senderId == request.auth.uid;
     }
 
     // ============================================
     // Чаты (chats)
     // ============================================
-    // Участники чата могут читать и писать
     match /chats/{chatId} {
-      allow read, write: if request.auth != null;
+      // Читать/создавать/обновлять — только участники чата
+      allow read: if isAuthenticated() && request.auth.uid in resource.data.participants;
+      allow create: if isAuthenticated() && isValidChat(request.resource.data);
+      allow update: if isAuthenticated() && request.auth.uid in resource.data.participants;
+
+      // Удалять чат нельзя (защита от случайного удаления)
+      allow delete: if false;
     }
 
     // ============================================
     // Общий контент (sharedContent)
     // ============================================
-    // Все авторизованные могут читать и писать
     match /sharedContent/{contentId} {
-      allow read, write: if request.auth != null;
+      // Читать — только если контент шарингован с текущим пользователем или им самим
+      allow read: if isAuthenticated() &&
+                     (resource.data.sharedWith == request.auth.uid ||
+                      resource.data.sharedBy == request.auth.uid);
+
+      // Создавать — только авторизованные, sharedBy = текущий пользователь
+      allow create: if isAuthenticated() && request.resource.data.sharedBy == request.auth.uid;
+
+      // Обновлять (например, пометить прочитанным) — только получатель
+      allow update: if isAuthenticated() && resource.data.sharedWith == request.auth.uid;
+
+      // Удалять — только автор
+      allow delete: if isAuthenticated() && resource.data.sharedBy == request.auth.uid;
     }
 
     // ============================================
     // Уведомления (notifications)
     // ============================================
-    // Пользователи могут читать и писать свои уведомления
     match /notifications/{notificationId} {
-      allow read, write: if request.auth != null;
+      // Читать/обновлять/удалять — только владелец уведомления
+      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      allow create: if isAuthenticated(); // Любой авторизованный может создать уведомление (сервис)
+      allow update: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      allow delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
     }
   }
 }

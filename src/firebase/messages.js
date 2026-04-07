@@ -13,6 +13,7 @@ import {
   limit,
 } from "firebase/firestore";
 import { db } from "./auth";
+import { validateMessageData } from "../utils/validation";
 
 const MESSAGES_COLLECTION = "messages";
 const CHATS_COLLECTION = "chats";
@@ -64,13 +65,15 @@ const safeUnsubscribe = (unsubscribe) => {
  */
 export const sendMessage = async (chatId, senderId, senderProfile, text) => {
   try {
+    // Валидация данных сообщения
+    const validated = validateMessageData(senderId, senderProfile, text);
+
     const messageData = {
       chatId,
-      senderId,
-      senderName: senderProfile.name || "Anonymous",
-      senderAvatar: senderProfile.avatar || "",
-      senderEmail: senderProfile.email || "",
-      text: text.trim(),
+      senderId: validated.senderId,
+      senderName: validated.senderName,
+      senderAvatar: validated.senderAvatar,
+      text: validated.text,
       createdAt: serverTimestamp(),
       read: false,
     };
@@ -343,13 +346,18 @@ export const shareContentToChat = async (
   message = ""
 ) => {
   try {
+    const validated = validateMessageData(
+      senderId,
+      senderProfile,
+      message || '🎬 Поделились контентом'
+    );
+
     const messageData = {
       chatId,
-      senderId,
-      senderName: senderProfile.name || "Anonymous",
-      senderAvatar: senderProfile.avatar || "",
-      senderEmail: senderProfile.email || "",
-      text: message.trim(),
+      senderId: validated.senderId,
+      senderName: validated.senderName,
+      senderAvatar: validated.senderAvatar,
+      text: validated.text,
       contentType: "shared_media",
       content: {
         id: contentItem.id,

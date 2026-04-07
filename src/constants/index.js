@@ -1,7 +1,12 @@
 // API константы
-export const AUTH_TOKEN = 'eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI5YWY0MzRlNWZjNDk1N2I0OTlkZWMzY2FhZmNjYjk2ZCIsIm5iZiI6MTc1NjcyNjgwNC44ODgsInN1YiI6IjY4YjU4NjE0YjQ3NWQ5NjJlMTllMjA4NyIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.oAfRNRh81PD-viu5rMg4ubRtcQfBK45Mt6RpUy3DSNk';
+export const AUTH_TOKEN = process.env.REACT_APP_TMDB_TOKEN;
 export const BASE_URL = 'https://api.themoviedb.org/3';
 export const IMAGE_BASE = 'https://image.tmdb.org/t/p/w500';
+
+// Проверка наличия токена
+if (!AUTH_TOKEN) {
+  console.error('[Config] REACT_APP_TMDB_TOKEN не установлен. Создайте файл .env на основе .env.example');
+}
 
 // Пагинация
 export const ITEMS_PER_PAGE = 6;

@@ -30,22 +30,6 @@ setPersistence(auth, browserLocalPersistence).catch((error) => {
 });
 
 // ============================================
-// Подавление Cross-Origin-Opener-Policy warnings
-// (это шум от Firebase SDK, не влияющий на работу)
-// ============================================
-const originalConsoleError = console.error;
-console.error = (...args) => {
-  const message = args[0];
-  if (
-    typeof message === "string" &&
-    message.includes("Cross-Origin-Opener-Policy")
-  ) {
-    return;
-  }
-  originalConsoleError.apply(console, args);
-};
-
-// ============================================
 // Аутентификация
 // ============================================
 

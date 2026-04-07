@@ -3,6 +3,7 @@ import axios from 'axios';
 import { cachedRequest, getCacheStats, clearAllCache } from '../utils/cache';
 import { BASE_URL, CACHE_TTL, AUTH_TOKEN } from '../constants';
 import { getSortField, sortResults } from '../utils/helpers/searchUtils';
+import { logApiError, getUserErrorMessage } from '../utils/apiErrors';
 
 /**
  * Кастомный хук для управления поиском и фильтрами
@@ -14,6 +15,7 @@ const useSearch = (language) => {
   const [suggestions, setSuggestions] = useState([]);
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
   const [searchActive, setSearchActive] = useState(false);
   const [filters, setFilters] = useState({
     type: 'all',
@@ -60,7 +62,8 @@ const useSearch = (language) => {
         );
         setGenres(uniqueGenres);
       } catch (err) {
-        console.error('Failed to load genres:', err.message);
+        logApiError(err, { context: 'genre_load' });
+        setGenres([]);
       }
       setLoadingGenres(false);
     };
@@ -88,7 +91,7 @@ const useSearch = (language) => {
           );
           setSuggestions(filtered.slice(0, 8));
         } catch (err) {
-          console.error('Suggestions failed:', err.message);
+          logApiError(err, { context: 'suggestions', query });
           setSuggestions([]);
         }
       }, 300);
@@ -273,7 +276,8 @@ const useSearch = (language) => {
         setResults(allResults);
       }
     } catch (err) {
-      console.error('Filter search failed:', err.message);
+      logApiError(err, { context: 'filter_search', filters, query });
+      setError(getUserErrorMessage(err, language));
       setResults([]);
     }
 
@@ -288,6 +292,7 @@ const useSearch = (language) => {
     setSearchActive(true);
     setCurrentPage(1);
     setSuggestions([]);
+    setError(null);
 
     try {
       const { data } = await axios.get(`${BASE_URL}/search/multi`, {
@@ -301,7 +306,8 @@ const useSearch = (language) => {
 
       setResults(filtered);
     } catch (err) {
-      console.error('Text search failed:', err.message);
+      logApiError(err, { context: 'text_search', searchQuery });
+      setError(getUserErrorMessage(err, language));
       setResults([]);
     }
 
@@ -342,6 +348,7 @@ const useSearch = (language) => {
     setQuery('');
     setSearchActive(false);
     setResults([]);
+    setError(null);
     setCurrentPage(1);
     setFilters({
       type: 'all',
@@ -353,12 +360,19 @@ const useSearch = (language) => {
     });
   }, []);
 
+  // Очистка ошибки
+  const clearError = useCallback(() => {
+    setError(null);
+  }, []);
+
   return {
     query,
     setQuery,
     suggestions,
     results,
     loading,
+    error,
+    clearError,
     searchActive,
     setSearchActive,
     filters,

@@ -10,6 +10,7 @@ import {
   getDocs,
 } from "firebase/firestore";
 import { db } from "./auth";
+import { validateUserData } from "../utils/validation";
 
 const USERS_COLLECTION = "users";
 
@@ -49,20 +50,25 @@ export const findUserByEmail = async (email) => {
  */
 export const saveUserData = async (userId, userData) => {
   try {
+    // Валидация данных перед сохранением
+    const validatedData = validateUserData(userData);
+
     const userRef = doc(db, USERS_COLLECTION, userId);
     await setDoc(
       userRef,
       {
-        ...userData,
-        updatedAt: new Date().toISOString(),
+        ...validatedData,
         profile: {
-          ...userData.profile,
-          email: userData.profile?.email || null,
+          ...validatedData.profile,
+          email: validatedData.profile?.email || null,
         },
       },
       { merge: true }
     );
   } catch (error) {
+    if (error.name === 'ValidationError') {
+      console.error("[Firestore] Validation error:", error.message);
+    }
     console.error("[Firestore] Save error:", error.message);
     throw error;
   }
