@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Send, Search, User } from 'lucide-react';
-import { getAllUsers } from '../firebase/messages';
-import { useUser } from '../context/UserContext';
+import { getAllUsers } from '../../firebase/messages';
+import { useUser } from '../../context/UserContext';
 
 const ShareModal = ({ t, isOpen, onClose, contentItem, onShare }) => {
   const { firebaseUser, profile } = useUser();

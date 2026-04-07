@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence, useDragControls } from 'framer-motion';
 import { ArrowLeft, Send, MessageSquare, X, SendHorizonal } from 'lucide-react';
-import { subscribeToMessages, sendMessage, markMessagesAsRead } from '../firebase/messages';
-import { useUser } from '../context/UserContext';
+import { subscribeToMessages, sendMessage, markMessagesAsRead } from '../../firebase/messages';
+import { useUser } from '../../context/UserContext';
 import MessageBubble from './MessageBubble';
 
 const ChatWindow = ({ chatId, otherUser, onBack, t, isOpen, onClose, onSelectContent }) => {

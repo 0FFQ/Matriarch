@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Heart, Eye, Bookmark, Film, Tv, Check, AlertCircle, MessageSquare } from 'lucide-react';
-import { subscribeToSharedContent, markSharedAsRead, deleteSharedContent, subscribeToUserSharedContent } from '../firebase/social';
-import { useUser } from '../context/UserContext';
+import { subscribeToSharedContent, markSharedAsRead, deleteSharedContent, subscribeToUserSharedContent } from '../../firebase/social';
+import { useUser } from '../../context/UserContext';
 
 const IMAGE_BASE = 'https://image.tmdb.org/t/p/w185';
 

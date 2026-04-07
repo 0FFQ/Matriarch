@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { translations } from '../translations';
+import { translations } from '../i18n/translations';
 
 /**
  * Кастомный хук для управления темой и языком

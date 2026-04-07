@@ -1,8 +1,8 @@
 import React from 'react';
-import { IMAGE_BASE } from '../constants';
+import { IMAGE_BASE } from '../../constants';
 import SearchSection from './SearchSection';
 import ResultsSection from './ResultsSection';
-import LoadingOverlay from './LoadingOverlay';
+import LoadingOverlay from '../common/LoadingOverlay';
 
 /**
  * Компонент секции поиска и результатов

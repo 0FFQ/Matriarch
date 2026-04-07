@@ -1,7 +1,7 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { Heart, Eye, Bookmark, Check, Share2 } from "lucide-react";
-import { useUser } from "../context/UserContext";
+import { useUser } from "../../context/UserContext";
 
 /**
  * Кнопки действий с фильмом/сериалом

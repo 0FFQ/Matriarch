@@ -4,8 +4,8 @@ import AppContainer from './containers/AppContainer';
 import './App.css';
 
 /**
- * Корневой компонент приложения
- * Обёртка с провайдером пользователя
+ * Root application component
+ * Wraps app with user provider
  */
 function App() {
   return (

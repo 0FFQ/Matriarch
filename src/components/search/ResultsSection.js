@@ -1,7 +1,7 @@
 import React from 'react';
 import { AnimatePresence } from 'framer-motion';
 import ResultsList from './ResultsList';
-import PaginationControls from './PaginationControls';
+import PaginationControls from '../common/PaginationControls';
 
 /**
  * Компонент секции результатов

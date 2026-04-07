@@ -1,7 +1,7 @@
 import React, { memo } from "react";
 import { motion } from "framer-motion";
 import { Star, TrendingUp, Database } from "lucide-react";
-import MovieActions from "./MovieActions";
+import MovieActions from "../player/MovieActions";
 
 const IMAGE_BASE = "https://image.tmdb.org/t/p/w500";
 

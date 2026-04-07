@@ -7,8 +7,8 @@ import {
   markAllNotificationsAsRead,
   deleteNotification,
   getUnreadNotificationsCount
-} from '../firebase/social';
-import { useUser } from '../context/UserContext';
+} from '../../firebase/social';
+import { useUser } from '../../context/UserContext';
 
 const NotificationsPanel = ({ t, isOpen, onClose, onSelectNotification }) => {
   const { firebaseUser } = useUser();

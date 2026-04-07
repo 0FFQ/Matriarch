@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Send, Search, User, MessageCircle, Film, Tv } from "lucide-react";
-import { getAllUsers, initializeChat, shareContentToChat } from "../firebase/messages";
-import { subscribeToUserChats } from "../firebase/messages";
-import { useUser } from "../context/UserContext";
+import { getAllUsers, initializeChat, shareContentToChat } from "../../firebase/messages";
+import { subscribeToUserChats } from "../../firebase/messages";
+import { useUser } from "../../context/UserContext";
 
 const IMAGE_BASE = "https://image.tmdb.org/t/p/w54";
 

@@ -1,9 +1,9 @@
 import React from 'react';
-import MenuToggle from './MenuToggle';
+import MenuToggle from './common/MenuToggle';
 import Sidebar from './Sidebar';
-import UserProfile from './UserProfile';
-import FilterPanel from './FilterPanel';
-import InteractiveAtom from './InteractiveAtom';
+import UserProfile from './user/UserProfile';
+import FilterPanel from './search/FilterPanel';
+import InteractiveAtom from './common/InteractiveAtom';
 
 /**
  * Компонент основной структуры приложения

@@ -13,10 +13,10 @@ import {
   usePaginationControls
 } from '../hooks';
 import AppLayout from '../components/AppLayout';
-import SocialIntegration from '../components/SocialIntegration';
-import SearchAndResults from '../components/SearchAndResults';
-import TrailerSection from '../components/TrailerSection';
-import MessengerSection from '../components/MessengerSection';
+import SocialIntegration from '../components/messenger/SocialIntegration';
+import SearchAndResults from '../components/search/SearchAndResults';
+import TrailerSection from '../components/player/TrailerSection';
+import MessengerSection from '../components/messenger/MessengerSection';
 
 /**
  * Главный контейнер приложения

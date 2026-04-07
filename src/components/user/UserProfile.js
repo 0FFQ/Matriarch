@@ -1,10 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence, useDragControls } from 'framer-motion';
 import { User, Edit2, X, Camera, Heart, Eye, Bookmark, ExternalLink, Trash2, Film, Tv, CheckCircle, Cloud, LogIn, AlertTriangle, Users, UserPlus, UserMinus, Bell, BellOff } from 'lucide-react';
-import { useUser } from '../context/UserContext';
-import { signInWithGoogle, logout, onAuthChange } from '../firebase/auth';
-import { getAllUsers } from '../firebase/messages';
-import { subscribeToUser, unsubscribeFromUser, isSubscribed, getSubscribersWithUserData } from '../firebase/subscriptions';
+import { useUser } from '../../context/UserContext';
+import { signInWithGoogle, logout, onAuthChange } from '../../firebase/auth';
+import { getAllUsers } from '../../firebase/messages';
+import { subscribeToUser, unsubscribeFromUser, isSubscribed, getSubscribersWithUserData } from '../../firebase/subscriptions';
 
 const IMAGE_BASE = 'https://image.tmdb.org/t/p/w92';
 

@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence, useDragControls } from 'framer-motion';
 import { Search, User, MessageSquare, X, Eye } from 'lucide-react';
-import { getAllUsers, initializeChat } from '../firebase/messages';
-import { useUser } from '../context/UserContext';
+import { getAllUsers, initializeChat } from '../../firebase/messages';
+import { useUser } from '../../context/UserContext';
 
 const UsersList = ({ t, isOpen, onClose, onViewProfile, onOpenChat }) => {
   const { firebaseUser, profile } = useUser();

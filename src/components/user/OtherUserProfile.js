@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Heart, Eye, Bookmark, Film, Tv, Share2, MessageSquare } from 'lucide-react';
-import { getUserProfile } from '../firebase/social';
-import { initializeChat } from '../firebase/messages';
+import { getUserProfile } from '../../firebase/social';
+import { initializeChat } from '../../firebase/messages';
 
 const IMAGE_BASE = 'https://image.tmdb.org/t/p/w92';
 

@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, useDragControls } from 'framer-motion';
 import { X, Plus, MessageSquare, ArrowLeft, Search, Check, CheckCheck } from 'lucide-react';
-import { subscribeToUserChats, getAllUsers, initializeChat } from '../firebase/messages';
-import { useUser } from '../context/UserContext';
+import { subscribeToUserChats, getAllUsers, initializeChat } from '../../firebase/messages';
+import { useUser } from '../../context/UserContext';
 
 const ChatList = ({ onSelectChat, onBack, t, isOpen, onClose }) => {
   const { firebaseUser, profile } = useUser();

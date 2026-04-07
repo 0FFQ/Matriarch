@@ -1,8 +1,8 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import axios from 'axios';
-import { cachedRequest, getCacheStats } from '../utils/cache';
+import { cachedRequest, getCacheStats, clearAllCache } from '../utils/cache';
 import { BASE_URL, CACHE_TTL, AUTH_TOKEN } from '../constants';
-import { getSortField, sortResults } from '../utils/searchUtils';
+import { getSortField, sortResults } from '../utils/helpers/searchUtils';
 
 /**
  * Кастомный хук для управления поиском и фильтрами
