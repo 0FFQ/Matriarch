@@ -199,7 +199,7 @@ const ShareToChatModal = ({
                   ) : (
                     <Tv size={14} />
                   )}
-                  {mediaType === "movie" ? "Фильм" : "Сериал"}
+                  {mediaType === "movie" ? (t?.movie || "Movie") : (t?.tvSeries || "TV Series")}
                 </span>
                 <h3 className="share-to-chat-content-title">
                   {contentTitle}

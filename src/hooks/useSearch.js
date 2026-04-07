@@ -174,8 +174,6 @@ const useSearch = (language) => {
           allResults = sortResults(allResults, sortBy);
         }
 
-        // Фильтруем результаты без постеров
-        allResults = allResults.filter(item => item.poster_path);
         setResults(allResults);
       } else {
         // Базовые параметры для фильмов
@@ -272,8 +270,6 @@ const useSearch = (language) => {
           allResults = sortResults(allResults, sortBy);
         }
 
-        // Фильтруем результаты без постеров
-        allResults = allResults.filter(item => item.poster_path);
         setResults(allResults);
       }
     } catch (err) {
@@ -334,6 +330,9 @@ const useSearch = (language) => {
   // Перезапрос результатов при смене языка
   useEffect(() => {
     if (searchActive && results.length > 0) {
+      // Очищаем кеш чтобы получить данные с правильными изображениями
+      const { clearAllCache } = require('../utils/cache');
+      clearAllCache();
       applyFilters();
     }
   }, [language]);

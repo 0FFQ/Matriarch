@@ -25,6 +25,8 @@ const SearchBar = memo(
     onFilterClick,
     onHomeClick,
     hasActiveFilters,
+    language,
+    t
   }) => {
     const [isExpanded, setIsExpanded] = useState(false);
     const inputRef = useRef(null);
@@ -229,13 +231,21 @@ const SearchBar = memo(
                     handleSelect(item.title || item.name)
                   }
                 >
-                  {item.poster_path && (
+                  {item.poster_path ? (
                     <img
                       src={`https://image.tmdb.org/t/p/w92${item.poster_path}`}
                       alt=""
                       className="suggestion-poster"
                       loading="lazy"
                     />
+                  ) : (
+                    <div className="suggestion-poster-placeholder">
+                      {item.media_type === "tv" ? (
+                        <Tv size={24} />
+                      ) : (
+                        <Film size={24} />
+                      )}
+                    </div>
                   )}
                   <div className="suggestion-info">
                     <span className="suggestion-title">
@@ -247,7 +257,7 @@ const SearchBar = memo(
                       ) : (
                         <Film size={14} />
                       )}
-                      {item.media_type === "tv" ? " Сериал" : " Фильм"}
+                      {item.media_type === "tv" ? ` ${t?.tvSeries || "TV Series"}` : ` ${t?.movie || "Movie"}`}
                       {item.release_date || item.first_air_date
                         ? ` • ${new Date(
                             item.release_date || item.first_air_date

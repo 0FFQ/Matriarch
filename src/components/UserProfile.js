@@ -313,7 +313,7 @@ const UserProfile = ({ t, isOpen, onClose, onBackToMenu }) => {
   const getKinopoiskLink = (item) => {
     const title = item.title || item.name;
     const year = (item.release_date || item.first_air_date || '').split('-')[0];
-    const type = item.media_type === 'tv' ? 'сериал' : 'фильм';
+    const type = item.media_type === 'tv' ? (t.tvSeries || 'TV Series') : (t.movie || 'Movie');
     return `https://www.kinopoisk.ru/search/?query=${encodeURIComponent(`${title} ${year} ${type}`)}`;
   };
 

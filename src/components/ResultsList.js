@@ -8,7 +8,7 @@ const IMAGE_BASE = "https://image.tmdb.org/t/p/w500";
 /**
  * Список результатов поиска
  */
-const ResultsList = memo(({ results, imageBase = IMAGE_BASE, onSelect, fromCache, onShareInChat }) => {
+const ResultsList = memo(({ results, imageBase = IMAGE_BASE, onSelect, fromCache, onShareInChat, t }) => {
   const isSingleResult = results.length === 1;
 
   /**
@@ -28,7 +28,7 @@ const ResultsList = memo(({ results, imageBase = IMAGE_BASE, onSelect, fromCache
   const getKinopoiskLink = (item) => {
     const title = item.title || item.name;
     const year = (item.release_date || item.first_air_date || "").split("-")[0];
-    const type = item.media_type === "tv" ? "сериал" : "фильм";
+    const type = item.media_type === "tv" ? (t?.tvSeries || 'TV Series') : (t?.movie || 'Movie');
     return `https://www.kinopoisk.ru/search/?query=${encodeURIComponent(
       `${title} ${year} ${type}`
     )}`;
@@ -89,11 +89,26 @@ const ResultsList = memo(({ results, imageBase = IMAGE_BASE, onSelect, fromCache
           >
             {/* Постер */}
             <div className="poster-wrapper">
-              <img
-                src={`${imageBase}${item.poster_path}`}
-                alt={item.title || item.name}
-                loading="lazy"
-              />
+              {item.poster_path ? (
+                <img
+                  src={`${imageBase}${item.poster_path}`}
+                  alt={item.title || item.name}
+                  loading="lazy"
+                />
+              ) : (
+                <div className="poster-placeholder">
+                  {item.media_type === 'tv' ? (
+                    <svg viewBox="0 0 24 24" fill="currentColor" width="64" height="64">
+                      <path d="M21 3H3c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h5v2h8v-2h5c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 14H3V5h18v12z"/>
+                    </svg>
+                  ) : (
+                    <svg viewBox="0 0 24 24" fill="currentColor" width="64" height="64">
+                      <path d="M18 4l2 4h-3l-2-4h-2l2 4h-3l-2-4H8l2 4H7L5 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V4h-4z"/>
+                    </svg>
+                  )}
+                  <span>{item.media_type === 'tv' ? (t?.tvSeries || 'TV Series') : (t?.movie || 'Movie')}</span>
+                </div>
+              )}
               <MovieActions item={item} onShareInChat={onShareInChat} />
             </div>
 

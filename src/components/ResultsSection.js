@@ -14,6 +14,7 @@ import PaginationControls from './PaginationControls';
  * @param {number} totalPages - всего страниц
  * @param {function} onPageChange - обработка смены страницы
  * @param {boolean} searchActive - флаг активности поиска
+ * @param {Object} t - объект с переводами
  */
 const ResultsSection = ({
   results,
@@ -24,7 +25,8 @@ const ResultsSection = ({
   currentPage,
   totalPages,
   onPageChange,
-  searchActive
+  searchActive,
+  t
 }) => {
   if (!searchActive || results.length === 0) return null;
 
@@ -37,6 +39,7 @@ const ResultsSection = ({
           onSelect={onSelect}
           fromCache={fromCache}
           onShareInChat={onShareInChat}
+          t={t}
         />
       </AnimatePresence>
 

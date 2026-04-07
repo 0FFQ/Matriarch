@@ -10,8 +10,9 @@ const IMAGE_BASE = "https://image.tmdb.org/t/p/w154";
  * @param {object} props.content - Данные о фильме
  * @param {boolean} props.isOwn - Своё ли это сообщение
  * @param {function} props.onOpenOnSite - Callback: открыть карточку на сайте
+ * @param {object} props.t - Объект с переводами
  */
-const SharedContentBubble = ({ content, isOwn, onOpenOnSite }) => {
+const SharedContentBubble = ({ content, isOwn, onOpenOnSite, t }) => {
   if (!content) return null;
 
   const mediaType = content.media_type || "movie";
@@ -24,7 +25,7 @@ const SharedContentBubble = ({ content, isOwn, onOpenOnSite }) => {
 
   const handleOpenKinopoisk = () => {
     const title = content.title;
-    const type = mediaType === "tv" ? "сериал" : "фильм";
+    const type = mediaType === "tv" ? (t?.tvSeries || 'TV Series') : (t?.movie || 'Movie');
     const url = `https://www.kinopoisk.ru/search/?query=${encodeURIComponent(
       `${title} ${year} ${type}`
     )}`;
@@ -103,7 +104,7 @@ const SharedContentBubble = ({ content, isOwn, onOpenOnSite }) => {
 
         <div className="shared-content-meta">
           <span className="shared-content-type">
-            {mediaType === "movie" ? "Фильм" : "Сериал"}
+            {mediaType === "movie" ? (t?.movie || "Movie") : (t?.tvSeries || "TV Series")}
           </span>
           {year && <span className="shared-content-year">{year}</span>}
           <span className="shared-content-rating">

@@ -14,6 +14,7 @@ import LoadingOverlay from './LoadingOverlay';
  * @param {boolean} filterOpen - открыт ли фильтр
  * @param {function} toggleFilter - переключение фильтра
  * @param {function} resetSearch - сброс поиска
+ * @param {Object} t - объект с переводами
  */
 const SearchAndResults = ({
   search,
@@ -23,7 +24,8 @@ const SearchAndResults = ({
   language,
   filterOpen,
   toggleFilter,
-  resetSearch
+  resetSearch,
+  t
 }) => {
   return (
     <>
@@ -41,6 +43,7 @@ const SearchAndResults = ({
         onHomeClick={resetSearch}
         hasActiveFilters={search.hasActiveFilters}
         language={language}
+        t={t}
       />
 
       {/* Глобальный индикатор загрузки */}
@@ -57,6 +60,7 @@ const SearchAndResults = ({
         totalPages={pagination.totalPages}
         onPageChange={pagination.handlePageChange}
         searchActive={search.searchActive}
+        t={t}
       />
     </>
   );

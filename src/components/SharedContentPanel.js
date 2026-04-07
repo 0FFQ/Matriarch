@@ -252,9 +252,9 @@ const SharedContentCard = ({ item, t, onView, onDelete, isOwner, formatDate }) =
             </span>
             <span>{content.release_date?.split('-')[0] || '—'}</span>
             <span className="px-2 py-0.5 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded text-xs">
-              {mediaType === 'movie' 
-                ? (t === 'ru' ? 'Фильм' : 'Movie') 
-                : (t === 'ru' ? 'Сериал' : 'TV Show')}
+              {mediaType === 'movie'
+                ? (t?.movie || t === 'ru' ? 'Фильм' : 'Movie')
+                : (t?.tvSeries || t === 'ru' ? 'Сериал' : 'TV Series')}
             </span>
           </div>
 

@@ -112,6 +112,7 @@ const AppContainer = () => {
         filterOpen={appState.filterOpen}
         toggleFilter={appState.toggleFilter}
         resetSearch={search.resetSearch}
+        t={themeLanguage.t}
       />
 
       {/* Трейлер */}
