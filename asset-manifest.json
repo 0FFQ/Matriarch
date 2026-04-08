@@ -1,13 +1,13 @@
 {
   "files": {
-    "main.css": "/kino/static/css/main.b9970225.css",
-    "main.js": "/kino/static/js/main.f1585c53.js",
-    "index.html": "/kino/index.html",
-    "main.b9970225.css.map": "/kino/static/css/main.b9970225.css.map",
-    "main.f1585c53.js.map": "/kino/static/js/main.f1585c53.js.map"
+    "main.css": "/Matriarch/static/css/main.b9970225.css",
+    "main.js": "/Matriarch/static/js/main.87af6771.js",
+    "index.html": "/Matriarch/index.html",
+    "main.b9970225.css.map": "/Matriarch/static/css/main.b9970225.css.map",
+    "main.87af6771.js.map": "/Matriarch/static/js/main.87af6771.js.map"
   },
   "entrypoints": [
     "static/css/main.b9970225.css",
-    "static/js/main.f1585c53.js"
+    "static/js/main.87af6771.js"
   ]
 }
