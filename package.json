@@ -2,7 +2,7 @@
   "name": "kino",
   "version": "1.0.0",
   "private": true,
-  "homepage": "https://0FFQ.github.io/KIno",
+  "homepage": "https://0FFQ.github.io/Matriarch",
   "dependencies": {
     "axios": "^1.5.1",
     "firebase": "^12.11.0",
