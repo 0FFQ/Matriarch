@@ -6,10 +6,12 @@
 
 ## Скриншоты
 
-| | | |
-|---|---|---|
-| ![Скриншот 1](assets/01-main-search.png) | ![Скриншот 2](assets/02-search-results.png) | ![Скриншот 3](assets/03-filters.png) |
-| ![Скриншот 4](assets/04-trailer-player.png) | ![Скриншот 5](assets/05-messenger.png) | ![Скриншот 6](assets/06-profile-dark.png) |
+![Скриншот 1](assets/01-main-search.png)
+![Скриншот 2](assets/02-search-results.png)
+![Скриншот 3](assets/03-filters.png)
+![Скриншот 4](assets/04-trailer-player.png)
+![Скриншот 5](assets/05-messenger.png)
+![Скриншот 6](assets/06-profile-dark.png)
 
 ## Что реализовано
 
