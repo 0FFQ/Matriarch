@@ -9,11 +9,11 @@
       "type": "image/svg+xml"
     }
   ],
-  "start_url": "/KIno/",
+  "start_url": ".",
   "display": "standalone",
   "theme_color": "#667eea",
   "background_color": "#ffffff",
   "orientation": "portrait-primary",
-  "scope": "/KIno/",
+  "scope": "/",
   "lang": "ru"
 }

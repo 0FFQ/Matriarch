@@ -1,13 +1,13 @@
 {
   "files": {
     "main.css": "/KIno/static/css/main.b9970225.css",
-    "main.js": "/KIno/static/js/main.921d24a2.js",
+    "main.js": "/KIno/static/js/main.c9326f5a.js",
     "index.html": "/KIno/index.html",
     "main.b9970225.css.map": "/KIno/static/css/main.b9970225.css.map",
-    "main.921d24a2.js.map": "/KIno/static/js/main.921d24a2.js.map"
+    "main.c9326f5a.js.map": "/KIno/static/js/main.c9326f5a.js.map"
   },
   "entrypoints": [
     "static/css/main.b9970225.css",
-    "static/js/main.921d24a2.js"
+    "static/js/main.c9326f5a.js"
   ]
 }
