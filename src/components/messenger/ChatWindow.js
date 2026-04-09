@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence, useDragControls } from 'framer-motion';
-import { ArrowLeft, Send, MessageSquare, X, SendHorizonal } from 'lucide-react';
+import { ArrowLeft, Send, MessageSquare, X, SendHorizonal, Trash2 } from 'lucide-react';
 import { subscribeToMessages, sendMessage, markMessagesAsRead } from '../../firebase/messages';
 import { subscribeToUserPresence } from '../../firebase/firestore';
 import { useUser } from '../../context/UserContext';
@@ -332,17 +332,18 @@ const ChatWindow = ({ chatId, otherUser, onBack, t, isOpen, onClose, onSelectCon
         {contextMenu && (
           <motion.div
             className="msg-context-menu"
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.95 }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
             transition={{ duration: 0.1 }}
-            style={{ top: contextMenu.y - 36, left: contextMenu.x - 40 }}
+            style={{ top: contextMenu.y, left: contextMenu.x }}
             onClick={(e) => e.stopPropagation()}
           >
             <button
               className="msg-context-menu-item msg-context-menu-delete"
               onClick={() => handleDeleteMessage(contextMenu.messageId)}
             >
+              <Trash2 size={14} className="msg-context-menu-icon" />
               Удалить
             </button>
           </motion.div>

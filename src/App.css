@@ -4888,39 +4888,59 @@ body.light .chat-date-divider span {
 .msg-context-menu {
   position: fixed;
   z-index: 10000;
-  background: #252538;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
-  padding: 4px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
-  min-width: 90px;
+  background: rgba(0, 0, 0, 0.95);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 6px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6), 0 2px 8px rgba(0, 0, 0, 0.3);
+  min-width: 120px;
+  transform: translate(-100%, -100%);
 }
 
 body.light .msg-context-menu {
-  background: #fff;
-  border-color: rgba(0, 0, 0, 0.12);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  background: rgba(255, 255, 255, 0.95);
+  border-color: rgba(0, 0, 0, 0.08);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15), 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
 .msg-context-menu-item {
-  display: block;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: center;
   width: 100%;
-  padding: 6px 14px;
+  padding: 8px 16px;
   border: none;
   background: transparent;
-  border-radius: 6px;
-  font-size: 0.8rem;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  font-weight: 500;
   cursor: pointer;
-  transition: background 0.15s;
-  text-align: center;
+  transition: all 0.2s;
+  letter-spacing: 0.01em;
+}
+
+.msg-context-menu-icon {
+  flex-shrink: 0;
 }
 
 .msg-context-menu-delete {
-  color: #ef4444;
+  color: #999;
 }
 
 .msg-context-menu-delete:hover {
-  background: rgba(239, 68, 68, 0.15);
+  background: rgba(255, 255, 255, 0.08);
+  color: #ccc;
+}
+
+body.light .msg-context-menu-delete {
+  color: #666;
+}
+
+body.light .msg-context-menu-delete:hover {
+  background: rgba(0, 0, 0, 0.06);
+  color: #333;
 }
 
 .message-sender {
