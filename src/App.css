@@ -4884,51 +4884,43 @@ body.light .chat-date-divider span {
   align-self: flex-start;
 }
 
-.message-bubble.deleting {
-  opacity: 0.5;
+/* Мини-меню удаления (ПКМ) */
+.msg-context-menu {
+  position: fixed;
+  z-index: 10000;
+  background: #252538;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 4px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+  min-width: 90px;
 }
 
-/* Кнопка удаления */
-.message-delete-btn {
-  position: absolute;
-  top: 4px;
-  right: -28px;
-  width: 22px;
-  height: 22px;
+body.light .msg-context-menu {
+  background: #fff;
+  border-color: rgba(0, 0, 0, 0.12);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+.msg-context-menu-item {
+  display: block;
+  width: 100%;
+  padding: 6px 14px;
   border: none;
   background: transparent;
-  color: #666;
+  border-radius: 6px;
+  font-size: 0.8rem;
   cursor: pointer;
-  border-radius: 4px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  opacity: 0;
-  transition: opacity 0.2s, background 0.2s;
-  padding: 2px;
+  transition: background 0.15s;
+  text-align: center;
 }
 
-.message-bubble:hover .message-delete-btn {
-  opacity: 1;
-}
-
-.message-delete-btn:hover {
-  background: rgba(239, 68, 68, 0.15);
+.msg-context-menu-delete {
   color: #ef4444;
 }
 
-.message-delete-btn:disabled {
-  cursor: not-allowed;
-  opacity: 0.5 !important;
-}
-
-.message-delete-spinner {
-  width: 12px;
-  height: 12px;
-  border: 1.5px solid rgba(239, 68, 68, 0.2);
-  border-top-color: #ef4444;
-  border-radius: 50%;
-  animation: spin 0.6s linear infinite;
+.msg-context-menu-delete:hover {
+  background: rgba(239, 68, 68, 0.15);
 }
 
 .message-sender {
