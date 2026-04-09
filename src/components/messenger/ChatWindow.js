@@ -8,7 +8,7 @@ import MessageBubble from './MessageBubble';
 
 const ChatWindow = ({ chatId, otherUser, onBack, t, isOpen, onClose, onSelectContent }) => {
   const { firebaseUser, profile } = useUser();
-  const [messages, setMessages] = useState([]);
+  const [messages, setMessages] = useState(null);
   const [newMessage, setNewMessage] = useState('');
   const [isSending, setIsSending] = useState(false);
   const [isOnline, setIsOnline] = useState(false);
@@ -44,10 +44,16 @@ const ChatWindow = ({ chatId, otherUser, onBack, t, isOpen, onClose, onSelectCon
 
   // Подписка на сообщения
   useEffect(() => {
-    if (!chatId || !isOpen) return;
+    if (!chatId || !isOpen) {
+      setMessages(null);
+      return;
+    }
 
     let unsubscribe = null;
     let isSubscribed = true;
+
+    // Сразу сбрасываем при смене чата
+    setMessages(null);
 
     const setupSubscription = async () => {
       try {
@@ -69,7 +75,7 @@ const ChatWindow = ({ chatId, otherUser, onBack, t, isOpen, onClose, onSelectCon
         try { unsubscribe(); } catch (error) {}
         unsubscribe = null;
       }
-      setMessages([]);
+      setMessages(null);
     };
   }, [chatId, isOpen]);
 
@@ -142,6 +148,7 @@ const ChatWindow = ({ chatId, otherUser, onBack, t, isOpen, onClose, onSelectCon
 
   // Группировка сообщений по дате
   const groupMessagesByDate = (msgs) => {
+    if (!msgs) return {};
     const groups = {};
     msgs.forEach((msg) => {
       const date = msg.createdAt?.toDate ? msg.createdAt.toDate() : new Date();
@@ -212,7 +219,12 @@ const ChatWindow = ({ chatId, otherUser, onBack, t, isOpen, onClose, onSelectCon
 
           {/* Сообщения */}
           <div className="chat-messages">
-            {messages.length === 0 ? (
+            {messages === null ? (
+              <div className="chat-loading">
+                <div className="chat-loading-spinner" />
+                <p>Загрузка...</p>
+              </div>
+            ) : messages.length === 0 ? (
               <div className="chat-empty">
                 <div className="chat-empty-icon">
                   <MessageSquare size={48} />
