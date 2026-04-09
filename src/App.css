@@ -4895,7 +4895,7 @@ body.light .chat-date-divider span {
   padding: 6px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6), 0 2px 8px rgba(0, 0, 0, 0.3);
   min-width: 120px;
-  transform: translate(-100%, -100%);
+  transform: translate(calc(-100% + 3px), calc(-100% + 3px));
 }
 
 body.light .msg-context-menu {
