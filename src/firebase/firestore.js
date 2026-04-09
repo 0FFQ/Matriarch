@@ -155,7 +155,6 @@ export const updateLastSeen = async (userId) => {
     const userRef = doc(db, USERS_COLLECTION, userId);
     const now = new Date().toISOString();
     await setDoc(userRef, { lastSeen: now }, { merge: true });
-    console.log(`[Firestore] ✅ lastSeen updated: ${now}`);
   } catch (error) {
     console.error("[Firestore] LastSeen update error:", error.message);
   }
