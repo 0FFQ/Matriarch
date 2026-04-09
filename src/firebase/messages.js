@@ -90,9 +90,18 @@ export const sendMessage = async (chatId, senderId, senderProfile, text) => {
     const chatSnap = await getDoc(chatRef);
 
     if (chatSnap.exists()) {
+      // Проверяем, не является ли текст пересланным сообщением
+      let displayText = text.trim().substring(0, 100);
+      try {
+        const data = JSON.parse(text);
+        if (data.forwardedFrom) {
+          displayText = `Переслано: ${(data.text || 'сообщение').substring(0, 80)}`;
+        }
+      } catch {}
+
       const updateData = {
         participants: chatId.split("_"),
-        lastMessage: text.trim().substring(0, 100),
+        lastMessage: displayText,
         lastMessageTime: serverTimestamp(),
         lastSenderId: senderId,
         lastSenderName: senderProfile.name || "Anonymous",

@@ -174,6 +174,10 @@ const SocialFeatures = ({
         chatId={activeChatId}
         otherUser={activeChatUser}
         isOpen={chatOpen}
+        onSwitchChat={(cid, user) => {
+          setActiveChatId(cid);
+          setActiveChatUser(user);
+        }}
         onClose={() => {
           setChatOpen(false);
           setActiveChatId(null);

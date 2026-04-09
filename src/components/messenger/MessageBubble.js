@@ -1,6 +1,6 @@
 import React from "react";
 import { motion } from "framer-motion";
-import { Check, CheckCheck, Trash2 } from "lucide-react";
+import { Check, CheckCheck } from "lucide-react";
 import SharedContentBubble from "./SharedContentBubble";
 
 /**
@@ -9,6 +9,7 @@ import SharedContentBubble from "./SharedContentBubble";
  */
 const MessageBubble = ({ message, isOwn, formatTime, onOpenContent, onContextMenu }) => {
   const hasSharedContent = message.contentType === "shared_media" && message.content;
+  const isForwarded = message.forwardedFrom && message.forwardedFrom.name;
 
   return (
     <motion.div
@@ -19,7 +20,6 @@ const MessageBubble = ({ message, isOwn, formatTime, onOpenContent, onContextMen
       transition={{ duration: 0.15, ease: "easeOut" }}
       onContextMenu={onContextMenu}
     >
-
       {/* Аватар отправителя (для чужих сообщений) */}
       {!isOwn && (
         <div className="message-sender">
@@ -39,6 +39,29 @@ const MessageBubble = ({ message, isOwn, formatTime, onOpenContent, onContextMen
       )}
 
       <div className="message-content">
+        {/* Заголовок пересланного сообщения */}
+        {isForwarded && (
+          <div className="message-forwarded-header">
+            <span className="message-forwarded-text">
+              Переслано от
+            </span>
+            {message.forwardedFrom.avatar ? (
+              <img
+                src={message.forwardedFrom.avatar}
+                alt={message.forwardedFrom.name}
+                className="message-forwarded-avatar"
+              />
+            ) : (
+              <div className="message-forwarded-avatar-placeholder">
+                {(message.forwardedFrom.name || '?')[0].toUpperCase()}
+              </div>
+            )}
+            <span className="message-forwarded-name">
+              {message.forwardedFrom.name}
+            </span>
+          </div>
+        )}
+
         {/* Прикреплённый контент (если есть) */}
         {hasSharedContent && (
           <SharedContentBubble

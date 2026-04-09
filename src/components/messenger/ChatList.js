@@ -242,7 +242,16 @@ const ChatList = ({ onSelectChat, onBack, t, isOpen, onClose }) => {
                 if (!matchesSearch) return null;
 
                 const chatKey = chat.id ? `chat-${chat.id}` : `chat-idx-${index}`;
-                const lastMsgText = chat.lastMessage || (t.startConversation || 'Начните общение...');
+                const lastMsgText = (() => {
+                  const raw = chat.lastMessage || (t.startConversation || 'Начните общение...');
+                  try {
+                    const data = JSON.parse(raw);
+                    if (data.forwardedFrom) {
+                      return `Переслано: ${data.text || 'сообщение'}`;
+                    }
+                  } catch {}
+                  return raw;
+                })();
                 const isOwnLast = chat.lastSenderId === firebaseUser?.uid;
                 const isRead = !!chat.lastMessageReadBy?.[otherUser.id];
 

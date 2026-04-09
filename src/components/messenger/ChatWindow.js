@@ -1,20 +1,24 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence, useDragControls } from 'framer-motion';
-import { ArrowLeft, Send, MessageSquare, X, SendHorizonal, Trash2 } from 'lucide-react';
-import { subscribeToMessages, sendMessage, markMessagesAsRead } from '../../firebase/messages';
+import { ArrowLeft, Send, MessageSquare, X, SendHorizonal, Trash2, Repeat } from 'lucide-react';
+import { subscribeToMessages, sendMessage, markMessagesAsRead, deleteMessage } from '../../firebase/messages';
 import { subscribeToUserPresence } from '../../firebase/firestore';
 import { useUser } from '../../context/UserContext';
 import MessageBubble from './MessageBubble';
 import { createPortal } from 'react-dom';
+import ForwardModal from './ForwardModal';
 
-const ChatWindow = ({ chatId, otherUser, onBack, t, isOpen, onClose, onSelectContent }) => {
+const ChatWindow = ({ chatId, otherUser, onBack, t, isOpen, onClose, onSelectContent, onSwitchChat }) => {
   const { firebaseUser, profile } = useUser();
   const [messages, setMessages] = useState(null);
   const [newMessage, setNewMessage] = useState('');
   const [isSending, setIsSending] = useState(false);
   const [isOnline, setIsOnline] = useState(false);
-  const [contextMenu, setContextMenu] = useState(null); // { x, y, messageId }
+  const [contextMenu, setContextMenu] = useState(null); // { x, y, messageId, message }
+  const [deleteMenu, setDeleteMenu] = useState(null); // { x, y, messageId }
   const [localDeleted, setLocalDeleted] = useState(new Set()); // ID удалённых только у себя
+  const [forwardModalOpen, setForwardModalOpen] = useState(false);
+  const [forwardMessage, setForwardMessage] = useState(null);
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
 
@@ -143,18 +147,63 @@ const ChatWindow = ({ chatId, otherUser, onBack, t, isOpen, onClose, onSelectCon
   };
 
   // Удаление сообщения — только у себя (локально)
-  const handleDeleteMessage = useCallback((messageId) => {
-    setContextMenu(null);
+  const handleDeleteLocal = useCallback((messageId) => {
+    setDeleteMenu(null);
     setLocalDeleted(prev => new Set([...prev, messageId]));
   }, []);
 
-  // Контекстное меню — только для своих сообщений
+  // Удаление сообщения — у всех (из Firestore)
+  const handleDeleteEveryone = useCallback(async (messageId) => {
+    if (!firebaseUser?.uid) return;
+    setDeleteMenu(null);
+    try {
+      const msg = messages.find(m => m.id === messageId);
+      if (msg) {
+        await deleteMessage(messageId, msg.senderId, firebaseUser.uid);
+      }
+    } catch (error) {
+      console.error('[ChatWindow] Delete everyone error:', error);
+    }
+  }, [firebaseUser, messages]);
+
+  // Открыть меню выбора удаления
+  const handleDeleteOptions = useCallback((messageId) => {
+    // Используем координаты исходного контекстного меню
+    if (contextMenu) {
+      const msg = messages.find(m => m.id === messageId);
+      const isOwn = msg && msg.senderId === firebaseUser?.uid;
+
+      if (isOwn) {
+        // Своё сообщение — показываем выбор
+        setDeleteMenu({ x: contextMenu.x, y: contextMenu.y, messageId });
+        setContextMenu(null);
+      } else {
+        // Чужое сообщение — сразу удаляем локально
+        handleDeleteLocal(messageId);
+        setContextMenu(null);
+      }
+    }
+  }, [contextMenu, messages, firebaseUser, handleDeleteLocal]);
+
+  // Контекстное меню — для любых сообщений
   const handleContextMenu = useCallback((e, messageId) => {
     const msg = messages.find(m => m.id === messageId);
-    if (!msg || msg.senderId !== firebaseUser?.uid) return; // только свои
+    if (!msg) return;
+    const isOwn = msg.senderId === firebaseUser?.uid;
     e.preventDefault();
-    setContextMenu({ x: e.clientX, y: e.clientY, messageId });
+    setDeleteMenu(null);
+    setContextMenu({ x: e.clientX, y: e.clientY, messageId, message: msg, isOwn });
   }, [messages, firebaseUser]);
+
+  // Открыть модалку пересылки
+  const handleForward = useCallback((messageId) => {
+    const msg = messages.find(m => m.id === messageId);
+    if (msg) {
+      setForwardMessage(msg);
+      setForwardModalOpen(true);
+    }
+    setContextMenu(null);
+  }, [messages]);
 
   const closeContextMenu = useCallback(() => {
     setContextMenu(null);
@@ -162,10 +211,17 @@ const ChatWindow = ({ chatId, otherUser, onBack, t, isOpen, onClose, onSelectCon
 
   // Закрытие по клику вне
   useEffect(() => {
-    if (!contextMenu) return;
-    const handleClick = () => setContextMenu(null);
+    if (!contextMenu && !deleteMenu) return;
+    const handleClick = () => {
+      setContextMenu(null);
+      setDeleteMenu(null);
+    };
     const handleEsc = (e) => {
-      if (e.key === 'Escape') setContextMenu(null);
+      if (e.key === 'Escape') {
+        setContextMenu(null);
+        setDeleteMenu(null);
+        if (forwardModalOpen) setForwardModalOpen(false);
+      }
     };
     document.addEventListener('click', handleClick);
     document.addEventListener('keydown', handleEsc);
@@ -173,7 +229,7 @@ const ChatWindow = ({ chatId, otherUser, onBack, t, isOpen, onClose, onSelectCon
       document.removeEventListener('click', handleClick);
       document.removeEventListener('keydown', handleEsc);
     };
-  }, [contextMenu]);
+  }, [contextMenu, deleteMenu, forwardModalOpen]);
 
   // Форматирование времени сообщения
   const formatMessageTime = (timestamp) => {
@@ -188,7 +244,17 @@ const ChatWindow = ({ chatId, otherUser, onBack, t, isOpen, onClose, onSelectCon
     const filtered = msgs.filter(m => !localDeleted.has(m.id));
     const groups = {};
     filtered.forEach((msg) => {
-      const date = msg.createdAt?.toDate ? msg.createdAt.toDate() : new Date();
+      // Пытаемся распарсить пересланное сообщение
+      let parsedMsg = msg;
+      try {
+        const data = JSON.parse(msg.text);
+        if (data.forwardedFrom) {
+          parsedMsg = { ...msg, text: data.text, forwardedFrom: data.forwardedFrom };
+        }
+      } catch {
+        // Обычное сообщение
+      }
+      const date = parsedMsg.createdAt?.toDate ? parsedMsg.createdAt.toDate() : new Date();
       const dateKey = date.toLocaleDateString('ru-RU', {
         day: 'numeric',
         month: 'long',
@@ -197,7 +263,7 @@ const ChatWindow = ({ chatId, otherUser, onBack, t, isOpen, onClose, onSelectCon
       if (!groups[dateKey]) {
         groups[dateKey] = [];
       }
-      groups[dateKey].push(msg);
+      groups[dateKey].push(parsedMsg);
     });
     return groups;
   };
@@ -327,30 +393,85 @@ const ChatWindow = ({ chatId, otherUser, onBack, t, isOpen, onClose, onSelectCon
     </AnimatePresence>
 
     {/* Контекстное меню удаления — портал в body */}
-    {createPortal(
-      <AnimatePresence>
-        {contextMenu && (
-          <motion.div
-            className="msg-context-menu"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.1 }}
-            style={{ top: contextMenu.y, left: contextMenu.x }}
-            onClick={(e) => e.stopPropagation()}
-          >
+    {contextMenu && createPortal(
+      <motion.div
+        className="msg-context-menu"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.1 }}
+        style={{ top: contextMenu.y, left: contextMenu.x }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <button
+          className="msg-context-menu-item msg-context-menu-forward"
+          onClick={() => handleForward(contextMenu.messageId)}
+        >
+          <Repeat size={14} className="msg-context-menu-icon" />
+          Переслать
+        </button>
+        {contextMenu.isOwn ? (
+          <>
             <button
               className="msg-context-menu-item msg-context-menu-delete"
-              onClick={() => handleDeleteMessage(contextMenu.messageId)}
+              onClick={() => handleDeleteOptions(contextMenu.messageId)}
             >
               <Trash2 size={14} className="msg-context-menu-icon" />
               Удалить
             </button>
-          </motion.div>
+          </>
+        ) : (
+          <button
+            className="msg-context-menu-item msg-context-menu-delete-local"
+            onClick={() => handleDeleteOptions(contextMenu.messageId)}
+          >
+            <Trash2 size={14} className="msg-context-menu-icon" />
+            Удалить у себя
+          </button>
         )}
-      </AnimatePresence>,
+      </motion.div>,
       document.body
     )}
+
+    {/* Меню выбора удаления — портал в body */}
+    {deleteMenu && createPortal(
+      <motion.div
+        className="msg-context-menu"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.1 }}
+        style={{ top: deleteMenu.y, left: deleteMenu.x }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <button
+          className="msg-context-menu-item msg-context-menu-delete-everyone"
+          onClick={() => handleDeleteEveryone(deleteMenu.messageId)}
+        >
+          <Trash2 size={14} className="msg-context-menu-icon" />
+          Удалить у всех
+        </button>
+        <button
+          className="msg-context-menu-item msg-context-menu-delete-local"
+          onClick={() => handleDeleteLocal(deleteMenu.messageId)}
+        >
+          <Trash2 size={14} className="msg-context-menu-icon" />
+          Удалить у себя
+        </button>
+      </motion.div>,
+      document.body
+    )}
+
+    {/* Модалка пересылки */}
+    <ForwardModal
+      isOpen={forwardModalOpen}
+      onClose={() => setForwardModalOpen(false)}
+      message={forwardMessage}
+      currentChatId={chatId}
+      onChatOpen={(cid, user) => {
+        if (onSwitchChat) onSwitchChat(cid, user);
+      }}
+    />
     </>
   );
 };
