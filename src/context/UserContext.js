@@ -7,7 +7,7 @@ import React, {
   useRef,
 } from "react";
 import { onAuthChange } from "../firebase/auth";
-import { saveUserData, loadUserData } from "../firebase/firestore";
+import { saveUserData, loadUserData, updateLastSeen } from "../firebase/firestore";
 
 const UserContext = createContext(null);
 
@@ -98,6 +98,7 @@ export const UserProvider = ({ children }) => {
   // Ref для отслеживания загрузки из Firestore
   const isLoadingRef = useRef(false);
   const saveTimeoutRef = useRef(null);
+  const heartbeatIntervalRef = useRef(null);
 
   // ============================================
   // Аутентификация
@@ -109,6 +110,14 @@ export const UserProvider = ({ children }) => {
       if (firebaseUser) {
         setUser(firebaseUser);
         setSyncEnabled(true);
+
+        // Обновляем lastSeen при входе
+        updateLastSeen(firebaseUser.uid);
+
+        // Запускаем heartbeat — каждые 30 секунд
+        heartbeatIntervalRef.current = setInterval(() => {
+          updateLastSeen(firebaseUser.uid);
+        }, 30 * 1000);
 
         // Загружаем данные из Firestore
         isLoadingRef.current = true;
@@ -147,8 +156,15 @@ export const UserProvider = ({ children }) => {
         isLoadingRef.current = false;
       } else {
         console.log("[UserContext] ❌ Logged out");
+        
         setUser(null);
         setSyncEnabled(false);
+
+        // Очищаем heartbeat
+        if (heartbeatIntervalRef.current) {
+          clearInterval(heartbeatIntervalRef.current);
+          heartbeatIntervalRef.current = null;
+        }
 
         // Очищаем localStorage
         try {
@@ -170,7 +186,12 @@ export const UserProvider = ({ children }) => {
       }
     });
 
-    return () => unsubscribe();
+    return () => {
+      unsubscribe();
+      if (heartbeatIntervalRef.current) {
+        clearInterval(heartbeatIntervalRef.current);
+      }
+    };
   }, []);
 
   // ============================================

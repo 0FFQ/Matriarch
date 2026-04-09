@@ -241,9 +241,10 @@ export const getAllUsers = async () => {
       const email = profile.email || data.email || "";
       const name = profile.name || data.name || "";
       const avatar = profile.avatar || data.avatar || "";
+      const lastSeen = data.lastSeen || null;
 
       if (email || name) {
-        users.push({ id: doc.id, name, email, avatar, ...profile, ...data });
+        users.push({ id: doc.id, name, email, avatar, lastSeen, ...profile, ...data });
       }
     });
 

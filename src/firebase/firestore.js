@@ -143,6 +143,77 @@ export const deleteUserData = async (userId) => {
 };
 
 // ============================================
+// Онлайн-статус (lastSeen)
+// ============================================
+
+/**
+ * Обновить время последней активности
+ * @param {string} userId - ID пользователя
+ */
+export const updateLastSeen = async (userId) => {
+  try {
+    const userRef = doc(db, USERS_COLLECTION, userId);
+    const now = new Date().toISOString();
+    await setDoc(userRef, { lastSeen: now }, { merge: true });
+    console.log(`[Firestore] ✅ lastSeen updated: ${now}`);
+  } catch (error) {
+    console.error("[Firestore] LastSeen update error:", error.message);
+  }
+};
+
+/**
+ * Подписаться на онлайн-статус пользователя
+ * @param {string} userId - ID пользователя
+ * @param {function} callback - Функция обратного вызова (isOnline)
+ * @returns {function|null} Функция отписки
+ */
+export const subscribeToUserPresence = (userId, callback) => {
+  try {
+    const userRef = doc(db, USERS_COLLECTION, userId);
+    const ONLINE_THRESHOLD = 2 * 60 * 1000; // 2 минуты
+    let lastSeenValue = null;
+    let checkInterval = null;
+
+    const checkOnline = () => {
+      if (!lastSeenValue) return;
+      const lastSeen = new Date(lastSeenValue).getTime();
+      const isOnline = Date.now() - lastSeen < ONLINE_THRESHOLD;
+      callback({ isOnline, lastSeen: lastSeenValue });
+    };
+
+    const unsubscribe = onSnapshot(
+      userRef,
+      (docSnap) => {
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          lastSeenValue = data.lastSeen || null;
+          const lastSeen = lastSeenValue ? new Date(lastSeenValue).getTime() : 0;
+          const isOnline = Date.now() - lastSeen < ONLINE_THRESHOLD;
+          callback({ isOnline, lastSeen: lastSeenValue });
+        } else {
+          lastSeenValue = null;
+          callback({ isOnline: false, lastSeen: null });
+        }
+      },
+      (error) => {
+        console.error("[Firestore] Presence subscribe error:", error.message);
+      }
+    );
+
+    // Локальный перерасчёт каждые 30 сек — чтобы отловить когда heartbeat остановился
+    checkInterval = setInterval(checkOnline, 30 * 1000);
+
+    return () => {
+      unsubscribe();
+      if (checkInterval) clearInterval(checkInterval);
+    };
+  } catch (error) {
+    console.error("[Firestore] Presence setup error:", error.message);
+    return null;
+  }
+};
+
+// ============================================
 // Инициализация
 // ============================================
 

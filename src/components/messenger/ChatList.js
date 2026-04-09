@@ -11,6 +11,7 @@ const ChatList = ({ onSelectChat, onBack, t, isOpen, onClose }) => {
   const [showUserPicker, setShowUserPicker] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchPickerQuery, setSearchPickerQuery] = useState('');
+  const usersRefreshRef = useRef(null);
 
   const dragControls = useDragControls();
   const panelRef = useRef(null);
@@ -87,6 +88,15 @@ const ChatList = ({ onSelectChat, onBack, t, isOpen, onClose }) => {
       }
     };
     loadUsers();
+
+    // Обновляем список каждые 30 секунд для актуального lastSeen
+    usersRefreshRef.current = setInterval(loadUsers, 30 * 1000);
+
+    return () => {
+      if (usersRefreshRef.current) {
+        clearInterval(usersRefreshRef.current);
+      }
+    };
   }, [firebaseUser, isOpen]);
 
   // Начать новый чат
@@ -115,7 +125,9 @@ const ChatList = ({ onSelectChat, onBack, t, isOpen, onClose }) => {
   const getOtherParticipant = (chat) => {
     if (!chat.participantProfiles || !firebaseUser) return null;
     const otherId = chat.participants.find(id => id !== firebaseUser.uid);
-    return chat.participantProfiles[otherId] || null;
+    const profile = chat.participantProfiles[otherId];
+    if (!profile) return null;
+    return { id: otherId, ...profile };
   };
 
   // Форматирование времени
@@ -134,6 +146,13 @@ const ChatList = ({ onSelectChat, onBack, t, isOpen, onClose }) => {
     } else {
       return date.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
     }
+  };
+
+  // Проверка онлайн-статуса по lastSeen
+  const isUserOnline = (user) => {
+    if (!user?.lastSeen) return false;
+    const lastSeen = new Date(user.lastSeen).getTime();
+    return Date.now() - lastSeen < 2 * 60 * 1000; // 2 минуты
   };
 
   if (!isOpen) return null;
@@ -245,6 +264,9 @@ const ChatList = ({ onSelectChat, onBack, t, isOpen, onClose }) => {
                           {(otherUser.name || '?')[0].toUpperCase()}
                         </div>
                       )}
+                      {isUserOnline(otherUser) && (
+                        <span className="chat-avatar-online-indicator" />
+                      )}
                     </div>
                     <div className="chat-info">
                       <div className="chat-name">{otherUser.name || otherUser.email}</div>
@@ -330,6 +352,9 @@ const ChatList = ({ onSelectChat, onBack, t, isOpen, onClose }) => {
                           <div className="user-picker-avatar-placeholder">
                             {(user.name || '?')[0].toUpperCase()}
                           </div>
+                        )}
+                        {isUserOnline(user) && (
+                          <span className="chat-avatar-online-indicator" />
                         )}
                       </div>
                       <div className="user-picker-info">

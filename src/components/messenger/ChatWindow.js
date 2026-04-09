@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence, useDragControls } from 'framer-motion';
 import { ArrowLeft, Send, MessageSquare, X, SendHorizonal } from 'lucide-react';
 import { subscribeToMessages, sendMessage, markMessagesAsRead } from '../../firebase/messages';
+import { subscribeToUserPresence } from '../../firebase/firestore';
 import { useUser } from '../../context/UserContext';
 import MessageBubble from './MessageBubble';
 
@@ -10,6 +11,7 @@ const ChatWindow = ({ chatId, otherUser, onBack, t, isOpen, onClose, onSelectCon
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
   const [isSending, setIsSending] = useState(false);
+  const [isOnline, setIsOnline] = useState(false);
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
 
@@ -75,6 +77,22 @@ const ChatWindow = ({ chatId, otherUser, onBack, t, isOpen, onClose, onSelectCon
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
+
+  // Подписка на онлайн-статус собеседника
+  useEffect(() => {
+    if (!otherUser?.id || !isOpen) {
+      setIsOnline(false);
+      return;
+    }
+
+    const unsubscribe = subscribeToUserPresence(otherUser.id, ({ isOnline }) => {
+      setIsOnline(isOnline);
+    });
+
+    return () => {
+      if (unsubscribe) unsubscribe();
+    };
+  }, [otherUser?.id, isOpen]);
 
   // Пометить сообщения как прочитанные при открытии чата
   useEffect(() => {
@@ -182,8 +200,8 @@ const ChatWindow = ({ chatId, otherUser, onBack, t, isOpen, onClose, onSelectCon
               </div>
               <div className="chat-window-info">
                 <div className="chat-window-name">{otherUser.name || otherUser.email}</div>
-                <div className="chat-window-status">
-                  {messages.length > 0 ? 'онлайн' : 'не в сети'}
+                <div className={`chat-window-status ${isOnline ? 'online' : 'offline'}`}>
+                  {isOnline ? 'онлайн' : 'не в сети'}
                 </div>
               </div>
             </div>
