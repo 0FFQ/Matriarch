@@ -9,6 +9,7 @@ import {
   getDoc,
   setDoc,
   updateDoc,
+  deleteDoc,
   getDocs,
   limit,
 } from "firebase/firestore";
@@ -260,6 +261,57 @@ export const getAllUsers = async () => {
 // ============================================
 
 /**
+ * Удалить сообщение (только отправитель может удалить)
+ */
+export const deleteMessage = async (messageId, senderId, currentUserId) => {
+  if (senderId !== currentUserId) {
+    throw new Error("Можно удалять только свои сообщения");
+  }
+
+  try {
+    const msgRef = doc(db, MESSAGES_COLLECTION, messageId);
+    const msgSnap = await getDoc(msgRef);
+
+    if (!msgSnap.exists()) return;
+
+    const chatId = msgSnap.data().chatId;
+
+    // Проверяем, последнее ли это сообщение в чате
+    const messagesRef = collection(db, MESSAGES_COLLECTION);
+    const q = query(messagesRef, where("chatId", "==", chatId));
+    const snapshot = await getDocs(q);
+
+    const messages = [];
+    snapshot.forEach((doc) => messages.push({ id: doc.id, ...doc.data() }));
+    messages.sort((a, b) => {
+      const timeA = a.createdAt?.toMillis ? a.createdAt.toMillis() : 0;
+      const timeB = b.createdAt?.toMillis ? b.createdAt.toMillis() : 0;
+      return timeB - timeA;
+    });
+
+    const isLastMessage = messages[0]?.id === messageId;
+
+    // Удаляем сообщение
+    await deleteDoc(msgRef);
+
+    // Если это было последнее сообщение — обновляем чат
+    if (isLastMessage && messages.length > 1) {
+      const chatRef = doc(db, CHATS_COLLECTION, chatId);
+      const nextMsg = messages[1];
+      await updateDoc(chatRef, {
+        lastMessage: nextMsg.text?.substring(0, 100) || "🎬 Контент",
+        lastMessageTime: nextMsg.createdAt,
+        lastSenderId: nextMsg.senderId,
+        lastSenderName: nextMsg.senderName || "Anonymous",
+      });
+    }
+  } catch (error) {
+    console.error("[Messages] Delete error:", error.message);
+    throw error;
+  }
+};
+
+/**
  * Пометить сообщения как прочитанные
  */
 export const markMessagesAsRead = async (chatId, userId) => {
@@ -469,4 +521,5 @@ export default {
   shareContentToChat,
   initializeChat,
   getChatId,
+  deleteMessage,
 };

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence, useDragControls } from 'framer-motion';
 import { ArrowLeft, Send, MessageSquare, X, SendHorizonal } from 'lucide-react';
-import { subscribeToMessages, sendMessage, markMessagesAsRead } from '../../firebase/messages';
+import { subscribeToMessages, sendMessage, markMessagesAsRead, deleteMessage } from '../../firebase/messages';
 import { subscribeToUserPresence } from '../../firebase/firestore';
 import { useUser } from '../../context/UserContext';
 import MessageBubble from './MessageBubble';
@@ -12,6 +12,7 @@ const ChatWindow = ({ chatId, otherUser, onBack, t, isOpen, onClose, onSelectCon
   const [newMessage, setNewMessage] = useState('');
   const [isSending, setIsSending] = useState(false);
   const [isOnline, setIsOnline] = useState(false);
+  const [deletingMsg, setDeletingMsg] = useState(null);
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
 
@@ -139,6 +140,19 @@ const ChatWindow = ({ chatId, otherUser, onBack, t, isOpen, onClose, onSelectCon
     }
   };
 
+  // Удаление сообщения
+  const handleDeleteMessage = useCallback(async (messageId) => {
+    if (!firebaseUser || deletingMsg) return;
+    setDeletingMsg(messageId);
+    try {
+      await deleteMessage(messageId, messages.find(m => m.id === messageId)?.senderId, firebaseUser.uid);
+    } catch (error) {
+      console.error('[ChatWindow] Delete error:', error);
+    } finally {
+      setDeletingMsg(null);
+    }
+  }, [firebaseUser, messages, deletingMsg]);
+
   // Форматирование времени сообщения
   const formatMessageTime = (timestamp) => {
     if (!timestamp) return '';
@@ -248,6 +262,8 @@ const ChatWindow = ({ chatId, otherUser, onBack, t, isOpen, onClose, onSelectCon
                         isOwn={message.senderId === firebaseUser?.uid}
                         formatTime={formatMessageTime}
                         onOpenContent={onSelectContent}
+                        onDelete={handleDeleteMessage}
+                        isDeleting={deletingMsg === message.id}
                       />
                     ))}
                   </AnimatePresence>
