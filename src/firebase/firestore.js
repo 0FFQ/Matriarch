@@ -170,7 +170,8 @@ export const updateLastSeen = async (userId) => {
 export const subscribeToUserPresence = (userId, callback) => {
   try {
     const userRef = doc(db, USERS_COLLECTION, userId);
-    const ONLINE_THRESHOLD = 2 * 60 * 1000; // 2 минуты
+    const ONLINE_THRESHOLD = 30 * 1000; // 30 секунд
+    const CHECK_INTERVAL = 10 * 1000; // проверка каждые 10 сек
     let lastSeenValue = null;
     let checkInterval = null;
 
@@ -200,8 +201,8 @@ export const subscribeToUserPresence = (userId, callback) => {
       }
     );
 
-    // Локальный перерасчёт каждые 30 сек — чтобы отловить когда heartbeat остановился
-    checkInterval = setInterval(checkOnline, 30 * 1000);
+    // Локальный перерасчёт — чтобы отловить когда heartbeat остановился
+    checkInterval = setInterval(checkOnline, CHECK_INTERVAL);
 
     return () => {
       unsubscribe();

@@ -152,7 +152,7 @@ const ChatList = ({ onSelectChat, onBack, t, isOpen, onClose }) => {
   const isUserOnline = (user) => {
     if (!user?.lastSeen) return false;
     const lastSeen = new Date(user.lastSeen).getTime();
-    return Date.now() - lastSeen < 2 * 60 * 1000; // 2 минуты
+    return Date.now() - lastSeen < 30 * 1000; // 30 секунд
   };
 
   if (!isOpen) return null;

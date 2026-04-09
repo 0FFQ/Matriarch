@@ -114,10 +114,10 @@ export const UserProvider = ({ children }) => {
         // Обновляем lastSeen при входе
         updateLastSeen(firebaseUser.uid);
 
-        // Запускаем heartbeat — каждые 30 секунд
+        // Запускаем heartbeat — каждые 10 секунд
         heartbeatIntervalRef.current = setInterval(() => {
           updateLastSeen(firebaseUser.uid);
-        }, 30 * 1000);
+        }, 10 * 1000);
 
         // Загружаем данные из Firestore
         isLoadingRef.current = true;
