@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence, useDragControls } from 'framer-motion';
 import { ArrowLeft, Send, MessageSquare, X, SendHorizonal, Trash2, Repeat, MousePointerClick } from 'lucide-react';
-import { subscribeToMessages, sendMessage, markMessagesAsRead, deleteMessage } from '../../firebase/messages';
+import { subscribeToMessages, sendMessage, markMessagesAsRead, deleteMessage, deleteMessageEveryone } from '../../firebase/messages';
 import { subscribeToUserPresence } from '../../firebase/firestore';
 import { useUser } from '../../context/UserContext';
 import MessageBubble from './MessageBubble';
@@ -24,6 +24,8 @@ const ChatWindow = ({ chatId, otherUser, onBack, t, isOpen, onClose, onSelectCon
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
   const isMouseDraggingRef = useRef(false);
+  const lastTouchedRef = useRef(null);
+  const chatContainerRef = useRef(null);
 
   // Система выбора сообщений
   const {
@@ -39,33 +41,74 @@ const ChatWindow = ({ chatId, otherUser, onBack, t, isOpen, onClose, onSelectCon
     exitSelectionMode,
     isSelected,
     selectionStats,
-  } = useMessageSelection(messages || []);
+  } = useMessageSelection(messages || [], firebaseUser?.uid || '');
 
   // Глобальный mouseup — сброс drag
   useEffect(() => {
     const handleMouseUp = () => {
       isMouseDraggingRef.current = false;
+      lastTouchedRef.current = null;
     };
     document.addEventListener('mouseup', handleMouseUp);
     return () => document.removeEventListener('mouseup', handleMouseUp);
   }, []);
 
-  // Начало drag-выбора (зажатие ЛКМ на сообщении)
-  const handleMouseDown = useCallback((messageId) => {
-    if (!isSelectionMode) return;
-    isMouseDraggingRef.current = true;
-    toggleMessage(messageId);
-  }, [isSelectionMode, toggleMessage]);
+  // Начало drag-выбора — mousedown на контейнере сообщений
+  const handleContainerMouseDown = useCallback((e) => {
+    const elements = document.elementsFromPoint(e.clientX, e.clientY);
+    const bubbleEl = elements.find(
+      (el) => el.classList?.contains('message-bubble')
+    );
 
-  // Продолжение drag-выбора (наведение на сообщение при зажатой ЛКМ)
-  const handleMouseEnterSelection = useCallback((messageId) => {
-    if (!isMouseDraggingRef.current || !isSelectionMode) return;
-    if (isSelected(messageId)) {
-      deselectMessage(messageId);
-    } else {
-      selectMessage(messageId);
+    if (bubbleEl) {
+      const messageId = bubbleEl.getAttribute('data-message-id');
+      if (messageId) {
+        isMouseDraggingRef.current = true;
+        lastTouchedRef.current = messageId;
+        if (!isSelectionMode) {
+          enterSelectionMode();
+        }
+        if (isSelected(messageId)) {
+          deselectMessage(messageId);
+        } else {
+          selectMessage(messageId);
+        }
+      }
     }
-  }, [isSelectionMode, isSelected, selectMessage, deselectMessage]);
+  }, [isSelectionMode, isSelected, selectMessage, deselectMessage, enterSelectionMode]);
+
+  // Продолжение drag-выбора — mousemove
+  useEffect(() => {
+    const handleMouseMove = (e) => {
+      if (!isMouseDraggingRef.current || !chatContainerRef.current) return;
+
+      const rect = chatContainerRef.current.getBoundingClientRect();
+      if (
+        e.clientX < rect.left || e.clientX > rect.right ||
+        e.clientY < rect.top || e.clientY > rect.bottom
+      ) return;
+
+      const elements = document.elementsFromPoint(e.clientX, e.clientY);
+      const bubbleEl = elements.find(
+        (el) => el.classList?.contains('message-bubble')
+      );
+
+      if (bubbleEl) {
+        const messageId = bubbleEl.getAttribute('data-message-id');
+        if (messageId && messageId !== lastTouchedRef.current) {
+          lastTouchedRef.current = messageId;
+          if (isSelected(messageId)) {
+            deselectMessage(messageId);
+          } else {
+            selectMessage(messageId);
+          }
+        }
+      }
+    };
+
+    document.addEventListener('mousemove', handleMouseMove);
+    return () => document.removeEventListener('mousemove', handleMouseMove);
+  }, [isSelected, selectMessage, deselectMessage]);
 
   const dragControls = useDragControls();
   const panelRef = useRef(null);
@@ -215,20 +258,10 @@ const ChatWindow = ({ chatId, otherUser, onBack, t, isOpen, onClose, onSelectCon
   const handleDeleteOptions = useCallback((messageId) => {
     // Используем координаты исходного контекстного меню
     if (contextMenu) {
-      const msg = messages.find(m => m.id === messageId);
-      const isOwn = msg && msg.senderId === firebaseUser?.uid;
-
-      if (isOwn) {
-        // Своё сообщение — показываем выбор
-        setDeleteMenu({ x: contextMenu.x, y: contextMenu.y, messageId });
-        setContextMenu(null);
-      } else {
-        // Чужое сообщение — сразу удаляем локально
-        handleDeleteLocal(messageId);
-        setContextMenu(null);
-      }
+      setDeleteMenu({ x: contextMenu.x, y: contextMenu.y, messageId });
+      setContextMenu(null);
     }
-  }, [contextMenu, messages, firebaseUser, handleDeleteLocal]);
+  }, [contextMenu]);
 
   // Контекстное меню — для любых сообщений
   const handleContextMenu = useCallback((e, messageId) => {
@@ -269,23 +302,28 @@ const ChatWindow = ({ chatId, otherUser, onBack, t, isOpen, onClose, onSelectCon
 
   const handleSelectionDeleteLocal = useCallback(() => {
     if (selectedMessages.length === 0) return;
-    const othersIds = selectedMessages.filter(m => !m.isOwn).map(m => m.id);
+    const othersIds = selectedMessages.filter(m => m.senderId !== firebaseUser?.uid).map(m => m.id);
     setLocalDeleted(prev => new Set([...prev, ...othersIds]));
     exitSelectionMode();
-  }, [selectedMessages, exitSelectionMode]);
+  }, [selectedMessages, firebaseUser, exitSelectionMode]);
 
   const handleSelectionDeleteEveryone = useCallback(async () => {
-    if (selectedMessages.length === 0 || !firebaseUser?.uid) return;
-    const ownMessagesToDelete = selectedMessages.filter(m => m.isOwn);
-    
-    for (const msg of ownMessagesToDelete) {
+    if (selectedMessages.length === 0) return;
+
+    for (const msg of selectedMessages) {
       try {
-        await deleteMessage(msg.id, msg.senderId, firebaseUser.uid);
+        if (msg.senderId === firebaseUser?.uid) {
+          // Свои — через обычную функцию
+          await deleteMessage(msg.id, msg.senderId, firebaseUser.uid);
+        } else {
+          // Чужие — через функцию без проверки
+          await deleteMessageEveryone(msg.id);
+        }
       } catch (error) {
         console.error('[ChatWindow] Bulk delete error:', error);
       }
     }
-    
+
     exitSelectionMode();
   }, [selectedMessages, firebaseUser, exitSelectionMode]);
 
@@ -370,7 +408,10 @@ const ChatWindow = ({ chatId, otherUser, onBack, t, isOpen, onClose, onSelectCon
     <AnimatePresence>
       {isOpen && (
         <motion.div
-          ref={panelRef}
+          ref={(el) => {
+            panelRef.current = el;
+            chatContainerRef.current = el;
+          }}
           className="chat-window"
           drag
           dragControls={dragControls}
@@ -411,7 +452,7 @@ const ChatWindow = ({ chatId, otherUser, onBack, t, isOpen, onClose, onSelectCon
             </div>
             <div className="chat-window-actions">
               {/* Кнопка выбора сообщений */}
-              <button 
+              <button
                 className={`chat-select-btn ${isSelectionMode ? 'active' : ''}`}
                 onClick={handleToggleSelectionMode}
                 title={isSelectionMode ? 'Завершить выбор' : 'Выбрать сообщения'}
@@ -424,8 +465,17 @@ const ChatWindow = ({ chatId, otherUser, onBack, t, isOpen, onClose, onSelectCon
             </div>
           </div>
 
+          {/* Панель действий для выбранных сообщений */}
+          <SelectionActionsBar
+            isVisible={isSelectionMode}
+            selectedCount={selectionStats.total}
+            onClose={exitSelectionMode}
+            onDeleteEveryone={handleSelectionDeleteEveryone}
+            onForward={handleSelectionForward}
+          />
+
           {/* Сообщения */}
-          <div className="chat-messages">
+          <div className="chat-messages" ref={chatContainerRef} onMouseDown={handleContainerMouseDown}>
             {messages === null ? (
               <div className="chat-loading">
                 <div className="chat-loading-spinner" />
@@ -458,9 +508,6 @@ const ChatWindow = ({ chatId, otherUser, onBack, t, isOpen, onClose, onSelectCon
                         onContextMenu={(e) => handleContextMenu(e, message.id)}
                         isSelectionMode={isSelectionMode}
                         isSelected={isSelected(message.id)}
-                        onToggleSelect={toggleMessage}
-                        onMouseDown={handleMouseDown}
-                        onMouseEnter={handleMouseEnterSelection}
                       />
                     ))}
                   </AnimatePresence>
@@ -518,25 +565,13 @@ const ChatWindow = ({ chatId, otherUser, onBack, t, isOpen, onClose, onSelectCon
           <Repeat size={14} className="msg-context-menu-icon" />
           Переслать
         </button>
-        {contextMenu.isOwn ? (
-          <>
-            <button
-              className="msg-context-menu-item msg-context-menu-delete"
-              onClick={() => handleDeleteOptions(contextMenu.messageId)}
-            >
-              <Trash2 size={14} className="msg-context-menu-icon" />
-              Удалить
-            </button>
-          </>
-        ) : (
-          <button
-            className="msg-context-menu-item msg-context-menu-delete-local"
-            onClick={() => handleDeleteOptions(contextMenu.messageId)}
-          >
-            <Trash2 size={14} className="msg-context-menu-icon" />
-            Удалить у себя
-          </button>
-        )}
+        <button
+          className="msg-context-menu-item msg-context-menu-delete"
+          onClick={() => handleDeleteOptions(contextMenu.messageId)}
+        >
+          <Trash2 size={14} className="msg-context-menu-icon" />
+          Удалить
+        </button>
       </motion.div>,
       document.body
     )}
@@ -579,20 +614,6 @@ const ChatWindow = ({ chatId, otherUser, onBack, t, isOpen, onClose, onSelectCon
       onChatOpen={(cid, user) => {
         if (onSwitchChat) onSwitchChat(cid, user);
       }}
-    />
-
-    {/* Панель действий для выбранных сообщений */}
-    <SelectionActionsBar
-      isVisible={isSelectionMode}
-      selectedCount={selectionStats.total}
-      ownCount={selectionStats.own}
-      othersCount={selectionStats.others}
-      onClose={exitSelectionMode}
-      onDeleteLocal={handleSelectionDeleteLocal}
-      onDeleteEveryone={handleSelectionDeleteEveryone}
-      onForward={handleSelectionForward}
-      onCopyText={handleSelectionCopyText}
-      canDeleteEveryone={selectionStats.own > 0}
     />
     </>
   );

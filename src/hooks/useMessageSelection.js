@@ -3,9 +3,10 @@ import { useState, useCallback, useMemo } from 'react';
 /**
  * Хук для управления выбором сообщений
  * @param {Array} messages - Массив всех сообщений
+ * @param {string} currentUserId - ID текущего пользователя
  * @returns {Object} Методы и состояние для управления выбором
  */
-const useMessageSelection = (messages = []) => {
+const useMessageSelection = (messages = [], currentUserId = '') => {
   const [selectedIds, setSelectedIds] = useState(new Set());
   const [isSelectionMode, setIsSelectionMode] = useState(false);
 
@@ -92,12 +93,13 @@ const useMessageSelection = (messages = []) => {
       return { total: 0, own: 0, others: 0 };
     }
     const selected = messages.filter(m => selectedIds.has(m.id));
+    const ownCount = selected.filter(m => m.senderId === currentUserId).length;
     return {
       total: selected.length,
-      own: selected.filter(m => m.isOwn).length,
-      others: selected.filter(m => !m.isOwn).length,
+      own: ownCount,
+      others: selected.length - ownCount,
     };
-  }, [messages, selectedIds]);
+  }, [messages, selectedIds, currentUserId]);
 
   return {
     selectedIds,

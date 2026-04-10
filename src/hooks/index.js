@@ -7,4 +7,5 @@ export { default as useSocialIntegration } from './useSocialIntegration';
 export { default as useTrailerControls } from './useTrailerControls';
 export { default as usePaginationControls } from './usePaginationControls';
 export { default as useKeyboardShortcuts } from './useKeyboardShortcuts';
+export { default as useMessageSelection } from './useMessageSelection';
 export { useErrorHandler } from './useErrorHandler';

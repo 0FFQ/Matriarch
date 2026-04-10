@@ -8,9 +8,6 @@ import SharedContentBubble from "./SharedContentBubble";
  * @param {function} props.onContextMenu - Обработчик ПКМ (из родителя)
  * @param {boolean} props.isSelectionMode - Режим выбора сообщений
  * @param {boolean} props.isSelected - Выбрано ли сообщение
- * @param {function} props.onToggleSelect - Переключить выбор сообщения
- * @param {function} props.onMouseDown - Нажатие ЛКМ (для drag-выбора)
- * @param {function} props.onMouseEnter - Наведение (для drag-выбора)
  */
 const MessageBubble = ({
   message,
@@ -20,39 +17,24 @@ const MessageBubble = ({
   onContextMenu,
   isSelectionMode = false,
   isSelected = false,
-  onToggleSelect,
-  onMouseDown,
-  onMouseEnter,
 }) => {
   const hasSharedContent = message.contentType === "shared_media" && message.content;
   const isForwarded = message.forwardedFrom && message.forwardedFrom.name;
 
   const handleClick = (e) => {
-    if (isSelectionMode && onToggleSelect) {
-      e.stopPropagation();
-      onToggleSelect(message.id);
-    }
+    // Клик не делает ничего в режиме выбора
   };
 
   return (
     <motion.div
       className={`message-bubble ${isOwn ? "own" : "other"} ${isSelectionMode ? "selectable" : ""}`}
+      data-message-id={message.id}
       initial={{ opacity: 0, y: 10, scale: 0.97 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, scale: 0.97 }}
       transition={{ duration: 0.15, ease: "easeOut" }}
       onContextMenu={onContextMenu}
       onClick={handleClick}
-      onMouseDown={(e) => {
-        if (isSelectionMode && onMouseDown) {
-          onMouseDown(message.id);
-        }
-      }}
-      onMouseEnter={() => {
-        if (isSelectionMode && onMouseEnter) {
-          onMouseEnter(message.id);
-        }
-      }}
     >
       {/* Аватар отправителя (для чужих сообщений) */}
       {!isOwn && (
@@ -133,10 +115,6 @@ const MessageBubble = ({
           {isSelectionMode && (
             <div
               className={`message-select-circle ${isSelected ? 'selected' : ''}`}
-              onClick={(e) => {
-                e.stopPropagation();
-                onToggleSelect?.(message.id);
-              }}
             >
               <svg width="12" height="12" viewBox="0 0 14 14" fill="none">
                 <polyline
