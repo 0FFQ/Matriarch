@@ -6743,6 +6743,18 @@ body.light .selection-topbar-btn.selection-cancel-btn {
   cursor: default;
 }
 
+/* В режиме выбора, но сообщение НЕ выбрано — нельзя выделять, курсор default, при зажатии no-drop */
+.message-bubble.selectable:not(.selected) .message-text,
+.message-bubble.selectable:not(.selected) .message-time,
+.message-bubble.selectable:not(.selected) .message-sender,
+.message-bubble.selectable:not(.selected) .message-forwarded-header {
+  cursor: default !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
+}
+
 /* Текст сообщения можно выделять и копировать (когда не выбран) */
 .message-text {
   user-select: text;
@@ -6772,7 +6784,59 @@ body.light .selection-topbar-btn.selection-cancel-btn {
 .message-bubble.no-select-cursor .message-text,
 .message-bubble.no-select-cursor .message-time,
 .message-bubble.no-select-cursor .message-sender,
-.message-bubble.no-select-cursor .message-forwarded-header {
+.message-bubble.no-select-cursor .message-forwarded-header,
+.message-bubble.no-select-cursor .shared-content-bubble,
+.message-bubble.no-select-cursor .shared-content-bubble .shared-content-title,
+.message-bubble.no-select-cursor .shared-content-bubble .shared-content-type,
+.message-bubble.no-select-cursor .shared-content-bubble .shared-content-year,
+.message-bubble.no-select-cursor .shared-content-bubble .shared-content-rating,
+.message-bubble.no-select-cursor .shared-content-bubble .shared-content-overview {
+  cursor: no-drop !important;
+}
+
+/* Shared content — запрет выделения всегда */
+.shared-content-bubble,
+.shared-content-bubble .shared-content-title,
+.shared-content-bubble .shared-content-type,
+.shared-content-bubble .shared-content-year,
+.shared-content-bubble .shared-content-rating,
+.shared-content-bubble .shared-content-overview,
+.shared-content-bubble .shared-content-poster,
+.shared-content-bubble .shared-content-poster img {
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
+  cursor: default;
+}
+
+/* В режиме выбора но НЕ выбрано — курсор default, нельзя выделять */
+.message-bubble.selectable:not(.selected) .shared-content-bubble,
+.message-bubble.selectable:not(.selected) .shared-content-bubble .shared-content-title,
+.message-bubble.selectable:not(.selected) .shared-content-bubble .shared-content-type,
+.message-bubble.selectable:not(.selected) .shared-content-bubble .shared-content-year,
+.message-bubble.selectable:not(.selected) .shared-content-bubble .shared-content-rating,
+.message-bubble.selectable:not(.selected) .shared-content-bubble .shared-content-overview,
+.message-bubble.selectable:not(.selected) .shared-content-bubble .shared-content-poster,
+.message-bubble.selectable:not(.selected) .shared-content-bubble .shared-content-poster img {
+  cursor: default !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
+}
+
+/* Дата-разделитель в режиме выбора — курсор default */
+.chat-messages .chat-date-divider {
+  cursor: default !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
+}
+
+/* Дата-разделитель — курсор no-drop при зажатии */
+.chat-date-divider.no-select-cursor {
   cursor: no-drop !important;
 }
 

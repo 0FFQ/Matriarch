@@ -10,6 +10,56 @@ import ForwardModal from './ForwardModal';
 import SelectionActionsBar from './SelectionActionsBar';
 import useMessageSelection from '../../hooks/useMessageSelection';
 
+// Компонент группы сообщений с датой
+const DateGroup = React.memo(({ date, messages, isSelectionMode, formatTime, firebaseUser, onSelectContent, handleContextMenu, isSelected }) => {
+  const [noSelect, setNoSelect] = React.useState(false);
+  const timerRef = React.useRef(null);
+
+  const handlePointerDown = () => {
+    if (isSelectionMode) {
+      setNoSelect(true);
+      timerRef.current = setTimeout(() => {
+        setNoSelect(false);
+        timerRef.current = null;
+      }, 600);
+    }
+  };
+  const handlePointerUp = () => {
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+      timerRef.current = null;
+      setNoSelect(false);
+    }
+  };
+
+  return (
+    <div className="chat-messages-group">
+      <div
+        className={`chat-date-divider ${noSelect ? 'no-select-cursor' : ''}`}
+        onPointerDown={isSelectionMode ? handlePointerDown : undefined}
+        onPointerUp={isSelectionMode ? handlePointerUp : undefined}
+        onPointerLeave={isSelectionMode ? handlePointerUp : undefined}
+      >
+        <span>{date}</span>
+      </div>
+      <AnimatePresence>
+        {messages.map((message) => (
+          <MessageBubble
+            key={message.id}
+            message={message}
+            isOwn={message.senderId === firebaseUser?.uid}
+            formatTime={formatTime}
+            onOpenContent={onSelectContent}
+            onContextMenu={(e) => handleContextMenu(e, message.id)}
+            isSelectionMode={isSelectionMode}
+            isSelected={isSelected(message.id)}
+          />
+        ))}
+      </AnimatePresence>
+    </div>
+  );
+});
+
 const ChatWindow = ({ chatId, otherUser, onBack, t, isOpen, onClose, onSelectContent, onSwitchChat }) => {
   const { firebaseUser, profile } = useUser();
   const [messages, setMessages] = useState(null);
@@ -55,6 +105,32 @@ const ChatWindow = ({ chatId, otherUser, onBack, t, isOpen, onClose, onSelectCon
 
   // Начало drag-выбора — mousedown на контейнере сообщений
   const handleContainerMouseDown = useCallback((e) => {
+    // Если клик внутри shared content — не выбираем сообщение
+    if (e.target.closest('[data-no-select]')) {
+      return;
+    }
+
+    // Проверяем target — если клик на shared content или его дочерних элементах, не выбираем
+    let el = e.target;
+    const chatEl = chatContainerRef.current;
+    while (el && el !== chatEl) {
+      if (
+        el.classList?.contains('shared-content-bubble') ||
+        el.classList?.contains('shared-content-info') ||
+        el.classList?.contains('shared-content-header') ||
+        el.classList?.contains('shared-content-meta') ||
+        el.classList?.contains('shared-content-title') ||
+        el.classList?.contains('shared-content-type') ||
+        el.classList?.contains('shared-content-year') ||
+        el.classList?.contains('shared-content-rating') ||
+        el.classList?.contains('shared-content-overview') ||
+        el.classList?.contains('shared-content-poster')
+      ) {
+        return;
+      }
+      el = el.parentElement;
+    }
+
     const elements = document.elementsFromPoint(e.clientX, e.clientY);
 
     // Если клик на тексте, времени или пересланном — не начинаем drag-выбор
@@ -510,25 +586,7 @@ const ChatWindow = ({ chatId, otherUser, onBack, t, isOpen, onClose, onSelectCon
               </div>
             ) : (
               Object.entries(groupedMessages).map(([date, dateMessages]) => (
-                <div key={date} className="chat-messages-group">
-                  <div className="chat-date-divider">
-                    <span>{date}</span>
-                  </div>
-                  <AnimatePresence>
-                    {dateMessages.map((message) => (
-                      <MessageBubble
-                        key={message.id}
-                        message={message}
-                        isOwn={message.senderId === firebaseUser?.uid}
-                        formatTime={formatMessageTime}
-                        onOpenContent={onSelectContent}
-                        onContextMenu={(e) => handleContextMenu(e, message.id)}
-                        isSelectionMode={isSelectionMode}
-                        isSelected={isSelected(message.id)}
-                      />
-                    ))}
-                  </AnimatePresence>
-                </div>
+                <DateGroup key={date} date={date} messages={dateMessages} isSelectionMode={isSelectionMode} formatTime={formatMessageTime} firebaseUser={firebaseUser} onSelectContent={onSelectContent} handleContextMenu={handleContextMenu} isSelected={isSelected} />
               ))
             )}
             <div ref={messagesEndRef} />

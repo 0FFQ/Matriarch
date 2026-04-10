@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useRef } from "react";
 import { motion } from "framer-motion";
 import { Film, Tv, Star, ExternalLink, Play } from "lucide-react";
 
@@ -11,8 +11,31 @@ const IMAGE_BASE = "https://image.tmdb.org/t/p/w154";
  * @param {boolean} props.isOwn - Своё ли это сообщение
  * @param {function} props.onOpenOnSite - Callback: открыть карточку на сайте
  * @param {object} props.t - Объект с переводами
+ * @param {boolean} props.isSelectionMode - Режим выбора
+ * @param {boolean} props.isSelected - Сообщение выбрано
  */
-const SharedContentBubble = ({ content, isOwn, onOpenOnSite, t }) => {
+const SharedContentBubble = ({ content, isOwn, onOpenOnSite, t, isSelectionMode = false, isSelected = false }) => {
+  const [isNoSelect, setIsNoSelect] = useState(false);
+  const noSelectTimerRef = useRef(null);
+
+  const handlePointerDown = () => {
+    if (isSelectionMode) {
+      setIsNoSelect(true);
+      noSelectTimerRef.current = setTimeout(() => {
+        setIsNoSelect(false);
+        noSelectTimerRef.current = null;
+      }, 600);
+    }
+  };
+
+  const handlePointerUp = () => {
+    if (noSelectTimerRef.current) {
+      clearTimeout(noSelectTimerRef.current);
+      noSelectTimerRef.current = null;
+      setIsNoSelect(false);
+    }
+  };
+
   if (!content) return null;
 
   const mediaType = content.media_type || "movie";
@@ -24,20 +47,9 @@ const SharedContentBubble = ({ content, isOwn, onOpenOnSite, t }) => {
     : "—";
 
   // Формируем URL постера с проверкой
-  const posterUrl = content.poster_path 
+  const posterUrl = content.poster_path
     ? `${IMAGE_BASE}${content.poster_path}`
     : null;
-
-  // Логируем для отладки
-  React.useEffect(() => {
-    console.log('[SharedContentBubble] Content:', {
-      id: content.id,
-      title: content.title,
-      hasPoster: !!content.poster_path,
-      posterPath: content.poster_path,
-      posterUrl,
-    });
-  }, [content]);
 
   const handleOpenKinopoisk = () => {
     const title = content.title;
@@ -56,10 +68,28 @@ const SharedContentBubble = ({ content, isOwn, onOpenOnSite, t }) => {
 
   return (
     <motion.div
-      className={`shared-content-bubble ${isOwn ? "own" : "other"}`}
+      className={`shared-content-bubble ${isOwn ? "own" : "other"} ${isSelectionMode && isNoSelect ? "no-select-cursor" : ""}`}
+      data-no-select="true"
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.2 }}
+      onPointerDown={(e) => {
+        if (isSelectionMode) {
+          handlePointerDown();
+        }
+        e.stopPropagation();
+      }}
+      onMouseDown={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+      }}
+      onPointerUp={(e) => {
+        if (isSelectionMode) {
+          handlePointerUp();
+        }
+        e.stopPropagation();
+      }}
+      onPointerLeave={isSelectionMode ? handlePointerUp : undefined}
     >
       {/* Постер — клик открывает карточку на сайте */}
       <div
@@ -102,12 +132,14 @@ const SharedContentBubble = ({ content, isOwn, onOpenOnSite, t }) => {
         <div className="shared-content-header">
           <h4
             className="shared-content-title shared-content-title-link"
-            onClick={handleOpenOnSite}
+            onClick={(e) => { e.stopPropagation(); handleOpenOnSite(); }}
+            onPointerDown={(e) => e.stopPropagation()}
             title="Открыть на сайте"
             role="button"
             tabIndex={0}
             onKeyDown={(e) => {
               if (e.key === "Enter" || e.key === " ") {
+                e.stopPropagation();
                 handleOpenOnSite();
               }
             }}
@@ -116,7 +148,7 @@ const SharedContentBubble = ({ content, isOwn, onOpenOnSite, t }) => {
           </h4>
           <button
             className="shared-content-open-btn"
-            onClick={handleOpenKinopoisk}
+            onClick={(e) => { e.stopPropagation(); handleOpenKinopoisk(); }}
             title="Открыть на Кинопоиске"
             aria-label="Открыть на Кинопоиске"
           >
@@ -125,18 +157,18 @@ const SharedContentBubble = ({ content, isOwn, onOpenOnSite, t }) => {
         </div>
 
         <div className="shared-content-meta">
-          <span className="shared-content-type">
+          <span className="shared-content-type" onClick={(e) => e.stopPropagation()} onPointerDown={(e) => e.stopPropagation()}>
             {mediaType === "movie" ? (t?.movie || "Movie") : (t?.tvSeries || "TV Series")}
           </span>
-          {year && <span className="shared-content-year">{year}</span>}
-          <span className="shared-content-rating">
+          {year && <span className="shared-content-year" onClick={(e) => e.stopPropagation()} onPointerDown={(e) => e.stopPropagation()}>{year}</span>}
+          <span className="shared-content-rating" onClick={(e) => e.stopPropagation()} onPointerDown={(e) => e.stopPropagation()}>
             <Star size={12} fill="currentColor" />
             {rating}
           </span>
         </div>
 
         {content.overview && (
-          <p className="shared-content-overview">
+          <p className="shared-content-overview" onClick={(e) => e.stopPropagation()} onPointerDown={(e) => e.stopPropagation()}>
             {content.overview.substring(0, 150)}
             {content.overview.length > 150 ? "..." : ""}
           </p>

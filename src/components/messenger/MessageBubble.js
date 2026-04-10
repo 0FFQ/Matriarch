@@ -24,7 +24,8 @@ const MessageBubble = ({
   const noSelectTimerRef = useRef(null);
 
   const handleTextPointerDown = (e) => {
-    if (isSelectionMode && isSelected) {
+    if (isSelectionMode) {
+      // Показываем знак запрета при зажатии в режиме выбора
       setIsNoSelect(true);
       noSelectTimerRef.current = setTimeout(() => {
         setIsNoSelect(false);
@@ -115,6 +116,8 @@ const MessageBubble = ({
             content={message.content}
             isOwn={isOwn}
             onOpenOnSite={onOpenContent}
+            isSelectionMode={isSelectionMode}
+            isSelected={isSelected}
           />
         )}
 
