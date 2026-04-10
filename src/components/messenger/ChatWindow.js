@@ -56,6 +56,16 @@ const ChatWindow = ({ chatId, otherUser, onBack, t, isOpen, onClose, onSelectCon
   // Начало drag-выбора — mousedown на контейнере сообщений
   const handleContainerMouseDown = useCallback((e) => {
     const elements = document.elementsFromPoint(e.clientX, e.clientY);
+
+    // Если клик на тексте, времени или пересланном — не начинаем drag-выбор
+    const textEl = elements.find(
+      (el) => el.classList?.contains('message-text') || el.classList?.contains('message-time') || el.classList?.contains('message-forwarded-header')
+    );
+    if (textEl) {
+      e.stopPropagation();
+      return;
+    }
+
     const bubbleEl = elements.find(
       (el) => el.classList?.contains('message-bubble')
     );
@@ -89,6 +99,13 @@ const ChatWindow = ({ chatId, otherUser, onBack, t, isOpen, onClose, onSelectCon
       ) return;
 
       const elements = document.elementsFromPoint(e.clientX, e.clientY);
+
+      // Не выбираем если курсор над текстом, временем или пересланным
+      const textEl = elements.find(
+        (el) => el.classList?.contains('message-text') || el.classList?.contains('message-time') || el.classList?.contains('message-forwarded-header')
+      );
+      if (textEl) return;
+
       const bubbleEl = elements.find(
         (el) => el.classList?.contains('message-bubble')
       );

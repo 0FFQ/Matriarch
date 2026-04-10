@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useRef } from "react";
 import { motion } from "framer-motion";
 import { Check, CheckCheck } from "lucide-react";
 import SharedContentBubble from "./SharedContentBubble";
@@ -20,14 +20,34 @@ const MessageBubble = ({
 }) => {
   const hasSharedContent = message.contentType === "shared_media" && message.content;
   const isForwarded = message.forwardedFrom && message.forwardedFrom.name;
+  const [isNoSelect, setIsNoSelect] = useState(false);
+  const noSelectTimerRef = useRef(null);
+
+  const handleTextPointerDown = (e) => {
+    if (isSelectionMode && isSelected) {
+      setIsNoSelect(true);
+      noSelectTimerRef.current = setTimeout(() => {
+        setIsNoSelect(false);
+        noSelectTimerRef.current = null;
+      }, 600);
+    }
+  };
+
+  const handleTextPointerUp = () => {
+    if (noSelectTimerRef.current) {
+      clearTimeout(noSelectTimerRef.current);
+      noSelectTimerRef.current = null;
+      setIsNoSelect(false);
+    }
+  };
 
   const handleClick = (e) => {
-    // Клик не делает ничего в режиме выбора
+    // Клик не делает ничего
   };
 
   return (
     <motion.div
-      className={`message-bubble ${isOwn ? "own" : "other"} ${isSelectionMode ? "selectable" : ""}`}
+      className={`message-bubble ${isOwn ? "own" : "other"} ${isSelectionMode ? "selectable" : ""} ${isSelected ? "selected" : ""}`}
       data-message-id={message.id}
       initial={{ opacity: 0, y: 10, scale: 0.97 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -38,7 +58,13 @@ const MessageBubble = ({
     >
       {/* Аватар отправителя (для чужих сообщений) */}
       {!isOwn && (
-        <div className="message-sender">
+        <div
+          className="message-sender"
+          style={isNoSelect ? { cursor: 'default' } : undefined}
+          onPointerDown={handleTextPointerDown}
+          onPointerUp={handleTextPointerUp}
+          onPointerLeave={handleTextPointerUp}
+        >
           {message.senderAvatar ? (
             <img
               src={message.senderAvatar}
@@ -57,7 +83,13 @@ const MessageBubble = ({
       <div className="message-content">
         {/* Заголовок пересланного сообщения */}
         {isForwarded && (
-          <div className="message-forwarded-header">
+          <div
+            className="message-forwarded-header"
+            style={isNoSelect ? { cursor: 'default' } : undefined}
+            onPointerDown={handleTextPointerDown}
+            onPointerUp={handleTextPointerUp}
+            onPointerLeave={handleTextPointerUp}
+          >
             <span className="message-forwarded-text">
               Переслано от
             </span>
@@ -89,12 +121,27 @@ const MessageBubble = ({
 
         {/* Текстовое сообщение */}
         {message.text && (
-          <p className="message-text">{message.text}</p>
+          <p
+            className="message-text"
+            onClick={(e) => e.stopPropagation()}
+            style={isNoSelect ? { cursor: 'default' } : undefined}
+            onPointerDown={handleTextPointerDown}
+            onPointerUp={handleTextPointerUp}
+            onPointerLeave={handleTextPointerUp}
+          >
+            {message.text}
+          </p>
         )}
 
         {/* Мета-информация и чекбокс справа */}
         <div className="message-meta">
-          <span className="message-time">
+          <span
+            className="message-time"
+            style={isNoSelect ? { cursor: 'default' } : undefined}
+            onPointerDown={handleTextPointerDown}
+            onPointerUp={handleTextPointerUp}
+            onPointerLeave={handleTextPointerUp}
+          >
             {formatTime(message.createdAt)}
           </span>
           {isOwn && (

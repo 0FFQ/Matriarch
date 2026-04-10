@@ -6740,9 +6740,25 @@ body.light .selection-close-topbar-btn:hover {
   color: #333333;
 }
 
-/* Режим выбора — курсор pointer, запрет выделенияа текста */
+/* Режим выбора — курсор pointer */
 .message-bubble.selectable {
-  cursor: pointer;
+  cursor: crosshair;
+}
+
+/* Текст сообщения можно выделять и копировать (когда не выбран) */
+.message-text {
+  user-select: text;
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
+  cursor: text;
+}
+
+/* Выбранное сообщение — текст, время, пересланное — нельзя выделить, курсор default */
+.message-bubble.selectable.selected .message-text,
+.message-bubble.selectable.selected .message-time,
+.message-bubble.selectable.selected .message-sender,
+.message-bubble.selectable.selected .message-forwarded-header {
   user-select: none;
   -webkit-user-select: none;
   -moz-user-select: none;
