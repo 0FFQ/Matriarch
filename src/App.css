@@ -6582,5 +6582,293 @@ body.light .forward-spinner {
   border-top-color: #666;
 }
 
+/* ==========================================
+   Система выбора сообщений
+   ========================================== */
+
+/* Кнопка выбора в заголовке чата */
+.chat-window-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.chat-select-btn {
+  width: 36px;
+  height: 36px;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #666666;
+  transition: all 0.2s;
+}
+
+.chat-select-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+}
+
+.chat-select-btn.active {
+  background: rgba(100, 150, 255, 0.2);
+  color: #6496ff;
+}
+
+body.light .chat-select-btn {
+  color: #6b6356;
+}
+
+body.light .chat-select-btn:hover {
+  background: rgba(0, 0, 0, 0.05);
+  color: #4a4438;
+}
+
+body.light .chat-select-btn.active {
+  background: rgba(100, 150, 255, 0.15);
+  color: #4a7dff;
+}
+
+/* Режим выбора — курсор pointer, запрет выделенияа текста */
+.message-bubble.selectable {
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+/* Круглый чекбокс внутри сообщения, справа в message-meta */
+.message-select-circle {
+  width: 18px;
+  height: 18px;
+  min-width: 18px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(255, 255, 255, 0.25);
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: transparent;
+  margin-left: 6px;
+}
+
+.message-select-circle:hover {
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+.message-select-circle.selected {
+  border-color: #888888;
+  background: #888888;
+  color: #ffffff;
+}
+
+body.light .message-select-circle {
+  border: 1.5px solid rgba(0, 0, 0, 0.2);
+}
+
+body.light .message-select-circle:hover {
+  border-color: rgba(0, 0, 0, 0.35);
+}
+
+body.light .message-select-circle.selected {
+  border-color: #666666;
+  background: #666666;
+  color: #ffffff;
+}
+
+.message-select-circle svg {
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.message-select-circle.selected svg {
+  opacity: 1;
+}
+
+/* Панель действий выбора */
+.selection-actions-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(0, 0, 0, 0.95);
+  backdrop-filter: blur(20px);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 16px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  z-index: 1000;
+  box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.5);
+}
+
+body.light .selection-actions-bar {
+  background: rgba(255, 255, 255, 0.98);
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+  box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.15);
+}
+
+.selection-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.selection-count {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+body.light .selection-count {
+  color: #4a4438;
+}
+
+.selection-breakdown {
+  display: flex;
+  gap: 12px;
+  font-size: 0.85rem;
+  color: #999999;
+}
+
+body.light .selection-breakdown {
+  color: #8b8578;
+}
+
+.selection-own {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: #7dcea0;
+}
+
+body.light .selection-own {
+  color: #27ae60;
+}
+
+.selection-others {
+  color: #f39c12;
+}
+
+body.light .selection-others {
+  color: #e67e22;
+}
+
+.selection-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.selection-action-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  color: #ffffff;
+  cursor: pointer;
+  transition: all 0.2s;
+  min-width: 60px;
+}
+
+.selection-action-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.selection-action-btn.selection-action-danger {
+  background: rgba(255, 50, 50, 0.1);
+  border-color: rgba(255, 50, 50, 0.2);
+  color: #ff6b6b;
+}
+
+.selection-action-btn.selection-action-danger:hover {
+  background: rgba(255, 50, 50, 0.2);
+  border-color: rgba(255, 50, 50, 0.3);
+}
+
+.selection-action-btn.selection-action-warning {
+  background: rgba(255, 165, 0, 0.1);
+  border-color: rgba(255, 165, 0, 0.2);
+  color: #ffa500;
+}
+
+.selection-action-btn.selection-action-warning:hover {
+  background: rgba(255, 165, 0, 0.2);
+  border-color: rgba(255, 165, 0, 0.3);
+}
+
+body.light .selection-action-btn {
+  background: rgba(0, 0, 0, 0.03);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  color: #4a4438;
+}
+
+body.light .selection-action-btn:hover {
+  background: rgba(0, 0, 0, 0.06);
+  border-color: rgba(0, 0, 0, 0.12);
+}
+
+.selection-action-label {
+  font-size: 0.7rem;
+  opacity: 0.9;
+}
+
+.selection-close-btn {
+  width: 40px;
+  height: 40px;
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  transition: all 0.2s;
+  margin-left: 8px;
+}
+
+.selection-close-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+}
+
+body.light .selection-close-btn {
+  background: rgba(0, 0, 0, 0.05);
+  color: #4a4438;
+}
+
+body.light .selection-close-btn:hover {
+  background: rgba(0, 0, 0, 0.08);
+  color: #4a4438;
+}
+
+/* Адаптивность для мобильных */
+@media (max-width: 768px) {
+  .selection-actions-bar {
+    padding: 12px 16px;
+  }
+
+  .selection-action-btn {
+    min-width: 50px;
+    padding: 6px 8px;
+  }
+
+  .selection-action-label {
+    font-size: 0.65rem;
+  }
+}
+
+
 
 

@@ -1,12 +1,14 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence, useDragControls } from 'framer-motion';
-import { ArrowLeft, Send, MessageSquare, X, SendHorizonal, Trash2, Repeat } from 'lucide-react';
+import { ArrowLeft, Send, MessageSquare, X, SendHorizonal, Trash2, Repeat, MousePointerClick } from 'lucide-react';
 import { subscribeToMessages, sendMessage, markMessagesAsRead, deleteMessage } from '../../firebase/messages';
 import { subscribeToUserPresence } from '../../firebase/firestore';
 import { useUser } from '../../context/UserContext';
 import MessageBubble from './MessageBubble';
 import { createPortal } from 'react-dom';
 import ForwardModal from './ForwardModal';
+import SelectionActionsBar from './SelectionActionsBar';
+import useMessageSelection from '../../hooks/useMessageSelection';
 
 const ChatWindow = ({ chatId, otherUser, onBack, t, isOpen, onClose, onSelectContent, onSwitchChat }) => {
   const { firebaseUser, profile } = useUser();
@@ -21,6 +23,49 @@ const ChatWindow = ({ chatId, otherUser, onBack, t, isOpen, onClose, onSelectCon
   const [forwardMessage, setForwardMessage] = useState(null);
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
+  const isMouseDraggingRef = useRef(false);
+
+  // Система выбора сообщений
+  const {
+    selectedIds,
+    selectedMessages,
+    isSelectionMode,
+    toggleMessage,
+    selectMessage,
+    deselectMessage,
+    selectAll,
+    deselectAll,
+    enterSelectionMode,
+    exitSelectionMode,
+    isSelected,
+    selectionStats,
+  } = useMessageSelection(messages || []);
+
+  // Глобальный mouseup — сброс drag
+  useEffect(() => {
+    const handleMouseUp = () => {
+      isMouseDraggingRef.current = false;
+    };
+    document.addEventListener('mouseup', handleMouseUp);
+    return () => document.removeEventListener('mouseup', handleMouseUp);
+  }, []);
+
+  // Начало drag-выбора (зажатие ЛКМ на сообщении)
+  const handleMouseDown = useCallback((messageId) => {
+    if (!isSelectionMode) return;
+    isMouseDraggingRef.current = true;
+    toggleMessage(messageId);
+  }, [isSelectionMode, toggleMessage]);
+
+  // Продолжение drag-выбора (наведение на сообщение при зажатой ЛКМ)
+  const handleMouseEnterSelection = useCallback((messageId) => {
+    if (!isMouseDraggingRef.current || !isSelectionMode) return;
+    if (isSelected(messageId)) {
+      deselectMessage(messageId);
+    } else {
+      selectMessage(messageId);
+    }
+  }, [isSelectionMode, isSelected, selectMessage, deselectMessage]);
 
   const dragControls = useDragControls();
   const panelRef = useRef(null);
@@ -205,6 +250,54 @@ const ChatWindow = ({ chatId, otherUser, onBack, t, isOpen, onClose, onSelectCon
     setContextMenu(null);
   }, [messages]);
 
+  // Действия с выбранными сообщениями
+  const handleSelectionForward = useCallback(() => {
+    if (selectedMessages.length === 0) return;
+    // Пересылаем первое выбранное сообщение
+    setForwardMessage(selectedMessages[0]);
+    setForwardModalOpen(true);
+    exitSelectionMode();
+  }, [selectedMessages, exitSelectionMode]);
+
+  const handleSelectionCopyText = useCallback(() => {
+    if (selectedMessages.length === 0) return;
+    const texts = selectedMessages.map(m => m.text || '').filter(Boolean);
+    const combinedText = texts.join('\n\n---\n\n');
+    navigator.clipboard.writeText(combinedText);
+    exitSelectionMode();
+  }, [selectedMessages, exitSelectionMode]);
+
+  const handleSelectionDeleteLocal = useCallback(() => {
+    if (selectedMessages.length === 0) return;
+    const othersIds = selectedMessages.filter(m => !m.isOwn).map(m => m.id);
+    setLocalDeleted(prev => new Set([...prev, ...othersIds]));
+    exitSelectionMode();
+  }, [selectedMessages, exitSelectionMode]);
+
+  const handleSelectionDeleteEveryone = useCallback(async () => {
+    if (selectedMessages.length === 0 || !firebaseUser?.uid) return;
+    const ownMessagesToDelete = selectedMessages.filter(m => m.isOwn);
+    
+    for (const msg of ownMessagesToDelete) {
+      try {
+        await deleteMessage(msg.id, msg.senderId, firebaseUser.uid);
+      } catch (error) {
+        console.error('[ChatWindow] Bulk delete error:', error);
+      }
+    }
+    
+    exitSelectionMode();
+  }, [selectedMessages, firebaseUser, exitSelectionMode]);
+
+  // Переключить режим выбора (долгий тап или кнопка)
+  const handleToggleSelectionMode = useCallback(() => {
+    if (isSelectionMode) {
+      exitSelectionMode();
+    } else {
+      enterSelectionMode();
+    }
+  }, [isSelectionMode, enterSelectionMode, exitSelectionMode]);
+
   const closeContextMenu = useCallback(() => {
     setContextMenu(null);
   }, []);
@@ -316,9 +409,19 @@ const ChatWindow = ({ chatId, otherUser, onBack, t, isOpen, onClose, onSelectCon
                 </div>
               </div>
             </div>
-            <button className="chat-close-btn" onClick={onClose}>
-              <X size={24} />
-            </button>
+            <div className="chat-window-actions">
+              {/* Кнопка выбора сообщений */}
+              <button 
+                className={`chat-select-btn ${isSelectionMode ? 'active' : ''}`}
+                onClick={handleToggleSelectionMode}
+                title={isSelectionMode ? 'Завершить выбор' : 'Выбрать сообщения'}
+              >
+                <MousePointerClick size={20} />
+              </button>
+              <button className="chat-close-btn" onClick={onClose}>
+                <X size={24} />
+              </button>
+            </div>
           </div>
 
           {/* Сообщения */}
@@ -353,6 +456,11 @@ const ChatWindow = ({ chatId, otherUser, onBack, t, isOpen, onClose, onSelectCon
                         formatTime={formatMessageTime}
                         onOpenContent={onSelectContent}
                         onContextMenu={(e) => handleContextMenu(e, message.id)}
+                        isSelectionMode={isSelectionMode}
+                        isSelected={isSelected(message.id)}
+                        onToggleSelect={toggleMessage}
+                        onMouseDown={handleMouseDown}
+                        onMouseEnter={handleMouseEnterSelection}
                       />
                     ))}
                   </AnimatePresence>
@@ -471,6 +579,20 @@ const ChatWindow = ({ chatId, otherUser, onBack, t, isOpen, onClose, onSelectCon
       onChatOpen={(cid, user) => {
         if (onSwitchChat) onSwitchChat(cid, user);
       }}
+    />
+
+    {/* Панель действий для выбранных сообщений */}
+    <SelectionActionsBar
+      isVisible={isSelectionMode}
+      selectedCount={selectionStats.total}
+      ownCount={selectionStats.own}
+      othersCount={selectionStats.others}
+      onClose={exitSelectionMode}
+      onDeleteLocal={handleSelectionDeleteLocal}
+      onDeleteEveryone={handleSelectionDeleteEveryone}
+      onForward={handleSelectionForward}
+      onCopyText={handleSelectionCopyText}
+      canDeleteEveryone={selectionStats.own > 0}
     />
     </>
   );
