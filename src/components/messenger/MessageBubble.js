@@ -47,7 +47,7 @@ const MessageBubble = ({
 
   return (
     <motion.div
-      className={`message-bubble ${isOwn ? "own" : "other"} ${isSelectionMode ? "selectable" : ""} ${isSelected ? "selected" : ""}`}
+      className={`message-bubble ${isOwn ? "own" : "other"} ${isSelectionMode ? "selectable" : ""} ${isSelected ? "selected" : ""} ${isNoSelect ? "no-select-cursor" : ""}`}
       data-message-id={message.id}
       initial={{ opacity: 0, y: 10, scale: 0.97 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -60,7 +60,6 @@ const MessageBubble = ({
       {!isOwn && (
         <div
           className="message-sender"
-          style={isNoSelect ? { cursor: 'default' } : undefined}
           onPointerDown={handleTextPointerDown}
           onPointerUp={handleTextPointerUp}
           onPointerLeave={handleTextPointerUp}
@@ -124,7 +123,6 @@ const MessageBubble = ({
           <p
             className="message-text"
             onClick={(e) => e.stopPropagation()}
-            style={isNoSelect ? { cursor: 'default' } : undefined}
             onPointerDown={handleTextPointerDown}
             onPointerUp={handleTextPointerUp}
             onPointerLeave={handleTextPointerUp}
@@ -137,7 +135,6 @@ const MessageBubble = ({
         <div className="message-meta">
           <span
             className="message-time"
-            style={isNoSelect ? { cursor: 'default' } : undefined}
             onPointerDown={handleTextPointerDown}
             onPointerUp={handleTextPointerUp}
             onPointerLeave={handleTextPointerUp}
