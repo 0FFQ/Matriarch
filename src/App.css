@@ -6613,8 +6613,8 @@ body.light .forward-spinner {
 }
 
 .chat-select-btn.active {
-  background: rgba(100, 150, 255, 0.2);
-  color: #6496ff;
+  background: rgba(255, 255, 255, 0.1);
+  color: #666666;
 }
 
 body.light .chat-select-btn {
@@ -6627,8 +6627,8 @@ body.light .chat-select-btn:hover {
 }
 
 body.light .chat-select-btn.active {
-  background: rgba(100, 150, 255, 0.15);
-  color: #4a7dff;
+  background: rgba(0, 0, 0, 0.08);
+  color: #6b6356;
 }
 
 /* Панель действий под заголовком чата */
@@ -6652,6 +6652,17 @@ body.light .selection-actions-topbar {
   align-items: center;
   gap: 4px;
   flex: 1;
+  justify-content: space-between;
+}
+
+.selection-actions-left {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.selection-topbar-btn.selection-cancel-btn {
+  margin-left: auto;
 }
 
 .selection-topbar-btn {
@@ -6695,54 +6706,41 @@ body.light .selection-actions-topbar {
   color: #aaaaaa;
 }
 
+.selection-topbar-btn.selection-cancel-btn {
+  color: #888888;
+}
+
+.selection-topbar-btn.selection-cancel-btn:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: #aaaaaa;
+}
+
 body.light .selection-topbar-btn {
   background: transparent;
-  color: #999999;
+  color: #333333;
 }
 
 body.light .selection-topbar-btn:hover {
   background: rgba(0, 0, 0, 0.04);
-  color: #666666;
-}
-
-body.light .selection-btn-count {
-  color: #555555;
-  background: transparent;
-}
-
-.selection-close-topbar-btn {
-  width: 34px;
-  height: 34px;
-  background: transparent;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #888888;
-  transition: all 0.15s;
-  margin-left: auto;
-}
-
-.selection-close-topbar-btn:hover {
-  background: rgba(255, 255, 255, 0.08);
-  color: #ffffff;
-}
-
-body.light .selection-close-topbar-btn {
-  background: transparent;
-  color: #999999;
-}
-
-body.light .selection-close-topbar-btn:hover {
-  background: rgba(0, 0, 0, 0.06);
   color: #333333;
 }
 
-/* Режим выбора — курсор pointer */
+body.light .selection-btn-count {
+  color: #333333;
+  background: transparent;
+}
+
+body.light .selection-topbar-btn.selection-danger-btn {
+  color: #333333;
+}
+
+body.light .selection-topbar-btn.selection-cancel-btn {
+  color: #333333;
+}
+
+/* Режим выбора */
 .message-bubble.selectable {
-  cursor: crosshair;
+  cursor: default;
 }
 
 /* Текст сообщения можно выделять и копировать (когда не выбран) */
