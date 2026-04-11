@@ -4649,6 +4649,7 @@ body.light .chat-window {
   -moz-user-select: none;
   -ms-user-select: none;
   touch-action: none;
+  height: 72px;
 }
 
 body.light .chat-window-header {
@@ -4660,6 +4661,7 @@ body.light .chat-window-header {
   align-items: center;
   gap: 12px;
   flex: 1;
+  height: 100%;
 }
 
 .chat-back-btn {
@@ -6591,6 +6593,7 @@ body.light .forward-spinner {
   display: flex;
   align-items: center;
   gap: 8px;
+  height: 100%;
 }
 
 .chat-select-btn {

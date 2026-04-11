@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence, useDragControls } from 'framer-motion';
-import { ArrowLeft, Send, MessageSquare, X, SendHorizonal, Trash2, Repeat, MousePointerClick } from 'lucide-react';
+import { ArrowLeft, Send, MessageSquare, X, SendHorizonal, Trash2, Repeat, MousePointerClick, Users } from 'lucide-react';
 import { subscribeToMessages, sendMessage, markMessagesAsRead, deleteMessage, deleteMessageEveryone } from '../../firebase/messages';
 import { subscribeToUserPresence } from '../../firebase/firestore';
 import { useUser } from '../../context/UserContext';
@@ -544,6 +544,14 @@ const ChatWindow = ({ chatId, otherUser, onBack, t, isOpen, onClose, onSelectCon
               </div>
             </div>
             <div className="chat-window-actions">
+              {/* Кнопка выбора собеседника */}
+              <button
+                className="chat-select-btn"
+                onClick={() => onSwitchChat && onSwitchChat()}
+                title="Выбрать собеседника"
+              >
+                <Users size={20} />
+              </button>
               {/* Кнопка выбора сообщений */}
               <button
                 className={`chat-select-btn ${isSelectionMode ? 'active' : ''}`}
