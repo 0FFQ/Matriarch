@@ -37,12 +37,18 @@ const Sidebar = ({
   // Вычисляем ограничения для перетаскивания
   useEffect(() => {
     if (isOpen && panelRef.current) {
+      const headerEl = panelRef.current.querySelector('.sidebar-header');
+      const headerHeight = headerEl ? headerEl.offsetHeight : 70;
       const panelHeight = panelRef.current.offsetHeight;
+      const initialTop = 16;
+      // Панель может опуститься так, чтобы header остался виден снизу
+      // translateY max = window.innerHeight - initialTop - headerHeight
+      const maxTranslateY = window.innerHeight - initialTop - headerHeight;
       setConstraints({
         left: -(window.innerWidth - 360),
         right: 0,
-        top: 0,
-        bottom: Math.max(0, window.innerHeight - 32 - panelHeight),
+        top: -(initialTop),
+        bottom: Math.max(0, maxTranslateY),
       });
     }
   }, [isOpen]);

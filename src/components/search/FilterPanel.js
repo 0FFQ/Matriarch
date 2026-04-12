@@ -27,12 +27,16 @@ const FilterPanel = ({
   // Вычисляем ограничения для перетаскивания
   useEffect(() => {
     if (isOpen && panelRef.current) {
+      const headerEl = panelRef.current.querySelector('.filter-header');
+      const headerHeight = headerEl ? headerEl.offsetHeight : 70;
       const panelHeight = panelRef.current.offsetHeight;
+      const initialTop = 16;
+      const maxTranslateY = window.innerHeight - initialTop - headerHeight;
       setConstraints({
         left: -(window.innerWidth - 400),
         right: 0,
         top: 0,
-        bottom: Math.max(0, window.innerHeight - 32 - panelHeight),
+        bottom: Math.max(0, maxTranslateY),
       });
     }
   }, [isOpen]);

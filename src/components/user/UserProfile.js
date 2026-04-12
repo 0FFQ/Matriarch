@@ -88,12 +88,16 @@ const UserProfile = ({ t, isOpen, onClose, onBackToMenu }) => {
 
   useEffect(() => {
     if (isOpen && panelRef.current) {
+      const headerEl = panelRef.current.querySelector('.filter-header');
+      const headerHeight = headerEl ? headerEl.offsetHeight : 70;
       const panelHeight = panelRef.current.offsetHeight;
+      const initialTop = 16;
+      const maxTranslateY = window.innerHeight - initialTop - headerHeight;
       setConstraints({
         left: -(window.innerWidth - 420),
         right: 0,
         top: 0,
-        bottom: Math.max(0, window.innerHeight - 32 - panelHeight)
+        bottom: Math.max(0, maxTranslateY)
       });
     }
   }, [isOpen]);
