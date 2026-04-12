@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, useDragControls } from 'framer-motion';
-import { X, Plus, MessageSquare, ArrowLeft, Search, Check, CheckCheck } from 'lucide-react';
+import { X, Plus, MessageSquare, ArrowLeft, Search, Check, CheckCheck, User, UserPlus } from 'lucide-react';
 import { subscribeToUserChats, getAllUsers, initializeChat } from '../../firebase/messages';
 import { useUser } from '../../context/UserContext';
 
@@ -180,35 +180,39 @@ const ChatList = ({ onSelectChat, onBack, t, isOpen, onClose }) => {
             style={{ cursor: 'grab' }}
           >
             <div className="messenger-title">
-              <MessageSquare size={20} />
               <h2>{t.messenger || 'Мессенджер'}</h2>
             </div>
             <div className="messenger-buttons">
-              <button
+              <motion.button
                 className="messenger-new-chat-btn"
                 onClick={() => setShowUserPicker(true)}
                 title={t.newChat || 'Новый чат'}
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.95 }}
               >
-                <Plus size={20} />
-              </button>
+                <UserPlus size={20} strokeWidth={1.5} />
+              </motion.button>
               {onBack ? (
                 <button className="messenger-back-btn" onClick={onBack}>
                   <ArrowLeft size={20} />
                 </button>
               ) : (
-                <button className="messenger-close-btn" onClick={onClose}>
-                  <X size={24} />
-                </button>
+                <motion.button
+                  className="messenger-close-btn"
+                  onClick={onClose}
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <X size={24} strokeWidth={1.5} />
+                </motion.button>
               )}
             </div>
           </div>
 
           {/* Поиск по чатам */}
           <div className="messenger-search">
-            <Search size={16} />
             <input
               type="text"
-              placeholder={t.searchUser || 'Поиск...'}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
