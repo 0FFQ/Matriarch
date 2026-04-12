@@ -13,6 +13,36 @@ const ChatList = ({ onSelectChat, onBack, t, isOpen, onClose }) => {
   const [searchPickerQuery, setSearchPickerQuery] = useState('');
   const usersRefreshRef = useRef(null);
   const userPickerRef = useRef(null);
+  const userPickerDragControls = useDragControls();
+  const [userPickerConstraints, setUserPickerConstraints] = useState({ left: 0, right: 0, top: 0, bottom: 0 });
+
+  useEffect(() => {
+    if (showUserPicker && userPickerRef.current) {
+      const panelHeight = userPickerRef.current.offsetHeight;
+      setUserPickerConstraints({
+        left: -(window.innerWidth - 420),
+        right: 0,
+        top: 0,
+        bottom: Math.max(0, window.innerHeight - 18 - panelHeight)
+      });
+    }
+  }, [showUserPicker]);
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (showUserPicker && userPickerRef.current) {
+        const panelHeight = userPickerRef.current.offsetHeight;
+        setUserPickerConstraints({
+          left: -(window.innerWidth - 420),
+          right: 0,
+          top: 0,
+          bottom: Math.max(0, window.innerHeight - 18 - panelHeight)
+        });
+      }
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [showUserPicker]);
 
   const dragControls = useDragControls();
   const panelRef = useRef(null);
@@ -25,7 +55,7 @@ const ChatList = ({ onSelectChat, onBack, t, isOpen, onClose }) => {
         left: -(window.innerWidth - 420),
         right: 0,
         top: 0,
-        bottom: Math.max(0, window.innerHeight - 32 - panelHeight)
+        bottom: Math.max(0, window.innerHeight - 18 - panelHeight)
       });
     }
   }, [isOpen]);
@@ -346,13 +376,23 @@ const ChatList = ({ onSelectChat, onBack, t, isOpen, onClose }) => {
           <motion.div
             ref={userPickerRef}
             className="user-picker-panel"
+            drag
+            dragControls={userPickerDragControls}
+            dragListener={false}
+            dragConstraints={userPickerConstraints}
+            dragElastic={0}
+            dragMomentum={false}
             initial={{ scale: 0.95, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.95, opacity: 0 }}
             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
           >
             <div className="user-picker-panel-content" onClick={(e) => e.stopPropagation()}>
-              <div className="user-picker-header">
+              <div
+                className="user-picker-header"
+                onPointerDown={(e) => userPickerDragControls.start(e)}
+                style={{ cursor: 'grab' }}
+              >
                 <h3>{t.selectUser || 'Выберите собеседника'}</h3>
                 <button onClick={() => { setShowUserPicker(false); setSearchPickerQuery(''); }}>
                   <X size={20} />

@@ -4049,10 +4049,10 @@ body.light .action-loading-spinner {
 /* Messenger Panel - минималистичный симметричный дизайн */
 .messenger-panel {
   position: fixed;
-  top: 20px;
-  right: 20px;
+  top: 16px;
+  right: 16px;
   width: 380px;
-  max-height: calc(100vh - 40px);
+  max-height: calc(100vh - 32px);
   background: #000000;
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 24px;
@@ -4504,11 +4504,10 @@ body.light .user-picker {
 /* User Picker Panel - выпадающая панель как messenger-panel */
 .user-picker-panel {
   position: fixed;
-  top: 20px;
-  right: 20px;
+  top: 16px;
+  right: 16px;
   width: 380px;
-  height: calc(100vh - 40px);
-  max-height: calc(100vh - 40px);
+  max-height: calc(100vh - 32px);
   background: #000000;
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 24px;
