@@ -4205,7 +4205,7 @@ body.light .messenger-close-btn:hover {
   display: flex;
   align-items: center;
   padding: 0.875rem 1.25rem;
-  margin: 0.5rem 1.5rem;
+  margin: 1rem 1.5rem 0.5rem;
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 16px;
