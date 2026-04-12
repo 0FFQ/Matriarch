@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { motion, useDragControls } from 'framer-motion';
+import { motion, AnimatePresence, useDragControls } from 'framer-motion';
 import { X, Plus, MessageSquare, ArrowLeft, Search, Check, CheckCheck, User, UserPlus } from 'lucide-react';
 import { subscribeToUserChats, getAllUsers, initializeChat } from '../../firebase/messages';
 import { useUser } from '../../context/UserContext';
@@ -12,6 +12,7 @@ const ChatList = ({ onSelectChat, onBack, t, isOpen, onClose }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchPickerQuery, setSearchPickerQuery] = useState('');
   const usersRefreshRef = useRef(null);
+  const userPickerRef = useRef(null);
 
   const dragControls = useDragControls();
   const panelRef = useRef(null);
@@ -43,6 +44,34 @@ const ChatList = ({ onSelectChat, onBack, t, isOpen, onClose }) => {
     document.addEventListener('keydown', handleEscape);
     return () => document.removeEventListener('keydown', handleEscape);
   }, [isOpen, showUserPicker, onClose]);
+
+  // Закрыть user-picker при закрытии messenger-panel
+  useEffect(() => {
+    if (!isOpen) {
+      setShowUserPicker(false);
+      setSearchPickerQuery('');
+    }
+  }, [isOpen]);
+
+  // Закрыть user-picker при клике вне его
+  useEffect(() => {
+    if (!showUserPicker) return;
+
+    const handleClickOutside = (e) => {
+      if (
+        userPickerRef.current &&
+        !userPickerRef.current.contains(e.target) &&
+        panelRef.current &&
+        !panelRef.current.contains(e.target)
+      ) {
+        setShowUserPicker(false);
+        setSearchPickerQuery('');
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showUserPicker]);
 
   // Подписка на чаты пользователя
   useEffect(() => {
@@ -311,23 +340,18 @@ const ChatList = ({ onSelectChat, onBack, t, isOpen, onClose }) => {
           </div>
         </motion.div>
 
-      {/* Выбор пользователя для нового чата */}
-      {showUserPicker && (
-        <motion.div
-          className="user-picker-overlay"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          onClick={() => { setShowUserPicker(false); setSearchPickerQuery(''); }}
-        >
-            <motion.div
-              className="user-picker"
-              initial={{ y: '100%', opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              exit={{ y: '100%', opacity: 0 }}
-              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              onClick={(e) => e.stopPropagation()}
-            >
+      {/* Выбор пользователя для нового чата - выпадающая панель */}
+      <AnimatePresence>
+        {showUserPicker && (
+          <motion.div
+            ref={userPickerRef}
+            className="user-picker-panel"
+            initial={{ scale: 0.95, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.95, opacity: 0 }}
+            transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+          >
+            <div className="user-picker-panel-content" onClick={(e) => e.stopPropagation()}>
               <div className="user-picker-header">
                 <h3>{t.selectUser || 'Выберите собеседника'}</h3>
                 <button onClick={() => { setShowUserPicker(false); setSearchPickerQuery(''); }}>
@@ -336,11 +360,9 @@ const ChatList = ({ onSelectChat, onBack, t, isOpen, onClose }) => {
               </div>
 
               <div className="user-picker-search-wrapper">
-                <Search size={16} />
                 <input
                   type="text"
                   className="user-picker-search"
-                  placeholder={t.searchUser || 'Поиск по имени или email...'}
                   value={searchPickerQuery}
                   onChange={(e) => setSearchPickerQuery(e.target.value)}
                 />
@@ -353,10 +375,14 @@ const ChatList = ({ onSelectChat, onBack, t, isOpen, onClose }) => {
                   </div>
                 ) : (
                   filteredUsers.map((user) => (
-                    <div
+                    <motion.div
                       key={user.id}
                       className="user-picker-item"
                       onClick={() => startNewChat(user)}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      whileHover={{ scale: 1.01 }}
+                      whileTap={{ scale: 0.99 }}
                     >
                       <div className="user-picker-avatar">
                         {user.avatar ? (
@@ -367,20 +393,21 @@ const ChatList = ({ onSelectChat, onBack, t, isOpen, onClose }) => {
                           </div>
                         )}
                         {isUserOnline(user) && (
-                          <span className="chat-avatar-online-indicator" />
+                          <span className="user-picker-online-indicator" />
                         )}
                       </div>
                       <div className="user-picker-info">
                         <div className="user-picker-name">{user.name}</div>
                         <div className="user-picker-email">{user.email}</div>
                       </div>
-                    </div>
+                    </motion.div>
                   ))
                 )}
               </div>
-            </motion.div>
+            </div>
           </motion.div>
         )}
+      </AnimatePresence>
     </>
   );
 };

@@ -4488,7 +4488,7 @@ body.light .messenger-empty button:hover {
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  box-shadow: 
+  box-shadow:
     0 -20px 60px rgba(0, 0, 0, 0.5),
     0 0 0 1px rgba(255, 255, 255, 0.02);
 }
@@ -4496,9 +4496,118 @@ body.light .messenger-empty button:hover {
 body.light .user-picker {
   background: rgba(255, 255, 255, 0.98);
   border-color: rgba(0, 0, 0, 0.06);
-  box-shadow: 
+  box-shadow:
     0 -20px 60px rgba(0, 0, 0, 0.12),
     0 0 0 1px rgba(0, 0, 0, 0.02);
+}
+
+/* User Picker Panel - выпадающая панель как messenger-panel */
+.user-picker-panel {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  width: 380px;
+  height: calc(100vh - 40px);
+  max-height: calc(100vh - 40px);
+  background: #000000;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 24px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  z-index: 1060;
+  box-shadow:
+    0 20px 60px rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(255, 255, 255, 0.02);
+}
+
+body.light .user-picker-panel {
+  background: rgba(255, 255, 255, 0.98);
+  border-color: rgba(0, 0, 0, 0.06);
+  box-shadow:
+    0 20px 60px rgba(0, 0, 0, 0.12),
+    0 0 0 1px rgba(0, 0, 0, 0.02);
+}
+
+.user-picker-panel-content {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.user-picker-panel .user-picker-header {
+  padding: 1.25rem 1.5rem;
+  flex-shrink: 0;
+}
+
+.user-picker-panel .user-picker-search-wrapper {
+  padding: 0;
+  flex-shrink: 0;
+}
+
+.user-picker-search-wrapper {
+  display: flex;
+  align-items: center;
+  padding: 0.875rem 1.25rem;
+  margin: 1rem 1.5rem 0.5rem;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  transition: all 0.2s ease;
+  min-height: 48px;
+}
+
+body.light .user-picker-search-wrapper {
+  background: rgba(0, 0, 0, 0.03);
+  border-color: rgba(0, 0, 0, 0.08);
+}
+
+.user-picker-search-wrapper:focus-within {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.15);
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.05);
+}
+
+body.light .user-picker-search-wrapper:focus-within {
+  background: rgba(0, 0, 0, 0.04);
+  border-color: rgba(0, 0, 0, 0.15);
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.05);
+}
+
+.user-picker-panel .user-picker-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0.5rem 0;
+}
+
+/* Адаптивность для user-picker-panel */
+@media (max-width: 860px) {
+  .user-picker-panel {
+    right: 20px;
+  }
+}
+
+@media (max-width: 420px) {
+  .user-picker-panel {
+    width: calc(100vw - 40px);
+    right: 20px;
+  }
+}
+
+/* Online indicator для user-picker */
+.user-picker-online-indicator {
+  position: absolute;
+  bottom: 2px;
+  right: 2px;
+  width: 12px;
+  height: 12px;
+  background: #22c55e;
+  border: 2px solid #000000;
+  border-radius: 50%;
+}
+
+body.light .user-picker-online-indicator {
+  border-color: #ffffff;
 }
 
 .user-picker-header {
@@ -4575,12 +4684,13 @@ body.light .user-picker-search-wrapper svg {
 
 .user-picker-search {
   flex: 1;
-  padding: 0.6rem 0;
+  padding: 0.875rem 1.25rem;
   border: none;
   background: transparent;
   color: #ffffff;
   font-size: 0.9rem;
   outline: none;
+  text-align: left;
 }
 
 body.light .user-picker-search {
