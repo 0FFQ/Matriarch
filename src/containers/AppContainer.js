@@ -84,6 +84,8 @@ const AppContainer = () => {
         t={themeLanguage.t}
         cacheStats={appState.cacheStats}
         onClearCache={appState.handleClearCache}
+        atomVisible={appState.atomVisible}
+        onToggleAtom={appState.toggleAtom}
         showAtom={showAtom}
         searchProps={search}
         filterProps={{

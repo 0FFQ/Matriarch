@@ -8,6 +8,7 @@ import {
   Trash2,
   Database,
   User,
+  Eye,
 } from "lucide-react";
 
 /**
@@ -24,6 +25,8 @@ const Sidebar = ({
   cacheStats,
   onClearCache,
   onOpenProfile,
+  atomVisible,
+  onToggleAtom,
 }) => {
   const dragControls = useDragControls();
   const panelRef = useRef(null);
@@ -124,6 +127,10 @@ const Sidebar = ({
               <button className="menu-item" onClick={onToggleLanguage}>
                 <Globe size={20} />
                 <span>{t.language}</span>
+              </button>
+              <button className="menu-item" onClick={onToggleAtom}>
+                <Eye size={20} />
+                <span>{atomVisible ? "Скрыть атом" : "Показать атом"}</span>
               </button>
             </div>
 

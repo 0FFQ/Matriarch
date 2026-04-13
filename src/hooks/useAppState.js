@@ -10,6 +10,7 @@ const useAppState = () => {
   const [profileOpen, setProfileOpen] = useState(false);
   const [filterOpen, setFilterOpen] = useState(false);
   const [cacheStats, setCacheStats] = useState(null);
+  const [atomVisible, setAtomVisible] = useState(true);
 
   // Инициализация статистики кэша
   useEffect(() => {
@@ -51,6 +52,10 @@ const useAppState = () => {
     setFilterOpen(false);
   }, []);
 
+  const toggleAtom = useCallback(() => {
+    setAtomVisible(prev => !prev);
+  }, []);
+
   return {
     menuOpen,
     setMenuOpen,
@@ -59,6 +64,8 @@ const useAppState = () => {
     filterOpen,
     setFilterOpen,
     cacheStats,
+    atomVisible,
+    setAtomVisible,
     toggleMenu,
     closeMenu,
     openProfile,
@@ -66,7 +73,8 @@ const useAppState = () => {
     backToMenu,
     toggleFilter,
     closeFilter,
-    handleClearCache
+    handleClearCache,
+    toggleAtom
   };
 };
 

@@ -20,6 +20,8 @@ import InteractiveAtom from './common/InteractiveAtom';
  * @param {Object} t - объект с переводами
  * @param {Object} cacheStats - статистика кэша
  * @param {function} onClearCache - очистка кэша
+ * @param {boolean} atomVisible - видимость атома
+ * @param {function} onToggleAtom - переключение видимости атома
  * @param {boolean} showAtom - показывать ли атом
  * @param {Object} searchProps - пропсы для поиска
  * @param {Object} filterProps - пропсы для фильтра
@@ -38,6 +40,8 @@ const AppLayout = ({
   t,
   cacheStats,
   onClearCache,
+  atomVisible,
+  onToggleAtom,
   showAtom,
   searchProps,
   filterProps
@@ -62,6 +66,8 @@ const AppLayout = ({
           setProfileOpen(true);
           setMenuOpen(false);
         }}
+        atomVisible={atomVisible}
+        onToggleAtom={onToggleAtom}
       />
 
       <UserProfile
@@ -81,7 +87,7 @@ const AppLayout = ({
         t={t}
       />
 
-      {showAtom && <InteractiveAtom />}
+      {showAtom && atomVisible && <InteractiveAtom />}
     </>
   );
 };
