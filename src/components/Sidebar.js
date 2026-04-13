@@ -130,7 +130,7 @@ const Sidebar = ({
                 style={{ marginBottom: "8px" }}
               >
                 <Eye size={20} />
-                <span>{atomVisible ? "Скрыть атом" : "Показать атом"}</span>
+                <span>{atomVisible ? t.hideAtom : t.showAtom}</span>
               </button>
               <button className="menu-item" onClick={onToggleLanguage}>
                 <Globe size={20} />

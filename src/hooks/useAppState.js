@@ -10,7 +10,19 @@ const useAppState = () => {
   const [profileOpen, setProfileOpen] = useState(false);
   const [filterOpen, setFilterOpen] = useState(false);
   const [cacheStats, setCacheStats] = useState(null);
-  const [atomVisible, setAtomVisible] = useState(true);
+  const [atomVisible, setAtomVisible] = useState(() => {
+    const saved = localStorage.getItem('matriarch_atom_visible');
+    return saved !== null ? saved === 'true' : true;
+  });
+
+  // Обёртка для сохранения в localStorage при прямом вызове setAtomVisible
+  const setAtomVisibleWithSave = useCallback((value) => {
+    setAtomVisible(prev => {
+      const newValue = typeof value === 'function' ? value(prev) : value;
+      localStorage.setItem('matriarch_atom_visible', newValue.toString());
+      return newValue;
+    });
+  }, []);
 
   // Инициализация статистики кэша
   useEffect(() => {
@@ -53,7 +65,11 @@ const useAppState = () => {
   }, []);
 
   const toggleAtom = useCallback(() => {
-    setAtomVisible(prev => !prev);
+    setAtomVisible(prev => {
+      const newValue = !prev;
+      localStorage.setItem('matriarch_atom_visible', newValue.toString());
+      return newValue;
+    });
   }, []);
 
   return {
@@ -65,7 +81,7 @@ const useAppState = () => {
     setFilterOpen,
     cacheStats,
     atomVisible,
-    setAtomVisible,
+    setAtomVisible: setAtomVisibleWithSave,
     toggleMenu,
     closeMenu,
     openProfile,
