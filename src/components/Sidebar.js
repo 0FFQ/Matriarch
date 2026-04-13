@@ -124,13 +124,17 @@ const Sidebar = ({
                 {darkMode ? <Sun size={20} /> : <Moon size={20} />}
                 <span>{darkMode ? t.lightTheme : t.darkTheme}</span>
               </button>
+              <button
+                className="menu-item"
+                onClick={onToggleAtom}
+                style={{ marginBottom: "8px" }}
+              >
+                <Eye size={20} />
+                <span>{atomVisible ? "Скрыть атом" : "Показать атом"}</span>
+              </button>
               <button className="menu-item" onClick={onToggleLanguage}>
                 <Globe size={20} />
                 <span>{t.language}</span>
-              </button>
-              <button className="menu-item" onClick={onToggleAtom}>
-                <Eye size={20} />
-                <span>{atomVisible ? "Скрыть атом" : "Показать атом"}</span>
               </button>
             </div>
 
