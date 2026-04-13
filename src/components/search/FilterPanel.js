@@ -26,7 +26,7 @@ const FilterPanel = ({
   });
 
   // Сохранение позиции окна
-  const { x, y, handleDragEnd } = useWindowPosition(
+  const { position, handleDragStart, handleDragEnd, resetPosition } = useWindowPosition(
     "filter-panel",
     isOpen
   );
@@ -114,12 +114,12 @@ const FilterPanel = ({
           dragConstraints={constraints}
           dragElastic={0}
           dragMomentum={false}
+          onDragStart={handleDragStart}
           onDragEnd={handleDragEnd}
-          style={{ x, y }}
-          initial={{ opacity: 0 }}
+          initial={{ x: position ? position.x : "100%", opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ x: "100%", opacity: 0 }}
-          transition={{ type: "spring", damping: 25, stiffness: 200 }}
+          transition={{ type: "spring", damping: 25, stiffness: 200, opacity: { duration: 0.2 } }}
         >
           {/* Заголовок */}
           <div

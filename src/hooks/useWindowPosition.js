@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
-import { useMotionValue } from 'framer-motion';
+import { useMotionValue, useTransform } from 'framer-motion';
 
 const STORAGE_KEY = 'matriarch_window_positions';
 
@@ -22,11 +22,12 @@ const savePositions = (positions) => {
 
 /**
  * Хук для сохранения и восстановления позиции перетаскиваемого окна.
+ * Использует useMotionValue для избежания конфликта с drag.
  */
 const useWindowPosition = (windowId, isOpen = false) => {
   const x = useMotionValue(0);
   const y = useMotionValue(0);
-  const hasLoadedRef = useRef(false);
+  const isDragging = useRef(false);
 
   // При открытии окна загружаем позицию
   useEffect(() => {
@@ -40,18 +41,25 @@ const useWindowPosition = (windowId, isOpen = false) => {
         x.set(0);
         y.set(0);
       }
-      hasLoadedRef.current = true;
     }
   }, [isOpen, windowId, x, y]);
 
-  const handleDragEnd = useCallback(() => {
-    const newOffset = {
+  const handleDragStart = useCallback(() => {
+    isDragging.current = true;
+  }, []);
+
+  const handleDragEnd = useCallback((event, info) => {
+    isDragging.current = false;
+    
+    // framer-motion уже обновил motion values через drag
+    // Просто читаем и сохраняем финальную позицию
+    const newPos = {
       x: x.get(),
       y: y.get(),
     };
 
     const positions = loadPositions();
-    positions[windowId] = newOffset;
+    positions[windowId] = newPos;
     savePositions(positions);
   }, [windowId, x, y]);
 
@@ -66,6 +74,7 @@ const useWindowPosition = (windowId, isOpen = false) => {
   return {
     x,
     y,
+    handleDragStart,
     handleDragEnd,
     resetPosition,
   };

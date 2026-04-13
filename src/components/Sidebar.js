@@ -39,7 +39,7 @@ const Sidebar = ({
   });
 
   // Сохранение позиции окна
-  const { x, y, handleDragEnd } = useWindowPosition(
+  const { x, y, handleDragStart, handleDragEnd, resetPosition } = useWindowPosition(
     "sidebar",
     isOpen
   );
@@ -75,7 +75,7 @@ const Sidebar = ({
   }, [isOpen, onClose]);
 
   return (
-    <AnimatePresence>
+    <AnimatePresence mode="sync">
       {isOpen && (
         <motion.div
           ref={panelRef}
@@ -86,12 +86,13 @@ const Sidebar = ({
           dragConstraints={constraints}
           dragElastic={0}
           dragMomentum={false}
+          onDragStart={handleDragStart}
           onDragEnd={handleDragEnd}
           style={{ x, y }}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          exit={{ x: "100%", opacity: 0 }}
-          transition={{ type: "spring", damping: 25, stiffness: 200 }}
+          exit={{ opacity: 0, transitionEnd: { x: 0, y: 0 } }}
+          transition={{ duration: 0.25 }}
         >
           {/* Заголовок */}
           <div

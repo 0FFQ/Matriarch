@@ -209,7 +209,7 @@ const ChatWindow = ({ chatId, otherUser, onBack, t, isOpen, onClose, onSelectCon
   const [constraints, setConstraints] = useState({ left: 0, right: 0, top: 0, bottom: 0 });
 
   // Сохранение позиции окна
-  const { x, y, handleDragEnd } = useWindowPosition(
+  const { position, handleDragStart, handleDragEnd, resetPosition } = useWindowPosition(
     `chat-window-${chatId || 'default'}`,
     isOpen
   );
@@ -523,12 +523,12 @@ const ChatWindow = ({ chatId, otherUser, onBack, t, isOpen, onClose, onSelectCon
           dragConstraints={constraints}
           dragElastic={0}
           dragMomentum={false}
+          onDragStart={handleDragStart}
           onDragEnd={handleDragEnd}
-          style={{ x, y }}
-          initial={{ opacity: 0 }}
+          initial={{ x: position ? position.x : '100%', opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ x: '100%', opacity: 0 }}
-          transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+          transition={{ type: 'spring', damping: 25, stiffness: 200, opacity: { duration: 0.2 } }}
         >
           {/* Заголовок чата */}
           <div
