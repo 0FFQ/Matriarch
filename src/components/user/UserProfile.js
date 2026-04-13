@@ -5,6 +5,7 @@ import { useUser } from '../../context/UserContext';
 import { signInWithGoogle, logout, onAuthChange } from '../../firebase/auth';
 import { getAllUsers } from '../../firebase/messages';
 import { subscribeToUser, unsubscribeFromUser, isSubscribed, getSubscribersWithUserData } from '../../firebase/subscriptions';
+import useWindowPosition from '../../hooks/useWindowPosition';
 
 const IMAGE_BASE = 'https://image.tmdb.org/t/p/w92';
 
@@ -85,6 +86,12 @@ const UserProfile = ({ t, isOpen, onClose, onBackToMenu }) => {
   const dragControls = useDragControls();
   const panelRef = useRef(null);
   const [constraints, setConstraints] = useState({ left: 0, right: 0, top: 0, bottom: 0 });
+
+  // Сохранение позиции окна
+  const { x, y, handleDragEnd } = useWindowPosition(
+    "user-profile",
+    isOpen
+  );
 
   useEffect(() => {
     if (isOpen && panelRef.current) {
@@ -414,8 +421,10 @@ const UserProfile = ({ t, isOpen, onClose, onBackToMenu }) => {
           dragConstraints={constraints}
           dragElastic={0}
           dragMomentum={false}
-          initial={{ x: '100%', opacity: 0 }}
-          animate={{ x: 0, opacity: 1 }}
+          onDragEnd={handleDragEnd}
+          style={{ x, y }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
           exit={{ x: '100%', opacity: 0 }}
           transition={{ type: 'spring', damping: 25, stiffness: 200 }}
         >

@@ -9,6 +9,7 @@ import { createPortal } from 'react-dom';
 import ForwardModal from './ForwardModal';
 import SelectionActionsBar from './SelectionActionsBar';
 import useMessageSelection from '../../hooks/useMessageSelection';
+import useWindowPosition from '../../hooks/useWindowPosition';
 
 // Компонент группы сообщений с датой
 const DateGroup = React.memo(({ date, messages, isSelectionMode, formatTime, firebaseUser, onSelectContent, handleContextMenu, isSelected }) => {
@@ -206,6 +207,12 @@ const ChatWindow = ({ chatId, otherUser, onBack, t, isOpen, onClose, onSelectCon
   const dragControls = useDragControls();
   const panelRef = useRef(null);
   const [constraints, setConstraints] = useState({ left: 0, right: 0, top: 0, bottom: 0 });
+
+  // Сохранение позиции окна
+  const { x, y, handleDragEnd } = useWindowPosition(
+    `chat-window-${chatId || 'default'}`,
+    isOpen
+  );
 
   useEffect(() => {
     if (isOpen && panelRef.current) {
@@ -516,8 +523,10 @@ const ChatWindow = ({ chatId, otherUser, onBack, t, isOpen, onClose, onSelectCon
           dragConstraints={constraints}
           dragElastic={0}
           dragMomentum={false}
-          initial={{ x: '100%', opacity: 0 }}
-          animate={{ x: 0, opacity: 1 }}
+          onDragEnd={handleDragEnd}
+          style={{ x, y }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
           exit={{ x: '100%', opacity: 0 }}
           transition={{ type: 'spring', damping: 25, stiffness: 200 }}
         >

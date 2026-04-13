@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import { motion, AnimatePresence, useDragControls } from "framer-motion";
 import { X, Sliders, RotateCcw, Film, Tv, Globe, Star } from "lucide-react";
+import useWindowPosition from "../../hooks/useWindowPosition";
 
 /**
  * Панель фильтров
@@ -23,6 +24,12 @@ const FilterPanel = ({
     top: 0,
     bottom: 0,
   });
+
+  // Сохранение позиции окна
+  const { x, y, handleDragEnd } = useWindowPosition(
+    "filter-panel",
+    isOpen
+  );
 
   // Вычисляем ограничения для перетаскивания
   useEffect(() => {
@@ -107,8 +114,10 @@ const FilterPanel = ({
           dragConstraints={constraints}
           dragElastic={0}
           dragMomentum={false}
-          initial={{ x: "100%", opacity: 0 }}
-          animate={{ x: 0, opacity: 1 }}
+          onDragEnd={handleDragEnd}
+          style={{ x, y }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
           exit={{ x: "100%", opacity: 0 }}
           transition={{ type: "spring", damping: 25, stiffness: 200 }}
         >
