@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useMotionValue } from 'framer-motion';
 
 const STORAGE_KEY = 'matriarch_window_positions';
@@ -27,6 +27,27 @@ const savePositions = (positions) => {
 const useWindowPosition = (windowId, isOpen = false) => {
   const x = useMotionValue(0);
   const y = useMotionValue(0);
+  const windowIdRef = useRef(windowId);
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+
+  // Обновляем ref windowId
+  useEffect(() => {
+    windowIdRef.current = windowId;
+  }, [windowId]);
+
+  // Подписываемся на изменения motion values для сохранения в state
+  useEffect(() => {
+    const unsubX = x.on('change', (latest) => {
+      setPosition(prev => ({ ...prev, x: latest }));
+    });
+    const unsubY = y.on('change', (latest) => {
+      setPosition(prev => ({ ...prev, y: latest }));
+    });
+    return () => {
+      unsubX();
+      unsubY();
+    };
+  }, [x, y]);
 
   // При открытии окна загружаем позицию
   useEffect(() => {
@@ -36,9 +57,11 @@ const useWindowPosition = (windowId, isOpen = false) => {
       if (saved && typeof saved.x === 'number' && typeof saved.y === 'number') {
         x.set(saved.x);
         y.set(saved.y);
+        setPosition({ x: saved.x, y: saved.y });
       } else {
         x.set(0);
         y.set(0);
+        setPosition({ x: 0, y: 0 });
       }
     }
   }, [isOpen, windowId, x, y]);
@@ -56,22 +79,22 @@ const useWindowPosition = (windowId, isOpen = false) => {
     };
 
     const positions = loadPositions();
-    positions[windowId] = newPos;
+    positions[windowIdRef.current] = newPos;
     savePositions(positions);
-  }, [windowId, x, y]);
+  }, [x, y]);
 
   const resetPosition = useCallback(() => {
     x.set(0);
     y.set(0);
     const positions = loadPositions();
-    delete positions[windowId];
+    delete positions[windowIdRef.current];
     savePositions(positions);
-  }, [windowId, x, y]);
+  }, [x, y]);
 
   return {
     x,
     y,
-    position: { x: x.get(), y: y.get() },
+    position,
     handleDragStart,
     handleDragEnd,
     resetPosition,

@@ -17,6 +17,12 @@ const ChatList = ({ onSelectChat, onBack, t, isOpen, onClose }) => {
   const userPickerDragControls = useDragControls();
   const [userPickerConstraints, setUserPickerConstraints] = useState({ left: 0, right: 0, top: 0, bottom: 0 });
 
+  // Сохранение позиции user-picker-panel
+  const { x: userPickerX, y: userPickerY, handleDragStart: userPickerHandleDragStart, handleDragEnd: userPickerHandleDragEnd } = useWindowPosition(
+    "user-picker-panel",
+    showUserPicker
+  );
+
   useEffect(() => {
     if (showUserPicker && userPickerRef.current) {
       const headerEl = userPickerRef.current.querySelector('.user-picker-header');
@@ -404,10 +410,13 @@ const ChatList = ({ onSelectChat, onBack, t, isOpen, onClose }) => {
             dragConstraints={userPickerConstraints}
             dragElastic={0}
             dragMomentum={false}
-            initial={{ scale: 0.95, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0.95, opacity: 0 }}
-            transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+            onDragStart={userPickerHandleDragStart}
+            onDragEnd={userPickerHandleDragEnd}
+            style={{ x: userPickerX, y: userPickerY }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.25 }}
           >
             <div className="user-picker-panel-content" onClick={(e) => e.stopPropagation()}>
               <div
