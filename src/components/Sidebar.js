@@ -75,7 +75,7 @@ const Sidebar = ({
   }, [isOpen, onClose]);
 
   return (
-    <AnimatePresence mode="sync">
+    <AnimatePresence>
       {isOpen && (
         <motion.div
           ref={panelRef}
@@ -91,7 +91,7 @@ const Sidebar = ({
           style={{ x, y }}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          exit={{ opacity: 0, transitionEnd: { x: 0, y: 0 } }}
+          exit={{ opacity: 0 }}
           transition={{ duration: 0.25 }}
         >
           {/* Заголовок */}

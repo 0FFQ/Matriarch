@@ -1,5 +1,5 @@
-import { useState, useCallback, useEffect, useRef } from 'react';
-import { useMotionValue, useTransform } from 'framer-motion';
+import { useCallback, useEffect, useRef } from 'react';
+import { useMotionValue } from 'framer-motion';
 
 const STORAGE_KEY = 'matriarch_window_positions';
 
@@ -27,7 +27,6 @@ const savePositions = (positions) => {
 const useWindowPosition = (windowId, isOpen = false) => {
   const x = useMotionValue(0);
   const y = useMotionValue(0);
-  const isDragging = useRef(false);
 
   // При открытии окна загружаем позицию
   useEffect(() => {
@@ -45,12 +44,10 @@ const useWindowPosition = (windowId, isOpen = false) => {
   }, [isOpen, windowId, x, y]);
 
   const handleDragStart = useCallback(() => {
-    isDragging.current = true;
+    // Drag начался
   }, []);
 
   const handleDragEnd = useCallback((event, info) => {
-    isDragging.current = false;
-    
     // framer-motion уже обновил motion values через drag
     // Просто читаем и сохраняем финальную позицию
     const newPos = {
@@ -74,6 +71,7 @@ const useWindowPosition = (windowId, isOpen = false) => {
   return {
     x,
     y,
+    position: { x: x.get(), y: y.get() },
     handleDragStart,
     handleDragEnd,
     resetPosition,

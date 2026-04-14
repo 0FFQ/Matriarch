@@ -3,6 +3,7 @@ import { motion, AnimatePresence, useDragControls } from 'framer-motion';
 import { Search, User, MessageSquare, X, Eye } from 'lucide-react';
 import { getAllUsers, initializeChat } from '../../firebase/messages';
 import { useUser } from '../../context/UserContext';
+import useWindowPosition from '../../hooks/useWindowPosition';
 
 const UsersList = ({ t, isOpen, onClose, onViewProfile, onOpenChat }) => {
   const { firebaseUser, profile } = useUser();
@@ -15,6 +16,12 @@ const UsersList = ({ t, isOpen, onClose, onViewProfile, onOpenChat }) => {
   const dragControls = useDragControls();
   const panelRef = useRef(null);
   const [constraints, setConstraints] = useState({ left: 0, right: 0, top: 0, bottom: 0 });
+
+  // Сохранение позиции окна
+  const { x, y, handleDragStart, handleDragEnd, resetPosition } = useWindowPosition(
+    "users-list",
+    isOpen
+  );
 
   useEffect(() => {
     if (isOpen && panelRef.current) {
@@ -105,10 +112,13 @@ const UsersList = ({ t, isOpen, onClose, onViewProfile, onOpenChat }) => {
           dragConstraints={constraints}
           dragElastic={0}
           dragMomentum={false}
-          initial={{ x: '100%', opacity: 0 }}
-          animate={{ x: 0, opacity: 1 }}
-          exit={{ x: '100%', opacity: 0 }}
-          transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+          onDragStart={handleDragStart}
+          onDragEnd={handleDragEnd}
+          style={{ x, y }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.25 }}
         >
           {/* Header */}
           <div

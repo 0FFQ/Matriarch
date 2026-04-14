@@ -88,7 +88,7 @@ const UserProfile = ({ t, isOpen, onClose, onBackToMenu }) => {
   const [constraints, setConstraints] = useState({ left: 0, right: 0, top: 0, bottom: 0 });
 
   // Сохранение позиции окна
-  const { position, handleDragStart, handleDragEnd, resetPosition } = useWindowPosition(
+  const { x, y, handleDragStart, handleDragEnd, resetPosition } = useWindowPosition(
     "user-profile",
     isOpen
   );
@@ -423,10 +423,11 @@ const UserProfile = ({ t, isOpen, onClose, onBackToMenu }) => {
           dragMomentum={false}
           onDragStart={handleDragStart}
           onDragEnd={handleDragEnd}
-          initial={{ x: position ? position.x : '100%', opacity: 0 }}
+          style={{ x, y }}
+          initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          exit={{ x: '100%', opacity: 0 }}
-          transition={{ type: 'spring', damping: 25, stiffness: 200, opacity: { duration: 0.2 } }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.25 }}
         >
           <div
             className="filter-header"
