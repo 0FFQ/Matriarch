@@ -1,13 +1,13 @@
 {
   "files": {
-    "main.css": "/Matriarch/static/css/main.b9970225.css",
-    "main.js": "/Matriarch/static/js/main.87af6771.js",
+    "main.css": "/Matriarch/static/css/main.3d8f43cf.css",
+    "main.js": "/Matriarch/static/js/main.e6ff2a94.js",
     "index.html": "/Matriarch/index.html",
-    "main.b9970225.css.map": "/Matriarch/static/css/main.b9970225.css.map",
-    "main.87af6771.js.map": "/Matriarch/static/js/main.87af6771.js.map"
+    "main.3d8f43cf.css.map": "/Matriarch/static/css/main.3d8f43cf.css.map",
+    "main.e6ff2a94.js.map": "/Matriarch/static/js/main.e6ff2a94.js.map"
   },
   "entrypoints": [
-    "static/css/main.b9970225.css",
-    "static/js/main.87af6771.js"
+    "static/css/main.3d8f43cf.css",
+    "static/js/main.e6ff2a94.js"
   ]
 }
