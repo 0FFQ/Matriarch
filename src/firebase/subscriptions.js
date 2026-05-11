@@ -14,20 +14,16 @@ import { db } from "./auth";
 
 const SUBSCRIPTIONS_COLLECTION = "subscriptions";
 
-// ============================================
-// Управление подписками
-// ============================================
 
-/**
- * Создать ID подписки
- */
+
+
+
+
 const createSubscriptionId = (subscriberId, targetUserId) => {
   return `${subscriberId}_${targetUserId}`;
 };
 
-/**
- * Подписаться на пользователя
- */
+
 export const subscribeToUser = async (
   subscriberId,
   targetUserId,
@@ -66,9 +62,7 @@ export const subscribeToUser = async (
   }
 };
 
-/**
- * Отписаться от пользователя
- */
+
 export const unsubscribeFromUser = async (subscriberId, targetUserId) => {
   try {
     const subscriptionId = createSubscriptionId(
@@ -93,13 +87,11 @@ export const unsubscribeFromUser = async (subscriberId, targetUserId) => {
   }
 };
 
-// ============================================
-// Проверка подписок
-// ============================================
 
-/**
- * Проверить, подписан ли пользователь на другого
- */
+
+
+
+
 export const isSubscribed = async (subscriberId, targetUserId) => {
   try {
     const subscriptionId = createSubscriptionId(
@@ -122,13 +114,11 @@ export const isSubscribed = async (subscriberId, targetUserId) => {
   }
 };
 
-// ============================================
-// Получение списков подписок
-// ============================================
 
-/**
- * Получить список подписок пользователя (на кого подписан)
- */
+
+
+
+
 export const getSubscriptions = async (userId) => {
   try {
     const subscriptionsRef = collection(db, SUBSCRIPTIONS_COLLECTION);
@@ -154,9 +144,7 @@ export const getSubscriptions = async (userId) => {
   }
 };
 
-/**
- * Получить подписчиков пользователя (кто на него подписан)
- */
+
 export const getSubscribers = async (userId) => {
   try {
     const subscriptionsRef = collection(db, SUBSCRIPTIONS_COLLECTION);
@@ -182,13 +170,11 @@ export const getSubscribers = async (userId) => {
   }
 };
 
-// ============================================
-// Real-time подписки
-// ============================================
 
-/**
- * Подписаться на список подписок (real-time)
- */
+
+
+
+
 export const subscribeToSubscriptions = (userId, callback) => {
   try {
     const subscriptionsRef = collection(db, SUBSCRIPTIONS_COLLECTION);
@@ -224,13 +210,11 @@ export const subscribeToSubscriptions = (userId, callback) => {
   }
 };
 
-// ============================================
-// Статистика подписчиков
-// ============================================
 
-/**
- * Получить количество подписчиков
- */
+
+
+
+
 export const getSubscriberCount = async (userId) => {
   try {
     const subscriptionsRef = collection(db, SUBSCRIPTIONS_COLLECTION);
@@ -250,9 +234,7 @@ export const getSubscriberCount = async (userId) => {
   }
 };
 
-/**
- * Получить список подписчиков с их данными
- */
+
 export const getSubscribersWithUserData = async (userId) => {
   try {
     console.log("[Subscriptions] Getting subscribers for:", userId);

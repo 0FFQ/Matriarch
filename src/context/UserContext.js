@@ -11,7 +11,7 @@ import { saveUserData, loadUserData, updateLastSeen } from "../firebase/firestor
 
 const UserContext = createContext(null);
 
-// Ключи для localStorage
+
 const LOCAL_STORAGE_KEYS = {
   profile: "matriarch_profile",
   favorites: "matriarch_favorites",
@@ -19,13 +19,11 @@ const LOCAL_STORAGE_KEYS = {
   watchlist: "matriarch_watchlist",
 };
 
-// ============================================
-// LocalStorage утилиты
-// ============================================
 
-/**
- * Загрузить данные из localStorage
- */
+
+
+
+
 const loadFromLocalStorage = () => {
   try {
     return {
@@ -53,9 +51,7 @@ const loadFromLocalStorage = () => {
   }
 };
 
-/**
- * Сохранить данные в localStorage
- */
+
 const saveToLocalStorage = (data) => {
   try {
     localStorage.setItem(
@@ -79,15 +75,15 @@ const saveToLocalStorage = (data) => {
   }
 };
 
-// ============================================
-// Провайдер
-// ============================================
+
+
+
 
 export const UserProvider = ({ children }) => {
-  // Загружаем начальные данные из localStorage
+  
   const initialData = loadFromLocalStorage();
 
-  // Состояние
+  
   const [user, setUser] = useState(null);
   const [syncEnabled, setSyncEnabled] = useState(false);
   const [profile, setProfile] = useState(initialData.profile);
@@ -95,36 +91,36 @@ export const UserProvider = ({ children }) => {
   const [watched, setWatched] = useState(initialData.watched);
   const [watchlist, setWatchlist] = useState(initialData.watchlist);
 
-  // Ref для отслеживания загрузки из Firestore
+  
   const isLoadingRef = useRef(false);
   const saveTimeoutRef = useRef(null);
   const heartbeatIntervalRef = useRef(null);
 
-  // ============================================
-  // Аутентификация
-  // ============================================
+  
+  
+  
 
-  // При изменении состояния аутентификации
+  
   useEffect(() => {
     const unsubscribe = onAuthChange(async (firebaseUser) => {
       if (firebaseUser) {
         setUser(firebaseUser);
         setSyncEnabled(true);
 
-        // Обновляем lastSeen при входе
+        
         updateLastSeen(firebaseUser.uid);
 
-        // Запускаем heartbeat — каждые 10 секунд
+        
         heartbeatIntervalRef.current = setInterval(() => {
           updateLastSeen(firebaseUser.uid);
         }, 10 * 1000);
 
-        // Загружаем данные из Firestore
+        
         isLoadingRef.current = true;
         const firestoreData = await loadUserData(firebaseUser.uid);
 
         if (firestoreData) {
-          // Обновляем состояние данными из Firestore
+          
           if (firestoreData.profile) {
             setProfile({
               ...firestoreData.profile,
@@ -137,7 +133,7 @@ export const UserProvider = ({ children }) => {
           if (firestoreData.watchlist)
             setWatchlist(firestoreData.watchlist);
         } else {
-          // Первый вход — создаём документ с Google-профилем
+          
           const googleProfile = {
             name: firebaseUser.displayName || "",
             avatar: firebaseUser.photoURL || "",
@@ -160,13 +156,13 @@ export const UserProvider = ({ children }) => {
         setUser(null);
         setSyncEnabled(false);
 
-        // Очищаем heartbeat
+        
         if (heartbeatIntervalRef.current) {
           clearInterval(heartbeatIntervalRef.current);
           heartbeatIntervalRef.current = null;
         }
 
-        // Очищаем localStorage
+        
         try {
           Object.values(LOCAL_STORAGE_KEYS).forEach((key) =>
             localStorage.removeItem(key)
@@ -178,7 +174,7 @@ export const UserProvider = ({ children }) => {
           );
         }
 
-        // Сбрасываем состояние
+        
         setProfile({ name: "", avatar: "" });
         setFavorites([]);
         setWatched([]);
@@ -194,28 +190,28 @@ export const UserProvider = ({ children }) => {
     };
   }, []);
 
-  // ============================================
-  // Синхронизация данных
-  // ============================================
+  
+  
+  
 
-  // Сохранение в localStorage (всегда)
+  
   useEffect(() => {
     saveToLocalStorage({ profile, favorites, watched, watchlist });
   }, [profile, favorites, watched, watchlist]);
 
-  // Сохранение в Firestore (только если НЕ загружаем)
+  
   useEffect(() => {
-    // НЕ сохраняем если:
-    // - Пользователь не авторизован
-    // - Идёт загрузка из Firestore
+    
+    
+    
     if (!syncEnabled || !user || isLoadingRef.current) return;
 
-    // Очищаем предыдущий таймер
+    
     if (saveTimeoutRef.current) {
       clearTimeout(saveTimeoutRef.current);
     }
 
-    // Debounce 500ms
+    
     saveTimeoutRef.current = setTimeout(async () => {
       try {
         await saveUserData(user.uid, {
@@ -236,9 +232,9 @@ export const UserProvider = ({ children }) => {
     };
   }, [profile, favorites, watched, watchlist, syncEnabled, user]);
 
-  // ============================================
-  // Функции управления списками
-  // ============================================
+  
+  
+  
 
   const updateProfile = useCallback((newProfile) => {
     setProfile(newProfile);
@@ -260,7 +256,7 @@ export const UserProvider = ({ children }) => {
       if (exists) {
         return prev.filter((i) => i.id !== item.id);
       }
-      // Удаляем из watchlist при добавлении в просмотренные
+      
       setWatchlist((wl) => wl.filter((i) => i.id !== item.id));
       return [...prev, { ...item, watchedAt: Date.now() }];
     });
@@ -276,7 +272,7 @@ export const UserProvider = ({ children }) => {
     });
   }, []);
 
-  // Проверки наличия в списках
+  
   const isInFavorites = useCallback(
     (id) => favorites.some((i) => i.id === id),
     [favorites]
@@ -290,7 +286,7 @@ export const UserProvider = ({ children }) => {
     [watchlist]
   );
 
-  // Удаление из списков
+  
   const removeFromFavorites = useCallback((id) => {
     setFavorites((prev) => prev.filter((i) => i.id !== id));
   }, []);
@@ -303,9 +299,9 @@ export const UserProvider = ({ children }) => {
     setWatchlist((prev) => prev.filter((i) => i.id !== id));
   }, []);
 
-  // ============================================
-  // Контекст
-  // ============================================
+  
+  
+  
 
   const value = {
     profile,
@@ -332,9 +328,9 @@ export const UserProvider = ({ children }) => {
   );
 };
 
-// ============================================
-// Хук
-// ============================================
+
+
+
 
 export const useUser = () => {
   const context = useContext(UserContext);

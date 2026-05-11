@@ -5,10 +5,7 @@ import { getAllUsers, initializeChat, shareContentToChat } from "../../firebase/
 import { subscribeToUserChats } from "../../firebase/messages";
 import { useUser } from "../../context/UserContext";
 
-/**
- * Модальное окно для отправки фильма/сериала в чат
- * @param {function} props.onChatOpen - Callback: открыть чат с получателем (chatId, user)
- */
+
 const ShareToChatModal = ({
   t,
   isOpen,
@@ -24,7 +21,7 @@ const ShareToChatModal = ({
   const [sending, setSending] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  // Загрузка пользователей и чатов
+  
   useEffect(() => {
     if (!isOpen || !firebaseUser) return;
 
@@ -33,7 +30,7 @@ const ShareToChatModal = ({
         setLoading(true);
         const [allUsers] = await Promise.all([getAllUsers()]);
 
-        // Исключаем текущего пользователя
+        
         const filteredUsers = allUsers.filter(
           (u) => u.id !== firebaseUser.uid
         );
@@ -48,7 +45,7 @@ const ShareToChatModal = ({
     loadData();
   }, [isOpen, firebaseUser]);
 
-  // Подписка на чаты
+  
   useEffect(() => {
     if (!firebaseUser || !isOpen) return;
 
@@ -61,7 +58,7 @@ const ShareToChatModal = ({
     };
   }, [firebaseUser, isOpen]);
 
-  // Фильтрация пользователей
+  
   const filteredUsers = users.filter((user) => {
     if (!searchQuery.trim()) return true;
     const query = searchQuery.toLowerCase();
@@ -71,7 +68,7 @@ const ShareToChatModal = ({
     );
   });
 
-  // Получаем информацию о чате для пользователя
+  
   const getUserChat = useCallback(
     (userId) => {
       return chats.find((chat) =>
@@ -81,7 +78,7 @@ const ShareToChatModal = ({
     [chats]
   );
 
-  // Отправка контента
+  
   const handleSend = async (userId) => {
     if (!contentItem || !firebaseUser || sending) return;
 
@@ -90,21 +87,21 @@ const ShareToChatModal = ({
       const otherUser = users.find((u) => u.id === userId);
       if (!otherUser) return;
 
-      // Профиль отправителя (берём из контекста + доп. данные)
+      
       const senderProfile = {
         name: profile?.name || firebaseUser.displayName || "Anonymous",
         avatar: profile?.avatar || firebaseUser.photoURL || "",
         email: profile?.email || firebaseUser.email || "",
       };
 
-      // Профиль получателя
+      
       const receiverProfile = {
         name: otherUser.name || "Anonymous",
         avatar: otherUser.avatar || "",
         email: otherUser.email || "",
       };
 
-      // Инициализируем чат если его нет
+      
       const chatId = await initializeChat(
         firebaseUser.uid,
         userId,
@@ -112,7 +109,7 @@ const ShareToChatModal = ({
         receiverProfile
       );
 
-      // Отправляем контент в чат
+      
       await shareContentToChat(
         chatId,
         firebaseUser.uid,
@@ -121,10 +118,10 @@ const ShareToChatModal = ({
         message
       );
 
-      // Закрываем модалку
+      
       onClose();
 
-      // Открываем чат с получателем
+      
       if (onChatOpen) {
         onChatOpen(chatId, {
           id: userId,
@@ -165,7 +162,7 @@ const ShareToChatModal = ({
           className="share-to-chat-modal"
           onClick={(e) => e.stopPropagation()}
         >
-          {/* Заголовок */}
+          {}
           <div className="share-to-chat-header">
             <div className="share-to-chat-title-row">
               <MessageCircle size={20} />
@@ -180,7 +177,7 @@ const ShareToChatModal = ({
             </button>
           </div>
 
-          {/* Информация о контенте */}
+          {}
           {contentTitle && (
             <div className="share-to-chat-content-info">
               <div className="share-to-chat-content-meta">
@@ -199,7 +196,7 @@ const ShareToChatModal = ({
             </div>
           )}
 
-          {/* Поиск */}
+          {}
           <div className="share-to-chat-search">
             <Search size={18} className="share-to-chat-search-icon" />
             <input
@@ -211,7 +208,7 @@ const ShareToChatModal = ({
             />
           </div>
 
-          {/* Список пользователей */}
+          {}
           <div className="share-to-chat-users">
             {loading ? (
               <div className="share-to-chat-loading">Загрузка...</div>
@@ -261,7 +258,7 @@ const ShareToChatModal = ({
             )}
           </div>
 
-          {/* Сообщение */}
+          {}
           <div className="share-to-chat-message-area">
             <textarea
               value={message}
@@ -273,7 +270,7 @@ const ShareToChatModal = ({
             />
           </div>
 
-          {/* Быстрая отправка всем */}
+          {}
           {!sending && (
             <div className="share-to-chat-quick-send">
               <p className="share-to-chat-quick-send-hint">

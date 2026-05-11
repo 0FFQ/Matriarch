@@ -18,30 +18,27 @@ import SearchAndResults from '../components/search/SearchAndResults';
 import TrailerSection from '../components/player/TrailerSection';
 import MessengerSection from '../components/messenger/MessengerSection';
 
-/**
- * Главный контейнер приложения
- * Объединяет все хуки и компоненты
- */
+
 const AppContainer = () => {
-  // Получаем пользователя из контекста
+  
   const { firebaseUser } = useUser();
 
-  // Хук для управления темой и языком
+  
   const themeLanguage = useThemeLanguage();
 
-  // Хук для управления поиском
+  
   const search = useSearch(themeLanguage.language);
 
-  // Хук для управления мессенджером
+  
   const messenger = useMessenger();
 
-  // Хук для управления трейлерами
+  
   const trailer = useTrailer(search.results, themeLanguage.language);
 
-  // Хук для управления состоянием приложения
+  
   const appState = useAppState();
 
-  // Обработка клавиатурных сокращений
+  
   useKeyboardShortcuts({
     onCloseTrailer: trailer.closeTrailer,
     onCloseNoTrailer: trailer.closeNoTrailer,
@@ -50,13 +47,13 @@ const AppContainer = () => {
     onCloseMenu: appState.closeMenu
   });
 
-  // Интеграция социальных функций
+  
   const socialIntegration = useSocialIntegration(messenger, search);
 
-  // Управление трейлером
+  
   const trailerControls = useTrailerControls(trailer, search);
 
-  // Управление пагинацией
+  
   const pagination = usePaginationControls(
     search.results.length,
     ITEMS_PER_PAGE,
@@ -64,12 +61,12 @@ const AppContainer = () => {
     search.setCurrentPage
   );
 
-  // Показывать ли атом
+  
   const showAtom = !search.searchActive || (search.results.length === 0 && !search.loading);
 
   return (
     <div className={`app ${themeLanguage.darkMode ? 'dark' : 'light'}`}>
-      {/* Layout */}
+      {}
       <AppLayout
         menuOpen={appState.menuOpen}
         setMenuOpen={appState.setMenuOpen}
@@ -97,14 +94,14 @@ const AppContainer = () => {
         }}
       />
 
-      {/* Социальная интеграция */}
+      {}
       <SocialIntegration
         messenger={messenger}
         onSelectSharedContent={socialIntegration.handleSelectSharedContent}
         t={themeLanguage.t}
       />
 
-      {/* Поиск и результаты */}
+      {}
       <SearchAndResults
         search={search}
         pagination={pagination}
@@ -117,7 +114,7 @@ const AppContainer = () => {
         t={themeLanguage.t}
       />
 
-      {/* Трейлер */}
+      {}
       <TrailerSection
         trailer={trailer}
         controls={trailerControls}
@@ -125,7 +122,7 @@ const AppContainer = () => {
         t={themeLanguage.t}
       />
 
-      {/* Мессенджер */}
+      {}
       <MessengerSection
         firebaseUser={firebaseUser}
         messenger={messenger}

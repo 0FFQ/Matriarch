@@ -17,7 +17,7 @@ const ChatList = ({ onSelectChat, onBack, t, isOpen, onClose }) => {
   const userPickerDragControls = useDragControls();
   const [userPickerConstraints, setUserPickerConstraints] = useState({ left: 0, right: 0, top: 0, bottom: 0 });
 
-  // Сохранение позиции user-picker-panel
+  
   const { x: userPickerX, y: userPickerY, handleDragStart: userPickerHandleDragStart, handleDragEnd: userPickerHandleDragEnd } = useWindowPosition(
     "user-picker-panel",
     showUserPicker
@@ -63,7 +63,7 @@ const ChatList = ({ onSelectChat, onBack, t, isOpen, onClose }) => {
   const panelRef = useRef(null);
   const [constraints, setConstraints] = useState({ left: 0, right: 0, top: 0, bottom: 0 });
 
-  // Сохранение позиции окна
+  
   const { x, y, handleDragStart, handleDragEnd, resetPosition } = useWindowPosition(
     "chat-list",
     isOpen
@@ -85,7 +85,7 @@ const ChatList = ({ onSelectChat, onBack, t, isOpen, onClose }) => {
     }
   }, [isOpen]);
 
-  // Обработка Escape
+  
   useEffect(() => {
     const handleEscape = (e) => {
       if (e.key === 'Escape' && isOpen) {
@@ -100,7 +100,7 @@ const ChatList = ({ onSelectChat, onBack, t, isOpen, onClose }) => {
     return () => document.removeEventListener('keydown', handleEscape);
   }, [isOpen, showUserPicker, onClose]);
 
-  // Закрыть user-picker при закрытии messenger-panel
+  
   useEffect(() => {
     if (!isOpen) {
       setShowUserPicker(false);
@@ -108,7 +108,7 @@ const ChatList = ({ onSelectChat, onBack, t, isOpen, onClose }) => {
     }
   }, [isOpen]);
 
-  // Закрыть user-picker при клике вне его
+  
   useEffect(() => {
     if (!showUserPicker) return;
 
@@ -128,7 +128,7 @@ const ChatList = ({ onSelectChat, onBack, t, isOpen, onClose }) => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [showUserPicker]);
 
-  // Подписка на чаты пользователя
+  
   useEffect(() => {
     if (!firebaseUser || !isOpen) return;
 
@@ -159,7 +159,7 @@ const ChatList = ({ onSelectChat, onBack, t, isOpen, onClose }) => {
     };
   }, [firebaseUser, isOpen]);
 
-  // Загрузка всех пользователей
+  
   useEffect(() => {
     if (!firebaseUser || !isOpen) return;
 
@@ -173,7 +173,7 @@ const ChatList = ({ onSelectChat, onBack, t, isOpen, onClose }) => {
     };
     loadUsers();
 
-    // Обновляем список каждые 30 секунд для актуального lastSeen
+    
     usersRefreshRef.current = setInterval(loadUsers, 30 * 1000);
 
     return () => {
@@ -183,7 +183,7 @@ const ChatList = ({ onSelectChat, onBack, t, isOpen, onClose }) => {
     };
   }, [firebaseUser, isOpen]);
 
-  // Начать новый чат
+  
   const startNewChat = useCallback(async (targetUser) => {
     if (!firebaseUser || !profile) return;
 
@@ -199,13 +199,13 @@ const ChatList = ({ onSelectChat, onBack, t, isOpen, onClose }) => {
     onSelectChat(chatId, targetUser);
   }, [firebaseUser, profile, onSelectChat]);
 
-  // Фильтрация пользователей по поиску
+  
   const filteredUsers = allUsers.filter(user =>
     user.name?.toLowerCase().includes(searchPickerQuery.toLowerCase()) ||
     user.email?.toLowerCase().includes(searchPickerQuery.toLowerCase())
   );
 
-  // Получить собеседника из чата
+  
   const getOtherParticipant = (chat) => {
     if (!chat.participantProfiles || !firebaseUser) return null;
     const otherId = chat.participants.find(id => id !== firebaseUser.uid);
@@ -214,7 +214,7 @@ const ChatList = ({ onSelectChat, onBack, t, isOpen, onClose }) => {
     return { id: otherId, ...profile };
   };
 
-  // Форматирование времени
+  
   const formatTime = (timestamp) => {
     if (!timestamp) return '';
     const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
@@ -232,11 +232,11 @@ const ChatList = ({ onSelectChat, onBack, t, isOpen, onClose }) => {
     }
   };
 
-  // Проверка онлайн-статуса по lastSeen
+  
   const isUserOnline = (user) => {
     if (!user?.lastSeen) return false;
     const lastSeen = new Date(user.lastSeen).getTime();
-    return Date.now() - lastSeen < 30 * 1000; // 30 секунд
+    return Date.now() - lastSeen < 30 * 1000; 
   };
 
   if (!isOpen) return null;
@@ -260,7 +260,7 @@ const ChatList = ({ onSelectChat, onBack, t, isOpen, onClose }) => {
       exit={{ opacity: 0 }}
       transition={{ duration: 0.25 }}
     >
-          {/* Заголовок */}
+          {}
           <div
             className="messenger-header"
             onPointerDown={(e) => dragControls.start(e)}
@@ -296,7 +296,7 @@ const ChatList = ({ onSelectChat, onBack, t, isOpen, onClose }) => {
             </div>
           </div>
 
-          {/* Поиск по чатам */}
+          {}
           <div className="messenger-search">
             <input
               type="text"
@@ -305,7 +305,7 @@ const ChatList = ({ onSelectChat, onBack, t, isOpen, onClose }) => {
             />
           </div>
 
-          {/* Список чатов */}
+          {}
           <div className="messenger-chat-list">
             {chats.length === 0 ? (
               <motion.div
@@ -374,7 +374,7 @@ const ChatList = ({ onSelectChat, onBack, t, isOpen, onClose }) => {
                         <div className="chat-last-message">
                           {lastMsgText}
                         </div>
-                        {/* Статус прочтения последнего сообщения */}
+                        {}
                         {isOwnLast && (
                           <span className={`chat-read-status ${isRead ? 'read' : 'sent'}`}>
                             {isRead ? (
@@ -398,7 +398,7 @@ const ChatList = ({ onSelectChat, onBack, t, isOpen, onClose }) => {
           </div>
         </motion.div>
 
-      {/* Выбор пользователя для нового чата - выпадающая панель */}
+      {}
       <AnimatePresence>
         {showUserPicker && (
           <motion.div

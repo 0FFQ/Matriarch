@@ -118,7 +118,7 @@ const NotificationsPanel = ({ t, isOpen, onClose, onSelectNotification }) => {
         exit={{ opacity: 0, y: -20 }}
         className="absolute top-16 right-4 w-96 bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 overflow-hidden z-50"
       >
-        {/* Header */}
+        {}
         <div className="p-4 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-gray-500 to-gray-600">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -141,7 +141,7 @@ const NotificationsPanel = ({ t, isOpen, onClose, onSelectNotification }) => {
           </div>
         </div>
 
-        {/* Mark All as Read */}
+        {}
         {unreadCount > 0 && (
           <div className="px-4 py-2 bg-gray-50 dark:bg-gray-700/50 border-b border-gray-200 dark:border-gray-700">
             <button
@@ -154,7 +154,7 @@ const NotificationsPanel = ({ t, isOpen, onClose, onSelectNotification }) => {
           </div>
         )}
 
-        {/* Notifications List */}
+        {}
         <div className="max-h-96 overflow-y-auto">
           {loading ? (
             <div className="p-8 text-center text-gray-500 dark:text-gray-400">

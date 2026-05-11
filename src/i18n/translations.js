@@ -1,4 +1,4 @@
-// Словарь переводов
+
 export const translations = {
   'ru-RU': {
     appTitle: 'Matriarch - Поиск фильмов и сериалов онлайн',
@@ -66,7 +66,7 @@ export const translations = {
     syncDisabled: 'Синхронизация отключена',
     logout: 'Выйти',
     synced: 'Синхронизировано',
-    // Мессенджер
+    
     messenger: 'Мессенджер',
     noMessagesYet: 'Пока нет сообщений',
     startConversation: 'Начните общение!',
@@ -155,7 +155,7 @@ export const translations = {
     syncDisabled: 'Sync disabled',
     logout: 'Logout',
     synced: 'Synced',
-    // Messenger
+    
     messenger: 'Messenger',
     noMessagesYet: 'No messages yet',
     startConversation: 'Start a conversation!',

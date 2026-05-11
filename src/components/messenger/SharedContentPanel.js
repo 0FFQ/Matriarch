@@ -10,7 +10,7 @@ const SharedContentPanel = ({ t, isOpen, onClose, onSelectContent }) => {
   const { firebaseUser } = useUser();
   const [sharedItems, setSharedItems] = useState([]);
   const [mySharedItems, setMySharedItems] = useState([]);
-  const [activeTab, setActiveTab] = useState('received'); // 'received' or 'sent'
+  const [activeTab, setActiveTab] = useState('received'); 
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -24,13 +24,13 @@ const SharedContentPanel = ({ t, isOpen, onClose, onSelectContent }) => {
 
     setLoading(true);
 
-    // Подписка на полученный контент
+    
     const unsubscribeReceived = subscribeToSharedContent(firebaseUser.uid, (items) => {
       setSharedItems(items);
       setLoading(false);
     });
 
-    // Подписка на отправленную пользователем контент
+    
     const unsubscribeSent = subscribeToUserSharedContent(firebaseUser.uid, (items) => {
       setMySharedItems(items);
     });
@@ -94,7 +94,7 @@ const SharedContentPanel = ({ t, isOpen, onClose, onSelectContent }) => {
           className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-4xl max-h-[85vh] overflow-hidden"
           onClick={(e) => e.stopPropagation()}
         >
-          {/* Header */}
+          {}
           <div className="p-6 border-b border-gray-200 dark:border-gray-700">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
@@ -108,7 +108,7 @@ const SharedContentPanel = ({ t, isOpen, onClose, onSelectContent }) => {
               </button>
             </div>
 
-            {/* Tabs */}
+            {}
             <div className="flex gap-2">
               <button
                 onClick={() => setActiveTab('received')}
@@ -145,7 +145,7 @@ const SharedContentPanel = ({ t, isOpen, onClose, onSelectContent }) => {
             </div>
           </div>
 
-          {/* Content List */}
+          {}
           <div className="overflow-y-auto max-h-[calc(85vh-200px)] p-6">
             {loading ? (
               <div className="text-center text-gray-500 dark:text-gray-400 py-8">
@@ -203,12 +203,12 @@ const SharedContentPanel = ({ t, isOpen, onClose, onSelectContent }) => {
   );
 };
 
-// Карточка общего контента
+
 const SharedContentCard = ({ item, t, onView, onDelete, isOwner, formatDate }) => {
   const content = item.content;
   const mediaType = content.media_type || 'movie';
   
-  // Формируем URL постера с проверкой
+  
   const posterUrl = content.poster_path 
     ? `${IMAGE_BASE}${content.poster_path}`
     : null;
@@ -220,7 +220,7 @@ const SharedContentCard = ({ item, t, onView, onDelete, isOwner, formatDate }) =
       className="bg-gray-50 dark:bg-gray-700 rounded-xl overflow-hidden hover:shadow-lg transition-shadow"
     >
       <div className="flex gap-4 p-4">
-        {/* Poster */}
+        {}
         <div className="flex-shrink-0 w-24">
           {posterUrl ? (
             <img
@@ -245,7 +245,7 @@ const SharedContentCard = ({ item, t, onView, onDelete, isOwner, formatDate }) =
           )}
         </div>
 
-        {/* Info */}
+        {}
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between gap-2 mb-2">
             <h4 className="text-lg font-semibold text-gray-900 dark:text-white truncate">

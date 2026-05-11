@@ -1,10 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { translations } from '../i18n/translations';
 
-/**
- * Кастомный хук для управления темой и языком
- * @returns {Object} состояние и функции для управления темой/языком
- */
+
 const useThemeLanguage = () => {
   const [darkMode, setDarkMode] = useState(() => {
     const savedTheme = localStorage.getItem('matriarch_dark_mode');
@@ -16,17 +13,17 @@ const useThemeLanguage = () => {
     return savedLanguage || 'ru-RU';
   });
 
-  // Текущие переводы
+  
   const t = useMemo(() => translations[language], [language]);
 
-  // Устанавливаем lang атрибут и тему при инициализации
+  
   useEffect(() => {
     document.documentElement.lang = language;
     document.body.classList.remove('dark', 'light');
     document.body.classList.add(darkMode ? 'dark' : 'light');
   }, []);
 
-  // Переключение темы
+  
   const toggleTheme = () => {
     const newDarkMode = !darkMode;
     setDarkMode(newDarkMode);
@@ -35,7 +32,7 @@ const useThemeLanguage = () => {
     localStorage.setItem('matriarch_dark_mode', newDarkMode.toString());
   };
 
-  // Переключение языка
+  
   const toggleLanguage = () => {
     const newLanguage = language === 'ru-RU' ? 'en-US' : 'ru-RU';
     setLanguage(newLanguage);

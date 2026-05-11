@@ -1,5 +1,5 @@
-// Утилита для сброса всех позиций окон
-// Запустить в консоли браузера: import('./src/utils/resetPositions.js').then(m => m.default())
+
+
 
 export const resetWindowPositions = () => {
   try {

@@ -1,7 +1,7 @@
-// Import jest-dom for extended matchers
+
 import '@testing-library/jest-dom';
 
-// Mock для localStorage
+
 const localStorageMock = (() => {
   let store = {};
   return {
@@ -26,7 +26,7 @@ Object.defineProperty(window, 'localStorage', {
   value: localStorageMock,
 });
 
-// Очищаем моки перед каждым тестом
+
 beforeEach(() => {
   localStorageMock.clear();
   localStorageMock.getItem.mockClear();
@@ -36,7 +36,7 @@ beforeEach(() => {
   localStorageMock.key.mockClear();
 });
 
-// Mock для matchMedia
+
 Object.defineProperty(window, 'matchMedia', {
   writable: true,
   value: jest.fn().mockImplementation((query) => ({

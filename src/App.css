@@ -1,6 +1,6 @@
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
-/* Убираем все подчёркивания */
+
 a {
   text-decoration: none !important;
   color: inherit;
@@ -19,7 +19,7 @@ body {
   width: 100%;
 }
 
-/* Глобальный скроллбар для тёмной темы */
+
 body.dark ::-webkit-scrollbar {
   width: 10px;
 }
@@ -37,7 +37,7 @@ body.dark ::-webkit-scrollbar-thumb:hover {
   background: #555555;
 }
 
-/* Глобальный скроллбар для светлой темы */
+
 body.light ::-webkit-scrollbar {
   width: 10px;
 }
@@ -271,7 +271,7 @@ body.light {
   text-align: left;
 }
 
-/* Стили для статистики кэша */
+
 .cache-stats {
   display: flex;
   flex-direction: column;
@@ -326,7 +326,7 @@ body.light {
   border-color: rgba(107, 114, 120, 0.15) !important;
 }
 
-/* Индикатор кэша */
+
 .cache-indicator {
   display: flex;
   align-items: center;
@@ -362,7 +362,7 @@ body.light {
   gap: 8px;
 }
 
-/* Контейнеры для иконок */
+
 .search-icon-left,
 .search-icon-right {
   width: 40px;
@@ -373,7 +373,7 @@ body.light {
   flex-shrink: 0;
 }
 
-/* Левая иконка (Домой) - по умолчанию скрыта */
+
 .search-icon-left {
   pointer-events: none;
   position: absolute;
@@ -404,7 +404,7 @@ body.light .home-icon:hover {
   color: #4a4438;
 }
 
-/* Иконка поиска */
+
 .search-icon-only {
   width: 40px;
   height: 40px;
@@ -419,7 +419,7 @@ body.light .home-icon:hover {
   padding: 0;
 }
 
-/* Прозрачная кнопка для активации поиска (на весь экран) */
+
 .search-trigger-overlay {
   position: fixed;
   top: 0;
@@ -443,7 +443,7 @@ body.light .home-icon:hover {
   pointer-events: none;
 }
 
-/* Когда фильтр скрыт - убираем pointer-events и видимость */
+
 .search-icon-right {
   pointer-events: none;
   position: absolute;
@@ -462,7 +462,7 @@ body.light .home-icon:hover {
   cursor: pointer;
 }
 
-/* Строка поиска */
+
 .search-bar {
   width: 0;
   height: 40px;
@@ -573,7 +573,7 @@ body.light .home-icon:hover {
   border: 1px solid rgba(0, 0, 0, 0.1);
 }
 
-/* Выпадающий список с подсказками */
+
 .suggestions-dropdown {
   position: absolute;
   top: 120%;
@@ -1171,7 +1171,7 @@ body.light .home-icon:hover {
   height: 50px;
 }
 
-/* Светлая тема */
+
 .light .result-card {
   background: #ffffff;
   border: 1px solid rgba(139, 131, 120, 0.15);
@@ -1345,7 +1345,7 @@ body.light .home-icon:hover {
   .theme-toggle { top: 1rem; right: 1rem; width: 40px; height: 40px; }
 }
 
-/* ========== Filter Panel Styles ========== */
+
 .filter-panel {
   position: fixed;
   top: 16px;
@@ -1522,7 +1522,7 @@ body.light .filter-back:hover {
   color: #4a4438;
 }
 
-/* Стилизация нативных select */
+
 .select-wrapper {
   position: relative;
   width: 100%;
@@ -1585,7 +1585,7 @@ body.light .filter-back:hover {
   color: #4a4438;
 }
 
-/* Стрелка для select через SVG background */
+
 .select-wrapper::after {
   content: '';
   position: absolute;
@@ -1657,7 +1657,7 @@ body.light .filter-back:hover {
   color: #4a4438;
 }
 
-/* Кастомный чекбокс для аниме */
+
 .anime-toggle {
   display: flex;
   align-items: center;
@@ -1908,7 +1908,7 @@ body.light .filter-back:hover {
   background: rgba(0, 0, 0, 0.12);
 }
 
-/* Индикатор активных фильтров на кнопке */
+
 .filter-icon.has-filters {
   color: #9ca3af !important;
   position: relative;
@@ -1934,7 +1934,7 @@ body.light .filter-back:hover {
   border-color: rgba(255, 255, 255, 0.8);
 }
 
-/* Адаптивность для фильтров */
+
 @media (max-width: 480px) {
   .filter-panel {
     width: calc(100vw - 32px);
@@ -1942,8 +1942,8 @@ body.light .filter-back:hover {
   }
 }
 
-/* ========== Pagination Styles ========== */
-/* Кнопки пагинации - стрелки по бокам */
+
+
 .page-nav-full {
   position: fixed;
   top: 50%;
@@ -1999,7 +1999,7 @@ body.light .filter-back:hover {
   color: #4a4438;
 }
 
-/* Индикатор страниц */
+
 .pagination-indicator {
   display: flex;
   align-items: center;
@@ -2033,7 +2033,7 @@ body.light .filter-back:hover {
   color: #4a4438;
 }
 
-/* Адаптивность для пагинации */
+
 @media (max-width: 768px) {
   .page-nav-full {
     width: 50px;
@@ -2058,9 +2058,9 @@ body.light .filter-back:hover {
   }
 }
 
-/* === Индикаторы загрузки === */
 
-/* Спиннер в строке поиска */
+
+
 .loading-spinner {
   position: absolute;
   right: 12px;
@@ -2086,7 +2086,7 @@ body.light .filter-back:hover {
   border-top-color: #4a4438;
 }
 
-/* Глобальный индикатор загрузки */
+
 .global-loading {
   position: fixed;
   top: 0;
@@ -2156,7 +2156,7 @@ body.light .filter-back:hover {
   }
 }
 
-/* === UserProfile (Filter Panel Style) === */
+
 .profile-overlay {
   position: fixed;
   inset: 0;
@@ -2188,7 +2188,7 @@ body.light .profile-panel {
   box-shadow: -10px 10px 40px rgba(0, 0, 0, 0.15);
 }
 
-/* Profile Content Wrapper */
+
 .profile-content-wrapper {
   display: flex;
   flex-direction: column;
@@ -2211,7 +2211,7 @@ body.light .profile-content-wrapper {
   position: relative;
 }
 
-/* Unified Profile Card - Compact & Minimal */
+
 .unified-profile-card {
   display: flex;
   flex-direction: column;
@@ -2229,7 +2229,7 @@ body.light .unified-profile-card {
   border-color: rgba(0, 0, 0, 0.08);
 }
 
-/* Profile header row - avatar + name */
+
 .profile-header-row {
   display: flex;
   align-items: center;
@@ -2310,7 +2310,7 @@ body.light .unified-profile-card {
   transform: translate(-50%, -50%) scale(1.1);
 }
 
-/* Profile name compact */
+
 .profile-name-small {
   flex: 1;
   min-width: 0;
@@ -2368,7 +2368,7 @@ body.light .profile-edit-small-btn {
   border-color: rgba(99, 102, 241, 0.3);
 }
 
-/* Profile name edit */
+
 .profile-name-small-edit {
   display: flex;
   align-items: center;
@@ -2436,7 +2436,7 @@ body.light .edit-small-btn {
   border-color: rgba(107, 114, 120, 0.3);
 }
 
-/* Compact stats */
+
 .profile-stats-compact {
   display: flex;
   gap: 1rem;
@@ -2456,7 +2456,7 @@ body.light .stat-compact {
   color: #6b6356;
 }
 
-/* Divider */
+
 .profile-divider {
   height: 1px;
   background: rgba(255, 255, 255, 0.08);
@@ -2467,7 +2467,7 @@ body.light .profile-divider {
   background: rgba(0, 0, 0, 0.08);
 }
 
-/* Compact sync - logged in */
+
 .sync-compact-row {
   display: flex;
   align-items: center;
@@ -2555,7 +2555,7 @@ body.light .sync-compact-logout {
   border-color: rgba(107, 114, 120, 0.3);
 }
 
-/* Compact sync - loading */
+
 .sync-compact-loading {
   display: flex;
   align-items: center;
@@ -2572,7 +2572,7 @@ body.light .sync-compact-logout {
   animation: spin 0.8s linear infinite;
 }
 
-/* Compact sync - sign in button */
+
 .sync-compact-signin {
   width: 100%;
   padding: 0.625rem 0.875rem;
@@ -2598,7 +2598,7 @@ body.light .sync-compact-logout {
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
 }
 
-/* Old Profile Card - keep for fallback */
+
 .profile-card {
   display: flex;
   flex-direction: column;
@@ -2799,7 +2799,7 @@ body.light .profile-stat-item {
   flex-shrink: 0;
 }
 
-/* Tabs Row */
+
 .profile-tabs-row {
   display: flex;
   gap: 0.5rem;
@@ -2906,7 +2906,7 @@ body.light .profile-tab-btn.active .tab-badge {
   color: #6b6b6b;
 }
 
-/* Sync Error */
+
 .sync-compact-error {
   padding: 0.75rem;
   background: rgba(239, 68, 68, 0.08);
@@ -2961,7 +2961,7 @@ body.light .sync-warning {
   color: #d97706;
 }
 
-/* Category Row */
+
 .profile-category-row {
   display: flex;
   gap: 0.5rem;
@@ -3043,7 +3043,7 @@ body.light .profile-category-btn.active svg {
   color: inherit;
 }
 
-/* List Section */
+
 .profile-list-section {
   min-height: 150px;
 }
@@ -3260,7 +3260,7 @@ body.light .item-remove-btn {
   color: #6b7280;
 }
 
-/* MovieActions на карточках */
+
 .movie-actions {
   display: flex;
   align-items: center;
@@ -3316,12 +3316,12 @@ body.light .item-remove-btn {
   background: rgba(59, 130, 246, 0.8);
 }
 
-/* Poster wrapper для позиционирования */
+
 .poster-wrapper {
   position: relative;
 }
 
-/* AuthButton стили */
+
 .auth-button {
   width: 100%;
   padding: 12px 16px;
@@ -3397,7 +3397,7 @@ body.light .item-remove-btn {
   display: inline-block;
 }
 
-/* Sync status in profile */
+
 .sync-status-profile {
   display: flex;
   align-items: center;
@@ -3415,7 +3415,7 @@ body.light .item-remove-btn {
   white-space: nowrap;
 }
 
-/* Sync section in profile */
+
 .sync-loading {
   display: flex;
   align-items: center;
@@ -3578,7 +3578,7 @@ body.light .sync-logout-btn {
   transform: rotate(180deg);
 }
 
-/* Стили для вкладки пользователей */
+
 .show-users-btn {
   width: 100%;
   padding: 0.875rem 1rem;
@@ -4006,11 +4006,11 @@ body.light .action-loading-spinner {
   border-top-color: #6366f1;
 }
 
-/* ============================================ */
-/* MESSENGER STYLES                             */
-/* ============================================ */
 
-/* FAB Button */
+
+
+
+
 .messenger-fab {
   position: fixed;
   top: 2rem;
@@ -4046,7 +4046,7 @@ body.light .action-loading-spinner {
   justify-content: center;
 }
 
-/* Messenger Panel - минималистичный симметричный дизайн */
+
 .messenger-panel {
   position: fixed;
   top: 16px;
@@ -4074,7 +4074,7 @@ body.light .messenger-panel {
     0 0 0 1px rgba(0, 0, 0, 0.02);
 }
 
-/* Messenger Header - минималистичный */
+
 .messenger-header {
   display: flex;
   align-items: center;
@@ -4200,7 +4200,7 @@ body.light .messenger-close-btn:hover {
   color: #1a1a1a;
 }
 
-/* Search в мессенджере - стильный */
+
 .messenger-search {
   display: flex;
   align-items: center;
@@ -4244,7 +4244,7 @@ body.light .messenger-search input {
   color: #1a1a1a;
 }
 
-/* Chat List - минималистичный */
+
 .messenger-chat-list {
   flex: 1;
   overflow-y: auto;
@@ -4409,7 +4409,7 @@ body.light .chat-time {
   color: #666666;
 }
 
-/* Пустой список чатов - минималистичный */
+
 .messenger-empty {
   display: flex;
   flex-direction: column;
@@ -4466,7 +4466,7 @@ body.light .messenger-empty button:hover {
   border-color: rgba(0, 0, 0, 0.12);
 }
 
-/* User Picker - минималистичный */
+
 .user-picker-overlay {
   position: fixed;
   inset: 0;
@@ -4501,7 +4501,7 @@ body.light .user-picker {
     0 0 0 1px rgba(0, 0, 0, 0.02);
 }
 
-/* User Picker Panel - выпадающая панель как messenger-panel */
+
 .user-picker-panel {
   position: fixed;
   top: 16px;
@@ -4579,7 +4579,7 @@ body.light .user-picker-search-wrapper:focus-within {
   padding: 0.5rem 0;
 }
 
-/* Адаптивность для user-picker-panel */
+
 @media (max-width: 860px) {
   .user-picker-panel {
     right: 20px;
@@ -4593,7 +4593,7 @@ body.light .user-picker-search-wrapper:focus-within {
   }
 }
 
-/* Online indicator для user-picker */
+
 .user-picker-online-indicator {
   position: absolute;
   bottom: 2px;
@@ -4809,7 +4809,7 @@ body.light .user-picker-empty {
   color: #666666;
 }
 
-/* Chat Window - минималистичный */
+
 .chat-window {
   position: fixed;
   top: 20px;
@@ -4958,7 +4958,7 @@ body.light .chat-window-status.online {
   color: #22c55e;
 }
 
-/* Messages - минималистичный */
+
 .chat-messages {
   flex: 1;
   overflow-y: auto;
@@ -5053,7 +5053,7 @@ body.light .chat-date-divider span {
   color: #666666;
 }
 
-/* Message Bubble */
+
 .message-bubble {
   display: flex;
   flex-direction: column;
@@ -5069,7 +5069,7 @@ body.light .chat-date-divider span {
   align-self: flex-start;
 }
 
-/* Блок пересланного сообщения */
+
 .message-forwarded-header {
   display: flex;
   align-items: center;
@@ -5118,7 +5118,7 @@ body.light .message-forwarded-name {
   color: #444;
 }
 
-/* Мини-меню удаления (ПКМ) */
+
 .msg-context-menu {
   position: fixed;
   z-index: 10000;
@@ -5353,7 +5353,7 @@ body.light .message-status.sent svg {
   color: rgba(0, 0, 0, 0.3);
 }
 
-/* Chat Input */
+
 .chat-input-area {
   display: flex;
   gap: 10px;
@@ -5458,7 +5458,7 @@ body.light .chat-send-btn:disabled {
   animation: spin 0.6s linear infinite;
 }
 
-/* Users List Panel - стиль как filter-panel */
+
 .users-list-panel {
   position: fixed;
   top: 16px;
@@ -5786,7 +5786,7 @@ body.light .users-list-item-btn:hover {
   transform: scale(1.05);
 }
 
-/* Scrollbar Styling для мессенджера */
+
 .messenger-chat-list::-webkit-scrollbar,
 .chat-messages::-webkit-scrollbar,
 .user-picker-list::-webkit-scrollbar,
@@ -5830,9 +5830,7 @@ body.light .users-list-content::-webkit-scrollbar-thumb:hover {
   background: rgba(0, 0, 0, 0.25);
 }
 
-/* ============================================
-   Shared Content Bubble (контент в сообщении)
-   ============================================ */
+
 
 .shared-content-bubble {
   display: flex;
@@ -5993,7 +5991,7 @@ body.light .users-list-content::-webkit-scrollbar-thumb:hover {
   margin: 0;
 }
 
-/* Светлая тема */
+
 body.light .shared-content-bubble {
   background: rgba(0, 0, 0, 0.03);
   border-color: rgba(0, 0, 0, 0.08);
@@ -6023,9 +6021,7 @@ body.light .shared-content-overview {
   color: #6b7280;
 }
 
-/* ============================================
-   Share to Chat Modal
-   ============================================ */
+
 
 .share-to-chat-overlay {
   position: fixed;
@@ -6116,7 +6112,7 @@ body.light .share-to-chat-close:hover {
   color: #1f2937;
 }
 
-/* Информация о контенте */
+
 .share-to-chat-content-info {
   display: flex;
   align-items: center;
@@ -6167,7 +6163,7 @@ body.light .share-to-chat-content-title {
   color: #1f2937;
 }
 
-/* Поиск */
+
 .share-to-chat-search {
   display: flex;
   align-items: center;
@@ -6222,7 +6218,7 @@ body.light .share-to-chat-search-input:focus {
   background: rgba(0, 0, 0, 0.05);
 }
 
-/* Список пользователей */
+
 .share-to-chat-users {
   flex: 1;
   overflow-y: auto;
@@ -6333,7 +6329,7 @@ body.light .share-to-chat-existing-badge {
   color: #6366f1;
 }
 
-/* Загрузка и пустое состояние */
+
 .share-to-chat-loading,
 .share-to-chat-empty {
   padding: 2rem;
@@ -6347,7 +6343,7 @@ body.light .share-to-chat-empty {
   color: #9ca3af;
 }
 
-/* Сообщение */
+
 .share-to-chat-message-area {
   padding: 1rem 1.5rem;
   border-top: 1px solid rgba(255, 255, 255, 0.06);
@@ -6395,7 +6391,7 @@ body.light .share-to-chat-message-input:focus {
   background: rgba(0, 0, 0, 0.05);
 }
 
-/* Быстрая отправка */
+
 .share-to-chat-quick-send {
   padding: 0.75rem 1.5rem;
   border-top: 1px solid rgba(255, 255, 255, 0.04);
@@ -6412,7 +6408,7 @@ body.light .share-to-chat-quick-send-hint {
   color: #9ca3af;
 }
 
-/* Кнопка «Поделиться» внизу постера */
+
 .share-poster-btn {
   position: absolute;
   bottom: 8px;
@@ -6450,7 +6446,7 @@ body.light .share-to-chat-quick-send-hint {
   color: #ffffff;
 }
 
-/* Светлая тема */
+
 body.light .share-poster-btn {
   background: rgba(0, 0, 0, 0.15);
   color: #ffffff;
@@ -6461,7 +6457,7 @@ body.light .share-poster-btn:hover {
   color: #ffffff;
 }
 
-/* ===== Forward Modal ===== */
+
 .forward-modal-overlay {
   position: fixed;
   top: 0;
@@ -6767,11 +6763,9 @@ body.light .forward-spinner {
   border-top-color: #666;
 }
 
-/* ==========================================
-   Система выбора сообщений
-   ========================================== */
 
-/* Кнопка выбора в заголовке чата */
+
+
 .chat-window-actions {
   display: flex;
   align-items: center;
@@ -6817,7 +6811,7 @@ body.light .chat-select-btn.active {
   color: #6b6356;
 }
 
-/* Панель действий под заголовком чата */
+
 .selection-actions-topbar {
   display: flex;
   align-items: center;
@@ -6924,12 +6918,12 @@ body.light .selection-topbar-btn.selection-cancel-btn {
   color: #333333;
 }
 
-/* Режим выбора */
+
 .message-bubble.selectable {
   cursor: default;
 }
 
-/* В режиме выбора, но сообщение НЕ выбрано — нельзя выделять, курсор default, при зажатии no-drop */
+
 .message-bubble.selectable:not(.selected) .message-text,
 .message-bubble.selectable:not(.selected) .message-time,
 .message-bubble.selectable:not(.selected) .message-sender,
@@ -6941,7 +6935,7 @@ body.light .selection-topbar-btn.selection-cancel-btn {
   -ms-user-select: none !important;
 }
 
-/* Текст сообщения можно выделять и копировать (когда не выбран) */
+
 .message-text {
   user-select: text;
   -webkit-user-select: text;
@@ -6950,7 +6944,7 @@ body.light .selection-topbar-btn.selection-cancel-btn {
   cursor: text;
 }
 
-/* Выбранное сообщение — текст, время, пересланное — нельзя выделить, курсор default */
+
 .message-bubble.selectable.selected .message-text,
 .message-bubble.selectable.selected .message-time,
 .message-bubble.selectable.selected .message-sender,
@@ -6962,7 +6956,7 @@ body.light .selection-topbar-btn.selection-cancel-btn {
   cursor: default !important;
 }
 
-/* Зажатие на выбранном сообщении — курсор no-drop */
+
 .message-bubble.no-select-cursor {
   cursor: no-drop !important;
 }
@@ -6980,7 +6974,7 @@ body.light .selection-topbar-btn.selection-cancel-btn {
   cursor: no-drop !important;
 }
 
-/* Shared content — запрет выделения всегда */
+
 .shared-content-bubble,
 .shared-content-bubble .shared-content-title,
 .shared-content-bubble .shared-content-type,
@@ -6996,7 +6990,7 @@ body.light .selection-topbar-btn.selection-cancel-btn {
   cursor: default;
 }
 
-/* В режиме выбора но НЕ выбрано — курсор default, нельзя выделять */
+
 .message-bubble.selectable:not(.selected) .shared-content-bubble,
 .message-bubble.selectable:not(.selected) .shared-content-bubble .shared-content-title,
 .message-bubble.selectable:not(.selected) .shared-content-bubble .shared-content-type,
@@ -7012,7 +7006,7 @@ body.light .selection-topbar-btn.selection-cancel-btn {
   -ms-user-select: none !important;
 }
 
-/* Дата-разделитель в режиме выбора — курсор default */
+
 .chat-messages .chat-date-divider {
   cursor: default !important;
   user-select: none !important;
@@ -7021,12 +7015,12 @@ body.light .selection-topbar-btn.selection-cancel-btn {
   -ms-user-select: none !important;
 }
 
-/* Дата-разделитель — курсор no-drop при зажатии */
+
 .chat-date-divider.no-select-cursor {
   cursor: no-drop !important;
 }
 
-/* Круглый чекбокс внутри сообщения, справа в message-meta */
+
 .message-select-circle {
   width: 18px;
   height: 18px;

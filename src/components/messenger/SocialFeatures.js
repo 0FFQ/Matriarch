@@ -12,7 +12,7 @@ import NotificationsPanel from './NotificationsPanel';
 
 const SocialFeatures = ({ 
   t,
-  // Состояния из App.js
+  
   usersOpen,
   setUsersOpen,
   viewingUserId,
@@ -43,20 +43,20 @@ const SocialFeatures = ({
 }) => {
   const { firebaseUser, profile } = useUser();
 
-  // Подписка на чаты для подсчёта непрочитанных
+  
   useEffect(() => {
     if (!firebaseUser) return;
 
     const unsubscribe = subscribeToUserChats(firebaseUser.uid, (chats) => {
-      // Подсчитываем непрочитанные:
-      // Чат непрочитан если lastSenderId !== firebaseUser.uid И чат не прочитан (нет в lastMessageReadBy или activeChatId)
+      
+      
       let unread = 0;
       chats.forEach(chat => {
-        // Если последнее сообщение от другого пользователя
+        
         if (chat.lastSenderId !== firebaseUser.uid) {
-          // Проверяем, прочитал ли текущий пользователь это сообщение
+          
           const hasRead = chat.lastMessageReadBy?.[firebaseUser.uid] === true;
-          // Если чат сейчас открыт — не считаем
+          
           const isActive = chat.id === activeChatId;
           if (!hasRead && !isActive) {
             unread++;
@@ -71,7 +71,7 @@ const SocialFeatures = ({
     };
   }, [firebaseUser, activeChatId]);
 
-  // Подписка на уведомления
+  
   useEffect(() => {
     if (!firebaseUser) return;
 
@@ -92,7 +92,7 @@ const SocialFeatures = ({
     };
   }, [firebaseUser]);
 
-  // Обработчик шаринга контента
+  
   const handleShareContent = (userId, contentItem) => {
     setShareContentItem(contentItem);
     setShareModalOpen(true);
@@ -108,14 +108,14 @@ const SocialFeatures = ({
     }
   };
 
-  // Обработчик открытия профиля другого пользователя
+  
   const handleViewProfile = (userId) => {
     setViewingUserId(userId);
     setViewingUserProfile(true);
     setUsersOpen(false);
   };
 
-  // Обработчик открытия чата из списка пользователей
+  
   const handleOpenChatFromUsers = (chatId, user) => {
     setActiveChatId(chatId);
     setActiveChatUser(user);
@@ -123,7 +123,7 @@ const SocialFeatures = ({
     setUsersOpen(false);
   };
 
-  // Обработчик выбора чата из ChatList
+  
   const handleSelectChat = (chatId, user) => {
     setActiveChatId(chatId);
     setActiveChatUser(user);
@@ -131,7 +131,7 @@ const SocialFeatures = ({
     setChatListOpen(false);
   };
 
-  // Обработчик выбора уведомления
+  
   const handleSelectNotification = (notification) => {
     if (notification.type === 'content_shared' && notification.sharedContentId) {
       setSharedContentOpen(true);
@@ -141,7 +141,7 @@ const SocialFeatures = ({
 
   return (
     <>
-      {/* Панель пользователей */}
+      {}
       <UsersList
         t={t}
         isOpen={usersOpen}
@@ -150,7 +150,7 @@ const SocialFeatures = ({
         onOpenChat={handleOpenChatFromUsers}
       />
 
-      {/* Профиль другого пользователя */}
+      {}
       <OtherUserProfile
         t={t}
         isOpen={viewingUserProfile}
@@ -160,7 +160,7 @@ const SocialFeatures = ({
         onOpenChat={handleOpenChatFromUsers}
       />
 
-      {/* Список чатов */}
+      {}
       <ChatList
         t={t}
         isOpen={chatListOpen}
@@ -168,7 +168,7 @@ const SocialFeatures = ({
         onSelectChat={handleSelectChat}
       />
 
-      {/* Окно чата */}
+      {}
       <ChatWindow
         t={t}
         chatId={activeChatId}
@@ -193,14 +193,14 @@ const SocialFeatures = ({
         onSelectContent={onSelectSharedContent}
       />
 
-      {/* Панель общего контента */}
+      {}
       <SharedContentPanel
         t={t}
         isOpen={sharedContentOpen}
         onClose={() => setSharedContentOpen(false)}
       />
 
-      {/* Модальное окно шаринга */}
+      {}
       <ShareModal
         t={t}
         isOpen={shareModalOpen}
@@ -212,7 +212,7 @@ const SocialFeatures = ({
         onShare={handleShare}
       />
 
-      {/* Панель уведомлений */}
+      {}
       <NotificationsPanel
         t={t}
         isOpen={notificationsOpen}

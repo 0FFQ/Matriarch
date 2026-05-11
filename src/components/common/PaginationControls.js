@@ -1,12 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 
-/**
- * Компонент управления пагинацией
- * @param {number} currentPage - текущая страница
- * @param {number} totalPages - всего страниц
- * @param {function} onPageChange - функция обратного вызова при смене страницы
- */
+
 const PaginationControls = ({ currentPage, totalPages, onPageChange }) => {
   if (totalPages <= 1) return null;
 

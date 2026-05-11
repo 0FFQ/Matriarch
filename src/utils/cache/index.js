@@ -1,25 +1,14 @@
-/**
- * Утилита кэширования для TMDB API
- *
- * Возможности:
- * - Автоматическое кэширование запросов
- * - Настраиваемый TTL (время жизни)
- * - Хранение в localStorage
- * - Автоматическая очистка истёкших записей
- * - Защита от переполнения localStorage
- */
+
 
 const CACHE_PREFIX = "matriarch_cache_";
-const DEFAULT_TTL = 1000 * 60 * 30; // 30 минут
-const MAX_STORAGE_SIZE = 4 * 1024 * 1024; // 4MB лимит
+const DEFAULT_TTL = 1000 * 60 * 30; 
+const MAX_STORAGE_SIZE = 4 * 1024 * 1024; 
 
-// ============================================
-// Внутренние утилиты
-// ============================================
 
-/**
- * Создать ключ кэша из endpoint и параметров
- */
+
+
+
+
 const createCacheKey = (endpoint, params = {}) => {
   const paramString = Object.keys(params)
     .sort()
@@ -28,9 +17,7 @@ const createCacheKey = (endpoint, params = {}) => {
   return `${CACHE_PREFIX}${endpoint}?${paramString}`;
 };
 
-/**
- * Безопасно получить все ключи кэша
- */
+
 const getCacheKeys = () => {
   const keys = [];
   for (let i = 0; i < localStorage.length; i++) {
@@ -42,28 +29,21 @@ const getCacheKeys = () => {
   return keys;
 };
 
-/**
- * Проверить, является ли запись истёкшей
- */
+
 const isExpired = (cached) => {
   try {
     const { timestamp, ttl } = JSON.parse(cached);
     return Date.now() - timestamp > ttl;
   } catch {
-    return true; // Невалидный JSON считаем истёкшим
+    return true; 
   }
 };
 
-// ============================================
-// Чтение/запись кэша
-// ============================================
 
-/**
- * Получить данные из кэша
- * @param {string} endpoint - API endpoint
- * @param {object} params - Параметры запроса
- * @returns {{data: *, fromCache: boolean}|null}
- */
+
+
+
+
 export const getCache = (endpoint, params = {}) => {
   try {
     const key = createCacheKey(endpoint, params);
@@ -84,13 +64,7 @@ export const getCache = (endpoint, params = {}) => {
   }
 };
 
-/**
- * Сохранить данные в кэш
- * @param {string} endpoint - API endpoint
- * @param {object} params - Параметры запроса
- * @param {*} data - Данные для сохранения
- * @param {number} ttl - Время жизни в мс
- */
+
 export const setCache = (
   endpoint,
   params,
@@ -107,7 +81,7 @@ export const setCache = (
 
     const serialized = JSON.stringify(cacheData);
 
-    // Проверяем доступное место
+    
     const currentSize = new Blob(Object.values(localStorage)).size;
     if (currentSize + serialized.length > MAX_STORAGE_SIZE) {
       console.warn("[Cache] Storage nearly full, clearing old entries...");
@@ -123,9 +97,7 @@ export const setCache = (
   }
 };
 
-/**
- * Удалить конкретный ключ из кэша
- */
+
 export const removeCache = (endpoint, params = {}) => {
   try {
     const key = createCacheKey(endpoint, params);
@@ -135,13 +107,11 @@ export const removeCache = (endpoint, params = {}) => {
   }
 };
 
-// ============================================
-// Очистка кэша
-// ============================================
 
-/**
- * Очистить все записи кэша
- */
+
+
+
+
 export const clearAllCache = () => {
   try {
     const keysToRemove = getCacheKeys();
@@ -151,9 +121,7 @@ export const clearAllCache = () => {
   }
 };
 
-/**
- * Очистить только истёкшие записи
- */
+
 export const clearExpiredCache = () => {
   try {
     const keysToRemove = [];
@@ -174,9 +142,7 @@ export const clearExpiredCache = () => {
   }
 };
 
-/**
- * Очистить самые старые записи (при нехватке места)
- */
+
 const clearOldestCache = () => {
   try {
     const entries = [];
@@ -196,10 +162,10 @@ const clearOldestCache = () => {
       }
     }
 
-    // Сортируем по времени (старые первые)
+    
     entries.sort((a, b) => a.timestamp - b.timestamp);
 
-    // Удаляем 50% самых старых записей
+    
     const toRemove = entries.slice(
       0,
       Math.ceil(entries.length / 2)
@@ -210,14 +176,11 @@ const clearOldestCache = () => {
   }
 };
 
-// ============================================
-// Статистика
-// ============================================
 
-/**
- * Получить статистику кэша
- * @returns {{totalItems: number, expiredItems: number, activeItems: number, totalSizeKB: string}}
- */
+
+
+
+
 export const getCacheStats = () => {
   try {
     let totalItems = 0;
@@ -259,20 +222,11 @@ export const getCacheStats = () => {
   }
 };
 
-// ============================================
-// Обёртка для axios
-// ============================================
 
-/**
- * Выполнить запрос с автоматическим кэшированием
- * @param {object} axios - Экземпляр axios
- * @param {string} baseurl - Базовый URL
- * @param {string} endpoint - Endpoint
- * @param {object} params - Параметры
- * @param {object} headers - Заголовки
- * @param {number} ttl - Время жизни кэша
- * @returns {{data: *, fromCache: boolean}}
- */
+
+
+
+
 export const cachedRequest = async (
   axios,
   baseurl,
@@ -281,29 +235,29 @@ export const cachedRequest = async (
   headers = {},
   ttl = DEFAULT_TTL
 ) => {
-  // Пробуем получить из кэша
+  
   const cached = getCache(endpoint, params);
   if (cached) {
     return { data: cached.data, fromCache: true };
   }
 
-  // Запрос к API
+  
   const response = await axios.get(`${baseurl}${endpoint}`, {
     params,
     headers,
   });
 
-  // Сохраняем в кэш
+  
   setCache(endpoint, params, response.data, ttl);
 
   return { data: response.data, fromCache: false };
 };
 
-// ============================================
-// Инициализация
-// ============================================
 
-// Автоматическая очистка истёкших записей при загрузке
+
+
+
+
 if (typeof window !== "undefined") {
   setTimeout(() => clearExpiredCache(), 1000);
 }

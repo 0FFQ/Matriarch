@@ -1,9 +1,6 @@
 import { useEffect, useCallback } from 'react';
 
-/**
- * Кастомный хук для обработки клавиши Escape
- * @param {Object} handlers - объект с функциями обратного вызова
- */
+
 const useKeyboardShortcuts = (handlers = {}) => {
   const handleEscape = useCallback(() => {
     if (handlers.onCloseTrailer) handlers.onCloseTrailer();

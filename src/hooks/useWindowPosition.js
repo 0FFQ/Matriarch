@@ -20,22 +20,19 @@ const savePositions = (positions) => {
   }
 };
 
-/**
- * Хук для сохранения и восстановления позиции перетаскиваемого окна.
- * Использует useMotionValue для избежания конфликта с drag.
- */
+
 const useWindowPosition = (windowId, isOpen = false) => {
   const x = useMotionValue(0);
   const y = useMotionValue(0);
   const windowIdRef = useRef(windowId);
   const [position, setPosition] = useState({ x: 0, y: 0 });
 
-  // Обновляем ref windowId
+  
   useEffect(() => {
     windowIdRef.current = windowId;
   }, [windowId]);
 
-  // Подписываемся на изменения motion values для сохранения в state
+  
   useEffect(() => {
     const unsubX = x.on('change', (latest) => {
       setPosition(prev => ({ ...prev, x: latest }));
@@ -49,7 +46,7 @@ const useWindowPosition = (windowId, isOpen = false) => {
     };
   }, [x, y]);
 
-  // При открытии окна загружаем позицию
+  
   useEffect(() => {
     if (isOpen) {
       const positions = loadPositions();
@@ -67,12 +64,12 @@ const useWindowPosition = (windowId, isOpen = false) => {
   }, [isOpen, windowId, x, y]);
 
   const handleDragStart = useCallback(() => {
-    // Drag начался
+    
   }, []);
 
   const handleDragEnd = useCallback((event, info) => {
-    // framer-motion уже обновил motion values через drag
-    // Просто читаем и сохраняем финальную позицию
+    
+    
     const newPos = {
       x: x.get(),
       y: y.get(),

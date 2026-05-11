@@ -5,27 +5,7 @@ import UserProfile from './user/UserProfile';
 import FilterPanel from './search/FilterPanel';
 import InteractiveAtom from './common/InteractiveAtom';
 
-/**
- * Компонент основной структуры приложения
- * @param {boolean} menuOpen - открыто ли меню
- * @param {function} setMenuOpen - функция управления меню
- * @param {boolean} profileOpen - открыт ли профиль
- * @param {function} setProfileOpen - функция управления профилем
- * @param {boolean} filterOpen - открыт ли фильтр
- * @param {function} setFilterOpen - функция управления фильтром
- * @param {boolean} darkMode - тёмная тема
- * @param {function} onToggleTheme - переключение темы
- * @param {string} language - текущий язык
- * @param {function} onToggleLanguage - переключение языка
- * @param {Object} t - объект с переводами
- * @param {Object} cacheStats - статистика кэша
- * @param {function} onClearCache - очистка кэша
- * @param {boolean} atomVisible - видимость атома
- * @param {function} onToggleAtom - переключение видимости атома
- * @param {boolean} showAtom - показывать ли атом
- * @param {Object} searchProps - пропсы для поиска
- * @param {Object} filterProps - пропсы для фильтра
- */
+
 const AppLayout = ({
   menuOpen,
   setMenuOpen,

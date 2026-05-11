@@ -4,16 +4,7 @@ import { Film, Tv, Star, ExternalLink, Play } from "lucide-react";
 
 const IMAGE_BASE = "https://image.tmdb.org/t/p/w154";
 
-/**
- * Пузырь сообщения с прикреплённым контентом (фильм/сериал)
- * @param {object} props
- * @param {object} props.content - Данные о фильме
- * @param {boolean} props.isOwn - Своё ли это сообщение
- * @param {function} props.onOpenOnSite - Callback: открыть карточку на сайте
- * @param {object} props.t - Объект с переводами
- * @param {boolean} props.isSelectionMode - Режим выбора
- * @param {boolean} props.isSelected - Сообщение выбрано
- */
+
 const SharedContentBubble = ({ content, isOwn, onOpenOnSite, t, isSelectionMode = false, isSelected = false }) => {
   const [isNoSelect, setIsNoSelect] = useState(false);
   const noSelectTimerRef = useRef(null);
@@ -46,7 +37,7 @@ const SharedContentBubble = ({ content, isOwn, onOpenOnSite, t, isSelectionMode 
     ? content.vote_average.toFixed(1)
     : "—";
 
-  // Формируем URL постера с проверкой
+  
   const posterUrl = content.poster_path
     ? `${IMAGE_BASE}${content.poster_path}`
     : null;
@@ -91,7 +82,7 @@ const SharedContentBubble = ({ content, isOwn, onOpenOnSite, t, isSelectionMode 
       }}
       onPointerLeave={isSelectionMode ? handlePointerUp : undefined}
     >
-      {/* Постер — клик открывает карточку на сайте */}
+      {}
       <div
         className="shared-content-poster shared-content-poster-clickable"
         onClick={handleOpenOnSite}
@@ -121,13 +112,13 @@ const SharedContentBubble = ({ content, isOwn, onOpenOnSite, t, isSelectionMode 
             {mediaType === "movie" ? <Film size={32} /> : <Tv size={32} />}
           </div>
         )}
-        {/* Оверлей при наведении */}
+        {}
         <div className="shared-content-poster-overlay">
           <Play size={24} />
         </div>
       </div>
 
-      {/* Информация */}
+      {}
       <div className="shared-content-info">
         <div className="shared-content-header">
           <h4

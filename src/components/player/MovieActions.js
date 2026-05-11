@@ -3,13 +3,7 @@ import { motion } from "framer-motion";
 import { Heart, Eye, Bookmark, Check, Share2 } from "lucide-react";
 import { useUser } from "../../context/UserContext";
 
-/**
- * Кнопки действий с фильмом/сериалом
- * @param {object} props
- * @param {object} props.item - Элемент контента
- * @param {string} props.placement - Расположение ('card' или другое)
- * @param {function} props.onShareInChat - Callback для шаринга в чате
- */
+
 const MovieActions = ({
   item,
   placement = "card",
@@ -28,18 +22,14 @@ const MovieActions = ({
   const isWatched = isInWatched(item.id);
   const isWatchlist = isInWatchlist(item.id);
 
-  /**
-   * Обработчик клика по кнопке действия
-   */
+  
   const handleToggle = (action, event) => {
     event.preventDefault();
     event.stopPropagation();
     action(item);
   };
 
-  /**
-   * Обработчик шаринга в чате
-   */
+  
   const handleShareInChat = (event) => {
     event.preventDefault();
     event.stopPropagation();
@@ -50,7 +40,7 @@ const MovieActions = ({
 
   return (
     <>
-      {/* Кнопка «Поделиться» — внизу постера по центру */}
+      {}
       {onShareInChat && (
         <motion.button
           className="share-poster-btn"
@@ -62,13 +52,13 @@ const MovieActions = ({
         </motion.button>
       )}
 
-      {/* Остальные кнопки действий */}
+      {}
       <div
         className={`movie-actions ${
           placement === "card" ? "movie-actions-card" : ""
         }`}
       >
-        {/* Избранное */}
+        {}
         <motion.button
           className={`action-btn ${isFavorite ? "active" : ""}`}
           onClick={(e) => handleToggle(toggleFavorite, e)}
@@ -79,7 +69,7 @@ const MovieActions = ({
           {isFavorite ? <Check size={14} /> : <Heart size={14} />}
         </motion.button>
 
-        {/* Просмотренное */}
+        {}
         <motion.button
           className={`action-btn ${isWatched ? "active watched" : ""}`}
           onClick={(e) => handleToggle(toggleWatched, e)}
@@ -90,7 +80,7 @@ const MovieActions = ({
           {isWatched ? <Check size={14} /> : <Eye size={14} />}
         </motion.button>
 
-        {/* Буду смотреть */}
+        {}
         <motion.button
           className={`action-btn ${isWatchlist ? "active watchlist" : ""}`}
           onClick={(e) => handleToggle(toggleWatchlist, e)}

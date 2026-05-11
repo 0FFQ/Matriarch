@@ -1,9 +1,6 @@
 import { useEffect } from 'react';
 
-/**
- * Кастомный хук для обработки клавиши Escape
- * @param {Object} handlers - объект с функциями обратного вызова для закрытия
- */
+
 const useEscapeKey = (handlers = {}) => {
   useEffect(() => {
     const handleEscape = (e) => {

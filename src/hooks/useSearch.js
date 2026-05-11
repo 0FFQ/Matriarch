@@ -5,11 +5,7 @@ import { BASE_URL, CACHE_TTL, AUTH_TOKEN } from '../constants';
 import { getSortField, sortResults } from '../utils/helpers/searchUtils';
 import { logApiError, getUserErrorMessage } from '../utils/apiErrors';
 
-/**
- * Кастомный хук для управления поиском и фильтрами
- * @param {string} language - текущий язык
- * @returns {Object} состояние и функции для управления поиском
- */
+
 const useSearch = (language) => {
   const [query, setQuery] = useState('');
   const [suggestions, setSuggestions] = useState([]);
@@ -32,7 +28,7 @@ const useSearch = (language) => {
 
   const debounceRef = useRef(null);
 
-  // Загрузка жанров
+  
   useEffect(() => {
     const loadGenres = async () => {
       setLoadingGenres(true);
@@ -70,7 +66,7 @@ const useSearch = (language) => {
     loadGenres();
   }, [language]);
 
-  // Поиск подсказок
+  
   useEffect(() => {
     if (query.length > 2) {
       if (debounceRef.current) clearTimeout(debounceRef.current);
@@ -104,7 +100,7 @@ const useSearch = (language) => {
     };
   }, [query, language]);
 
-  // Основная функция поиска с фильтрами
+  
   const applyFilters = useCallback(async () => {
     setLoading(true);
     setSearchActive(true);
@@ -114,7 +110,7 @@ const useSearch = (language) => {
     const searchQuery = query.trim();
 
     try {
-      // Если есть поисковый запрос, используем search вместо discover
+      
       if (searchQuery) {
         let allResults = [];
 
@@ -172,14 +168,14 @@ const useSearch = (language) => {
             : tvResults;
         }
 
-        // Сортируем смешанные результаты
+        
         if (type === 'all') {
           allResults = sortResults(allResults, sortBy);
         }
 
         setResults(allResults);
       } else {
-        // Базовые параметры для фильмов
+        
         const movieParams = {
           language,
           include_adult: false,
@@ -187,7 +183,7 @@ const useSearch = (language) => {
           sort_by: getSortField(sortBy, 'movie'),
         };
 
-        // Базовые параметры для сериалов
+        
         const tvParams = {
           language,
           include_adult: false,
@@ -196,7 +192,7 @@ const useSearch = (language) => {
           'vote_count.gte': 10,
         };
 
-        // Фильтры для фильмов
+        
         const movieFilters = {};
         if (genre) movieFilters.with_genres = genre;
         if (year) movieFilters.primary_release_year = year;
@@ -209,7 +205,7 @@ const useSearch = (language) => {
           movieFilters.with_origin_country = 'JP';
         }
 
-        // Фильтры для сериалов
+        
         const tvFilters = {};
         if (genre) tvFilters.with_genres = genre;
         if (year) tvFilters.first_air_date_year = year;
@@ -222,7 +218,7 @@ const useSearch = (language) => {
           tvFilters.with_origin_country = 'JP';
         }
 
-        // Функция для получения страниц с кэшированием (максимум 20 страниц = 400 результатов)
+        
         const fetchPages = async (endpoint, params, pagesCount = 20) => {
           const allResults = [];
 
@@ -242,7 +238,7 @@ const useSearch = (language) => {
               allResults.push(...data.results);
             }
 
-            // Останавливаемся если страница пустая
+            
             if (!data.results || data.results.length < 20) break;
           }
 
@@ -251,7 +247,7 @@ const useSearch = (language) => {
 
         let allResults = [];
 
-        // Определяем какие запросы делать
+        
         if (type === 'movie') {
           allResults = await fetchPages('/discover/movie', { ...movieParams, ...movieFilters });
           allResults = allResults.map(item => ({ ...item, media_type: 'movie' }));
@@ -269,7 +265,7 @@ const useSearch = (language) => {
             ...movieResults.map(item => ({ ...item, media_type: 'movie' })),
             ...tvResults.map(item => ({ ...item, media_type: 'tv' }))
           ];
-          // Сортируем смешанные результаты
+          
           allResults = sortResults(allResults, sortBy);
         }
 
@@ -284,7 +280,7 @@ const useSearch = (language) => {
     setLoading(false);
   }, [filters, language, query]);
 
-  // Поиск по тексту
+  
   const searchByText = useCallback(async (searchQuery) => {
     if (!searchQuery.trim()) return;
 
@@ -314,14 +310,14 @@ const useSearch = (language) => {
     setLoading(false);
   }, [language]);
 
-  // Клик по подсказке
+  
   const handleSuggestionClick = useCallback((title) => {
     setQuery(title);
     searchByText(title);
     setSuggestions([]);
   }, [searchByText]);
 
-  // Проверка активных фильтров
+  
   const hasActiveFilters = useCallback(() => {
     return (
       filters.genre !== '' ||
@@ -333,17 +329,17 @@ const useSearch = (language) => {
     );
   }, [filters]);
 
-  // Перезапрос результатов при смене языка
+  
   useEffect(() => {
     if (searchActive && results.length > 0) {
-      // Очищаем кеш чтобы получить данные с правильными изображениями
+      
       const { clearAllCache } = require('../utils/cache');
       clearAllCache();
       applyFilters();
     }
   }, [language]);
 
-  // Сброс поиска
+  
   const resetSearch = useCallback(() => {
     setQuery('');
     setSearchActive(false);
@@ -360,7 +356,7 @@ const useSearch = (language) => {
     });
   }, []);
 
-  // Очистка ошибки
+  
   const clearError = useCallback(() => {
     setError(null);
   }, []);

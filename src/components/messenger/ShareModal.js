@@ -26,7 +26,7 @@ const ShareModal = ({ t, isOpen, onClose, contentItem, onShare }) => {
     try {
       setLoading(true);
       const allUsers = await getAllUsers();
-      // Исключаем текущего пользователя
+      
       const filtered = allUsers.filter(u => u.id !== firebaseUser?.uid);
       setUsers(filtered);
       setFilteredUsers(filtered);
@@ -37,7 +37,7 @@ const ShareModal = ({ t, isOpen, onClose, contentItem, onShare }) => {
     }
   };
 
-  // Фильтрация пользователей
+  
   useEffect(() => {
     if (searchQuery.trim() === '') {
       setFilteredUsers(users);
@@ -64,7 +64,7 @@ const ShareModal = ({ t, isOpen, onClose, contentItem, onShare }) => {
 
     setSending(true);
     try {
-      // Отправляем каждому выбранному пользователю
+      
       for (const userId of selectedUsers) {
         if (onShare) {
           await onShare(userId, contentItem, message);
@@ -100,7 +100,7 @@ const ShareModal = ({ t, isOpen, onClose, contentItem, onShare }) => {
           className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-lg max-h-[80vh] overflow-hidden"
           onClick={(e) => e.stopPropagation()}
         >
-          {/* Header */}
+          {}
           <div className="p-6 border-b border-gray-200 dark:border-gray-700">
             <div className="flex items-center justify-between">
               <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
@@ -121,7 +121,7 @@ const ShareModal = ({ t, isOpen, onClose, contentItem, onShare }) => {
             )}
           </div>
 
-          {/* Search */}
+          {}
           <div className="p-4 border-b border-gray-200 dark:border-gray-700">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
@@ -135,7 +135,7 @@ const ShareModal = ({ t, isOpen, onClose, contentItem, onShare }) => {
             </div>
           </div>
 
-          {/* Users List */}
+          {}
           <div className="max-h-64 overflow-y-auto">
             {loading ? (
               <div className="p-8 text-center text-gray-500 dark:text-gray-400">
@@ -185,7 +185,7 @@ const ShareModal = ({ t, isOpen, onClose, contentItem, onShare }) => {
             )}
           </div>
 
-          {/* Message */}
+          {}
           <div className="p-4 border-t border-gray-200 dark:border-gray-700">
             <textarea
               value={message}
@@ -196,7 +196,7 @@ const ShareModal = ({ t, isOpen, onClose, contentItem, onShare }) => {
             />
           </div>
 
-          {/* Footer */}
+          {}
           <div className="p-4 border-t border-gray-200 dark:border-gray-700 flex justify-end">
             <button
               onClick={onClose}

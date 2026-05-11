@@ -8,9 +8,9 @@ import {
 } from "../firebase/auth";
 import { useUser } from "../context/UserContext";
 
-// ============================================
-// Стили
-// ============================================
+
+
+
 
 const styles = {
   container: {
@@ -107,13 +107,11 @@ const styles = {
   },
 };
 
-// ============================================
-// Внутренние компоненты
-// ============================================
 
-/**
- * Аватар пользователя (фото или заглушка)
- */
+
+
+
+
 const UserAvatar = ({ user }) => {
   if (user.photoURL) {
     return (
@@ -133,9 +131,7 @@ const UserAvatar = ({ user }) => {
   );
 };
 
-/**
- * Google SVG иконка
- */
+
 const GoogleIcon = () => (
   <svg width="18" height="18" viewBox="0 0 24 24">
     <path
@@ -157,16 +153,16 @@ const GoogleIcon = () => (
   </svg>
 );
 
-// ============================================
-// Основной компонент
-// ============================================
+
+
+
 
 const AuthButton = () => {
   const { updateProfile } = useUser();
   const [user, setUser] = React.useState(null);
   const [loading, setLoading] = React.useState(true);
 
-  // Отслеживание состояния авторизации
+  
   React.useEffect(() => {
     const unsubscribe = onAuthChange((firebaseUser) => {
       setUser(firebaseUser);
@@ -184,7 +180,7 @@ const AuthButton = () => {
     return () => unsubscribe();
   }, [updateProfile]);
 
-  // Обработчики
+  
   const handleSignIn = async () => {
     try {
       const result = await signInWithGoogle();
@@ -205,12 +201,12 @@ const AuthButton = () => {
     }
   };
 
-  // Состояние загрузки
+  
   if (loading) {
     return <div style={styles.loading}>Проверка авторизации...</div>;
   }
 
-  // Авторизован
+  
   if (user) {
     return (
       <motion.div
@@ -218,7 +214,7 @@ const AuthButton = () => {
         animate={{ opacity: 1 }}
         style={styles.container}
       >
-        {/* Информация о пользователе */}
+        {}
         <div style={styles.userInfo}>
           <UserAvatar user={user} />
           <div style={{ flex: 1, minWidth: 0 }}>
@@ -232,7 +228,7 @@ const AuthButton = () => {
           </div>
         </div>
 
-        {/* Кнопка выхода */}
+        {}
         <motion.button
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
@@ -246,14 +242,14 @@ const AuthButton = () => {
     );
   }
 
-  // Не авторизован
+  
   return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       style={styles.container}
     >
-      {/* Кнопка входа через Google */}
+      {}
       <motion.button
         whileHover={{ scale: 1.02 }}
         whileTap={{ scale: 0.98 }}
@@ -264,7 +260,7 @@ const AuthButton = () => {
         Войти через Google
       </motion.button>
 
-      {/* Информационный баннер */}
+      {}
       <div style={styles.infoBanner}>
         <Info size={14} />
         <span>

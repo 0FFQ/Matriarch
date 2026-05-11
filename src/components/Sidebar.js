@@ -12,9 +12,7 @@ import {
 } from "lucide-react";
 import useWindowPosition from "../hooks/useWindowPosition";
 
-/**
- * Боковое меню (Sidebar)
- */
+
 const Sidebar = ({
   isOpen,
   onClose,
@@ -38,21 +36,21 @@ const Sidebar = ({
     bottom: 0,
   });
 
-  // Сохранение позиции окна
+  
   const { x, y, handleDragStart, handleDragEnd, resetPosition } = useWindowPosition(
     "sidebar",
     isOpen
   );
 
-  // Вычисляем ограничения для перетаскивания
+  
   useEffect(() => {
     if (isOpen && panelRef.current) {
       const headerEl = panelRef.current.querySelector('.sidebar-header');
       const headerHeight = headerEl ? headerEl.offsetHeight : 70;
       const panelHeight = panelRef.current.offsetHeight;
       const initialTop = 16;
-      // Панель может опуститься так, чтобы header остался виден снизу
-      // translateY max = window.innerHeight - initialTop - headerHeight
+      
+      
       const maxTranslateY = window.innerHeight - initialTop - headerHeight;
       setConstraints({
         left: -(window.innerWidth - 360),
@@ -63,7 +61,7 @@ const Sidebar = ({
     }
   }, [isOpen]);
 
-  // Обработка Escape
+  
   useEffect(() => {
     const handleEscape = (e) => {
       if (e.key === "Escape" && isOpen) {
@@ -94,7 +92,7 @@ const Sidebar = ({
           exit={{ opacity: 0 }}
           transition={{ duration: 0.25 }}
         >
-          {/* Заголовок */}
+          {}
           <div
             className="sidebar-header"
             onPointerDown={(e) => dragControls.start(e)}
@@ -110,9 +108,9 @@ const Sidebar = ({
             </button>
           </div>
 
-          {/* Содержимое */}
+          {}
           <div className="sidebar-content">
-            {/* Профиль */}
+            {}
             <div className="menu-section">
               <button
                 className="menu-item profile-menu-item"
@@ -123,7 +121,7 @@ const Sidebar = ({
               </button>
             </div>
 
-            {/* Настройки */}
+            {}
             <div className="menu-section">
               <h3>{t.settings}</h3>
               <button
@@ -148,7 +146,7 @@ const Sidebar = ({
               </button>
             </div>
 
-            {/* Статистика кэша */}
+            {}
             {cacheStats && (
               <div className="menu-section">
                 <h3>

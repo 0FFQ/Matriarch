@@ -1,15 +1,8 @@
-/**
- * Утилиты валидации данных для Firestore
- *
- * Обеспечивают проверку данных перед записью в базу:
- * - Санитизация строк (удаление опасных символов)
- * - Проверка длины и типа данных
- * - Валидация схем объектов
- */
 
-// ============================================
-// Константы
-// ============================================
+
+
+
+
 
 const MAX_NAME_LENGTH = 100;
 const MAX_MESSAGE_LENGTH = 2000;
@@ -19,12 +12,12 @@ const MAX_FAVORITES_COUNT = 1000;
 const MAX_WATCHED_COUNT = 10000;
 const MAX_WATCHLIST_COUNT = 1000;
 
-// Разрешённые символы в имени (буквы, цифры, пробелы, базовая пунктуация)
+
 const NAME_REGEX = /^[\p{L}\p{N}\s\-_.'()]{0,100}$/u;
 
-// ============================================
-// Ошибки валидации
-// ============================================
+
+
+
 
 export class ValidationError extends Error {
   constructor(field, message) {
@@ -34,32 +27,26 @@ export class ValidationError extends Error {
   }
 }
 
-// ============================================
-// Санитизация
-// ============================================
 
-/**
- * Удалить потенциально опасные HTML-сущности и управляющие символы
- * @param {string} str
- * @returns {string}
- */
+
+
+
+
 export const sanitizeString = (str) => {
   if (typeof str !== 'string') return '';
 
   return str
-    .replace(/<[^>]*>/g, '') // Удалить HTML-теги
-    .replace(/[\x00-\x1F\x7F-\x9F]/g, '') // Удалить управляющие символы
-    .replace(/javascript\s*:/gi, '') // Удалить javascript: протокол
+    .replace(/<[^>]*>/g, '') 
+    .replace(/[\x00-\x1F\x7F-\x9F]/g, '') 
+    .replace(/javascript\s*:/gi, '') 
     .trim();
 };
 
-// ============================================
-// Валидация полей
-// ============================================
 
-/**
- * Проверить и очистить имя
- */
+
+
+
+
 export const validateName = (name) => {
   if (name === null || name === undefined) return null;
   if (typeof name !== 'string') {
@@ -80,9 +67,7 @@ export const validateName = (name) => {
   return cleaned;
 };
 
-/**
- * Проверить URL аватара
- */
+
 export const validateAvatarUrl = (url) => {
   if (!url) return '';
   if (typeof url !== 'string') {
@@ -92,9 +77,9 @@ export const validateAvatarUrl = (url) => {
   const trimmed = url.trim();
   if (trimmed.length === 0) return '';
 
-  // Data URI (base64 изображение)
+  
   if (trimmed.startsWith('data:image')) {
-    if (trimmed.length > 500000) { // макс. ~500KB
+    if (trimmed.length > 500000) { 
       console.warn('[Validation] Avatar data URI too large, skipping:', trimmed.length, 'chars');
       return '';
     }
@@ -104,7 +89,7 @@ export const validateAvatarUrl = (url) => {
   try {
     const parsed = new URL(trimmed);
 
-    // Google/TMDB аватары — принимаем любые
+    
     if (
       parsed.hostname.endsWith('.googleusercontent.com') ||
       parsed.hostname === 'googleusercontent.com' ||
@@ -116,7 +101,7 @@ export const validateAvatarUrl = (url) => {
       return trimmed;
     }
 
-    // Для недоверенных источников — проверка длины
+    
     if (trimmed.length > MAX_AVATAR_URL_LENGTH) {
       console.error('[Validation] Long avatar URL:', trimmed.substring(0, 200));
       console.error('[Validation] URL length:', trimmed.length, 'chars, hostname:', parsed.hostname);
@@ -132,9 +117,7 @@ export const validateAvatarUrl = (url) => {
   return trimmed;
 };
 
-/**
- * Проверить email
- */
+
 export const validateEmail = (email) => {
   if (!email) return null;
   if (typeof email !== 'string') {
@@ -145,7 +128,7 @@ export const validateEmail = (email) => {
     throw new ValidationError('email', 'Email слишком длинный');
   }
 
-  // RFC 5322 упрощённая проверка
+  
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   if (!emailRegex.test(email)) {
     throw new ValidationError('email', 'Неверный формат email');
@@ -154,9 +137,7 @@ export const validateEmail = (email) => {
   return email.toLowerCase().trim();
 };
 
-/**
- * Проверить текст сообщения
- */
+
 export const validateMessageText = (text) => {
   if (typeof text !== 'string') {
     throw new ValidationError('text', 'Сообщение должно быть строкой');
@@ -175,13 +156,11 @@ export const validateMessageText = (text) => {
   return cleaned;
 };
 
-// ============================================
-// Валидация схем
-// ============================================
 
-/**
- * Проверить профиль пользователя
- */
+
+
+
+
 export const validateProfile = (profile) => {
   if (!profile || typeof profile !== 'object') {
     throw new ValidationError('profile', 'Профиль должен быть объектом');
@@ -194,9 +173,7 @@ export const validateProfile = (profile) => {
   };
 };
 
-/**
- * Проверить массив избранного/просмотренного/списка просмотра
- */
+
 export const validateContentList = (list, fieldName, maxCount) => {
   if (!Array.isArray(list)) {
     throw new ValidationError(fieldName, `${fieldName} должен быть массивом`);
@@ -206,7 +183,7 @@ export const validateContentList = (list, fieldName, maxCount) => {
     throw new ValidationError(fieldName, `${fieldName} не должен превышать ${maxCount} элементов`);
   }
 
-  // Проверить структуру элементов
+  
   return list.map((item, index) => {
     if (!item || typeof item !== 'object') {
       throw new ValidationError(fieldName, `Элемент ${index} должен быть объектом`);
@@ -222,9 +199,7 @@ export const validateContentList = (list, fieldName, maxCount) => {
   });
 };
 
-/**
- * Полная валидация данных пользователя перед сохранением
- */
+
 export const validateUserData = (userData) => {
   if (!userData || typeof userData !== 'object') {
     throw new ValidationError('userData', 'Данные пользователя должны быть объектом');
@@ -234,12 +209,12 @@ export const validateUserData = (userData) => {
     updatedAt: new Date().toISOString(),
   };
 
-  // Профиль
+  
   if (userData.profile) {
     validated.profile = validateProfile(userData.profile);
   }
 
-  // Списки контента
+  
   if (userData.favorites) {
     validated.favorites = validateContentList(userData.favorites, 'favorites', MAX_FAVORITES_COUNT);
   }
@@ -255,12 +230,10 @@ export const validateUserData = (userData) => {
   return validated;
 };
 
-/**
- * Валидация данных сообщения перед отправкой
- */
+
 export const validateMessageData = (senderId, senderProfile, text) => {
   return {
-    senderId: validateName(senderId), // UID Firebase — alphanumeric
+    senderId: validateName(senderId), 
     senderName: validateName(senderProfile.name) || 'Anonymous',
     senderAvatar: validateAvatarUrl(senderProfile.avatar),
     text: validateMessageText(text),

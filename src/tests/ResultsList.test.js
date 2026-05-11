@@ -113,7 +113,7 @@ describe('ResultsList Component', () => {
       />
     );
 
-    // Kinopoisk icon has an SVG inside
+    
     const kinoIcons = screen.getAllByRole('link');
     const kinopoiskIcon = kinoIcons[0].querySelector('.kinopoisk-icon svg');
 
@@ -201,10 +201,10 @@ describe('ResultsList Component', () => {
       />
     );
 
-    // First 10 should be rendered
+    
     expect(screen.getByText('Movie 1')).toBeInTheDocument();
     expect(screen.getByText('Movie 10')).toBeInTheDocument();
-    // 11th should not be rendered
+    
     expect(screen.queryByText('Movie 11')).not.toBeInTheDocument();
   });
 

@@ -9,9 +9,7 @@ import React, {
 import { motion, AnimatePresence } from "framer-motion";
 import { Search, X, Film, Tv, Home, Sliders } from "lucide-react";
 
-/**
- * Строка поиска с автодополнением
- */
+
 const SearchBar = memo(
   ({
     query,
@@ -31,13 +29,11 @@ const SearchBar = memo(
     const [isExpanded, setIsExpanded] = useState(false);
     const inputRef = useRef(null);
 
-    // ============================================
-    // Обработчики
-    // ============================================
+    
+    
+    
 
-    /**
-     * Отправить форму поиска
-     */
+    
     const handleSubmit = useCallback(
       (event) => {
         event.preventDefault();
@@ -49,9 +45,7 @@ const SearchBar = memo(
       [query, onSearch, setSearchActive]
     );
 
-    /**
-     * Очистить поиск
-     */
+    
     const handleClear = useCallback(() => {
       setQuery("");
       setSearchActive(false);
@@ -59,9 +53,7 @@ const SearchBar = memo(
       inputRef.current?.focus();
     }, [setQuery, setSearchActive]);
 
-    /**
-     * Выбрать подсказку
-     */
+    
     const handleSelect = useCallback(
       (title) => {
         if (onSuggestionClick) {
@@ -71,17 +63,13 @@ const SearchBar = memo(
       [onSuggestionClick]
     );
 
-    /**
-     * Клик по иконке — раскрыть поиск
-     */
+    
     const handleIconClick = useCallback(() => {
       setIsExpanded(true);
       setTimeout(() => inputRef.current?.focus(), 100);
     }, []);
 
-    /**
-     * Потеря фокуса — свернуть если пусто
-     */
+    
     const handleInputBlur = useCallback(() => {
       setTimeout(() => {
         const activeElement = document.activeElement;
@@ -94,9 +82,7 @@ const SearchBar = memo(
       }, 10);
     }, [query, searchActive]);
 
-    /**
-     * Клик по фильтру
-     */
+    
     const handleFilterClick = useCallback(
       (event) => {
         event.stopPropagation();
@@ -105,11 +91,11 @@ const SearchBar = memo(
       [onFilterClick]
     );
 
-    // ============================================
-    // Эффекты
-    // ============================================
+    
+    
+    
 
-    // Показывать подсказки только при подходящих условиях
+    
     const showSuggestions = useMemo(
       () =>
         suggestions.length > 0 &&
@@ -119,7 +105,7 @@ const SearchBar = memo(
       [suggestions.length, isExpanded, searchActive, loading]
     );
 
-    // Автоматическое раскрытие/сворачивание
+    
     useEffect(() => {
       if (query || searchActive) {
         setIsExpanded(true);
@@ -128,13 +114,13 @@ const SearchBar = memo(
       }
     }, [query, searchActive]);
 
-    // ============================================
-    // Рендер
-    // ============================================
+    
+    
+    
 
     return (
       <div className="search-bar-wrapper">
-        {/* Прозрачная кнопка-оверлей для активации поиска */}
+        {}
         <motion.button
           className="search-trigger-overlay"
           onClick={handleIconClick}
@@ -145,7 +131,7 @@ const SearchBar = memo(
           aria-label="Активировать поиск"
         />
 
-        {/* Левая иконка: Домой */}
+        {}
         <motion.div
           className={`search-icon-left ${isExpanded ? "visible" : ""}`}
           initial={{ opacity: 0 }}
@@ -162,7 +148,7 @@ const SearchBar = memo(
           </button>
         </motion.div>
 
-        {/* Строка поиска */}
+        {}
         <motion.div
           className="search-bar"
           initial={{ width: 0, opacity: 0 }}
@@ -191,7 +177,7 @@ const SearchBar = memo(
                 placeholder="Поиск..."
               />
 
-              {/* Кнопка очистки */}
+              {}
               {query && !loading && (
                 <motion.button
                   type="button"
@@ -210,7 +196,7 @@ const SearchBar = memo(
           </form>
         </motion.div>
 
-        {/* Выпадающий список с подсказками */}
+        {}
         <AnimatePresence>
           {showSuggestions && (
             <motion.div
@@ -271,7 +257,7 @@ const SearchBar = memo(
           )}
         </AnimatePresence>
 
-        {/* Правая иконка: Фильтр */}
+        {}
         <motion.div
           className={`search-icon-right ${isExpanded ? "visible" : ""}`}
           initial={{ opacity: 0 }}

@@ -17,17 +17,11 @@ const SHARED_CONTENT_COLLECTION = "sharedContent";
 const NOTIFICATIONS_COLLECTION = "notifications";
 const USERS_COLLECTION = "users";
 
-// ============================================
-// Утилиты подписок
-// ============================================
 
-/**
- * Создать safe-обёртку для onSnapshot
- * @param {function} queryFn - Функция создания запроса
- * @param {function} transformFn - Функция трансформации данных (mutates in place)
- * @param {function} callback - Функция обратного вызова с результатами
- * @param {function} errorCallback - Обработчик ошибок
- */
+
+
+
+
 const createSafeSubscription = (queryFn, transformFn, callback, errorCallback) => {
   try {
     const q = queryFn();
@@ -63,7 +57,7 @@ const createSafeSubscription = (queryFn, transformFn, callback, errorCallback) =
       try {
         unsubscribe();
       } catch {
-        // Игнорируем ошибки при отписке
+        
       }
     };
   } catch (error) {
@@ -72,9 +66,7 @@ const createSafeSubscription = (queryFn, transformFn, callback, errorCallback) =
   }
 };
 
-/**
- * Сортировка по времени (новые сверху)
- */
+
 const sortByDateDesc = (items, field) => {
   return items.sort((a, b) => {
     const timeA = a[field]?.toMillis ? a[field].toMillis() : 0;
@@ -83,13 +75,11 @@ const sortByDateDesc = (items, field) => {
   });
 };
 
-// ============================================
-// Общий контент (Sharing)
-// ============================================
 
-/**
- * Поделиться фильмом/сериалом с другим пользователем
- */
+
+
+
+
 export const shareContent = async (
   sharedBy,
   sharedWith,
@@ -117,13 +107,13 @@ export const shareContent = async (
       read: false,
     };
 
-    // Создаём запись о шаринге
+    
     const shareDoc = await addDoc(
       collection(db, SHARED_CONTENT_COLLECTION),
       shareData
     );
 
-    // Создаём уведомление для получателя
+    
     const notificationData = {
       userId: sharedWith,
       type: "content_shared",
@@ -149,9 +139,7 @@ export const shareContent = async (
   }
 };
 
-/**
- * Подписаться на контент, которым поделились с пользователем
- */
+
 export const subscribeToSharedContent = (userId, callback) => {
   return createSafeSubscription(
     () =>
@@ -166,9 +154,7 @@ export const subscribeToSharedContent = (userId, callback) => {
   );
 };
 
-/**
- * Подписаться на контент, которым пользователь поделился
- */
+
 export const subscribeToUserSharedContent = (userId, callback) => {
   return createSafeSubscription(
     () =>
@@ -186,9 +172,7 @@ export const subscribeToUserSharedContent = (userId, callback) => {
   );
 };
 
-/**
- * Пометить шаринг как прочитанный
- */
+
 export const markSharedAsRead = async (sharedId) => {
   try {
     const shareRef = doc(db, SHARED_CONTENT_COLLECTION, sharedId);
@@ -198,9 +182,7 @@ export const markSharedAsRead = async (sharedId) => {
   }
 };
 
-/**
- * Удалить шаринг (только автор может удалить)
- */
+
 export const deleteSharedContent = async (sharedId, userId) => {
   try {
     const shareRef = doc(db, SHARED_CONTENT_COLLECTION, sharedId);
@@ -216,13 +198,11 @@ export const deleteSharedContent = async (sharedId, userId) => {
   }
 };
 
-// ============================================
-// Уведомления
-// ============================================
 
-/**
- * Подписаться на уведомления пользователя
- */
+
+
+
+
 export const subscribeToNotifications = (userId, callback) => {
   return createSafeSubscription(
     () =>
@@ -237,9 +217,7 @@ export const subscribeToNotifications = (userId, callback) => {
   );
 };
 
-/**
- * Пометить уведомление как прочитанное
- */
+
 export const markNotificationAsRead = async (notificationId) => {
   try {
     const notifRef = doc(db, NOTIFICATIONS_COLLECTION, notificationId);
@@ -252,9 +230,7 @@ export const markNotificationAsRead = async (notificationId) => {
   }
 };
 
-/**
- * Пометить все уведомления как прочитанные
- */
+
 export const markAllNotificationsAsRead = async (userId) => {
   try {
     const notifRef = collection(db, NOTIFICATIONS_COLLECTION);
@@ -280,9 +256,7 @@ export const markAllNotificationsAsRead = async (userId) => {
   }
 };
 
-/**
- * Удалить уведомление (только владелец может удалить)
- */
+
 export const deleteNotification = async (notificationId, userId) => {
   try {
     const notifRef = doc(db, NOTIFICATIONS_COLLECTION, notificationId);
@@ -298,9 +272,7 @@ export const deleteNotification = async (notificationId, userId) => {
   }
 };
 
-/**
- * Получить количество непрочитанных уведомлений
- */
+
 export const getUnreadNotificationsCount = async (userId) => {
   try {
     const notifRef = collection(db, NOTIFICATIONS_COLLECTION);
@@ -318,13 +290,11 @@ export const getUnreadNotificationsCount = async (userId) => {
   }
 };
 
-// ============================================
-// Профили пользователей
-// ============================================
 
-/**
- * Получить профиль пользователя по ID
- */
+
+
+
+
 export const getUserProfile = async (userId) => {
   try {
     const userRef = doc(db, USERS_COLLECTION, userId);

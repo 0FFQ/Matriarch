@@ -3,11 +3,9 @@ import YouTube from "react-youtube";
 import { motion } from "framer-motion";
 import { X } from "lucide-react";
 
-/**
- * Проигрыватель трейлеров (YouTube)
- */
+
 const TrailerPlayer = memo(({ trailer, onClose, setSearchActive }) => {
-  // Настройки плеера
+  
   const opts = useMemo(
     () => ({
       width: "100%",
@@ -17,13 +15,13 @@ const TrailerPlayer = memo(({ trailer, onClose, setSearchActive }) => {
     []
   );
 
-  // Закрытие трейлера
+  
   const handleClose = useCallback(() => {
     onClose();
     setSearchActive(true);
   }, [onClose, setSearchActive]);
 
-  // Обработка Escape
+  
   useEffect(() => {
     const handleEscape = (e) => {
       if (e.key === "Escape") {

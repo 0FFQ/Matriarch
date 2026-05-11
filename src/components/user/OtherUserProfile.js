@@ -10,7 +10,7 @@ const OtherUserProfile = ({ t, isOpen, onClose, userId, onShareContent, onOpenCh
   const [userProfile, setUserProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [activeTab, setActiveTab] = useState('watchlist'); // 'watchlist', 'favorites', 'watched'
+  const [activeTab, setActiveTab] = useState('watchlist'); 
 
   useEffect(() => {
     if (isOpen && userId) {
@@ -127,7 +127,7 @@ const OtherUserProfile = ({ t, isOpen, onClose, userId, onShareContent, onOpenCh
             </div>
           ) : userProfile ? (
             <>
-              {/* Header */}
+              {}
               <div className="relative p-6 bg-gradient-to-r from-gray-500 to-gray-600">
                 <button
                   onClick={onClose}
@@ -170,7 +170,7 @@ const OtherUserProfile = ({ t, isOpen, onClose, userId, onShareContent, onOpenCh
                 </div>
               </div>
 
-              {/* Tabs */}
+              {}
               <div className="border-b border-gray-200 dark:border-gray-700">
                 <div className="flex gap-2 p-4">
                   {['watchlist', 'favorites', 'watched'].map((tab) => (
@@ -195,7 +195,7 @@ const OtherUserProfile = ({ t, isOpen, onClose, userId, onShareContent, onOpenCh
                 </div>
               </div>
 
-              {/* Content List */}
+              {}
               <div className="overflow-y-auto max-h-[calc(85vh-280px)] p-6">
                 {getContentList().length === 0 ? (
                   <div className="text-center text-gray-500 dark:text-gray-400 py-8">
@@ -225,7 +225,7 @@ const OtherUserProfile = ({ t, isOpen, onClose, userId, onShareContent, onOpenCh
                             </div>
                           )}
                           
-                          {/* Share Button Overlay */}
+                          {}
                           <div className="absolute top-2 right-2 opacity-0 hover:opacity-100 transition-opacity">
                             <button
                               onClick={() => handleShareContent(item)}

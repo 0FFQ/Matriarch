@@ -1,13 +1,6 @@
 import { useCallback } from 'react';
 
-/**
- * Кастомный хук для управления пагинацией
- * @param {number} totalItems - общее количество элементов
- * @param {number} itemsPerPage - количество элементов на странице
- * @param {number} currentPage - текущая страница
- * @param {function} setCurrentPage - функция установки страницы
- * @returns {Object} состояние и функции для управления пагинацией
- */
+
 const usePaginationControls = (totalItems, itemsPerPage, currentPage, setCurrentPage) => {
   const totalPages = Math.ceil(totalItems / itemsPerPage);
 
@@ -28,7 +21,7 @@ const usePaginationControls = (totalItems, itemsPerPage, currentPage, setCurrent
 
   return {
     totalPages,
-    paginatedItems: null, // Будет вычислен при вызове getPaginatedItems
+    paginatedItems: null, 
     getPaginatedItems,
     handlePageChange,
     hasMultiplePages: totalPages > 1

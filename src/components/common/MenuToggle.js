@@ -1,9 +1,7 @@
 import React from "react";
 import { motion } from "framer-motion";
 
-/**
- * Кнопка-переключатель меню (гамбургер)
- */
+
 const MenuToggle = ({ isOpen, onClick }) => (
   <motion.button
     className="menu-toggle"

@@ -1,10 +1,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import { getCacheStats, clearAllCache } from '../utils/cache';
 
-/**
- * Кастомный хук для управления общим состоянием приложения
- * @returns {Object} состояние и функции для управления UI
- */
+
 const useAppState = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
@@ -15,7 +12,7 @@ const useAppState = () => {
     return saved !== null ? saved === 'true' : true;
   });
 
-  // Обёртка для сохранения в localStorage при прямом вызове setAtomVisible
+  
   const setAtomVisibleWithSave = useCallback((value) => {
     setAtomVisible(prev => {
       const newValue = typeof value === 'function' ? value(prev) : value;
@@ -24,7 +21,7 @@ const useAppState = () => {
     });
   }, []);
 
-  // Инициализация статистики кэша
+  
   useEffect(() => {
     setCacheStats(getCacheStats());
   }, []);

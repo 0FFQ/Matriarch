@@ -37,10 +37,10 @@ describe('MovieActions Component', () => {
     );
 
     const buttons = screen.getAllByRole('button');
-    fireEvent.click(buttons[0]); // Favorite button
+    fireEvent.click(buttons[0]); 
 
-    // Проверяем, что кнопка стала активной (с галочкой)
-    // Это происходит потому что состояние обновляется в контексте
+    
+    
   });
 
   test('adds movie to watched when clicked', () => {
@@ -49,7 +49,7 @@ describe('MovieActions Component', () => {
     );
 
     const buttons = screen.getAllByRole('button');
-    fireEvent.click(buttons[1]); // Watched button
+    fireEvent.click(buttons[1]); 
   });
 
   test('adds movie to watchlist when clicked', () => {
@@ -58,7 +58,7 @@ describe('MovieActions Component', () => {
     );
 
     const buttons = screen.getAllByRole('button');
-    fireEvent.click(buttons[2]); // Watchlist button
+    fireEvent.click(buttons[2]); 
   });
 
   test('prevents default event propagation', () => {

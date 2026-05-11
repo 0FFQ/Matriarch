@@ -17,7 +17,7 @@ const MessageInput = ({
   const textareaRef = useRef(null);
   const containerRef = useRef(null);
 
-  // Автоматическая высота textarea
+  
   useEffect(() => {
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';
@@ -25,7 +25,7 @@ const MessageInput = ({
     }
   }, [value]);
 
-  // Обработка ввода с уведомлением о наборе
+  
   const handleChange = (e) => {
     onChange(e);
     if (onTyping) {
@@ -33,7 +33,7 @@ const MessageInput = ({
     }
   };
 
-  // Эффект ripple при отправке
+  
   const createRipple = (event) => {
     const button = event.currentTarget;
     const rect = button.getBoundingClientRect();
@@ -44,7 +44,7 @@ const MessageInput = ({
     setTimeout(() => setRipplePosition(null), 600);
   };
 
-  // Анимация отправки с частицами
+  
   const handleSendWithEffects = (event) => {
     createRipple(event);
     setShowParticles(true);
@@ -52,7 +52,7 @@ const MessageInput = ({
     setTimeout(() => setShowParticles(false), 1000);
   };
 
-  // Частицы при отправке
+  
   const Particle = ({ delay }) => (
     <motion.div
       className="message-particle"

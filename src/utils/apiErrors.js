@@ -1,15 +1,8 @@
-/**
- * Утилиты обработки ошибок API (без React зависимостей)
- *
- * Централизованная обработка ошибок с:
- * - Классификацией типов ошибок (сеть, авторизация, сервер, лимиты)
- * - Информативными сообщениями для пользователя
- * - Логированием для разработчика
- */
 
-// ============================================
-// Типы ошибок
-// ============================================
+
+
+
+
 
 export const ErrorType = {
   NETWORK: 'network',
@@ -21,9 +14,9 @@ export const ErrorType = {
   UNKNOWN: 'unknown',
 };
 
-// ============================================
-// Сообщения об ошибках для пользователя
-// ============================================
+
+
+
 
 const userMessages = {
   [ErrorType.NETWORK]: {
@@ -56,13 +49,11 @@ const userMessages = {
   },
 };
 
-// ============================================
-// Классификация ошибок
-// ============================================
 
-/**
- * Определить тип ошибки по Axios error объекту
- */
+
+
+
+
 export const classifyError = (error) => {
   if (!error.response) {
     if (error.code === 'ECONNABORTED' || error.message?.includes('timeout')) {
@@ -92,18 +83,14 @@ export const classifyError = (error) => {
   return ErrorType.UNKNOWN;
 };
 
-/**
- * Получить сообщение об ошибке для пользователя
- */
+
 export const getUserErrorMessage = (error, language = 'ru') => {
   const errorType = classifyError(error);
   const messages = userMessages[errorType];
   return messages?.[language] || messages?.ru || userMessages[ErrorType.UNKNOWN].ru;
 };
 
-/**
- * Создать объект ошибки для логирования
- */
+
 export const createErrorReport = (error, context = {}) => {
   const errorType = classifyError(error);
 
@@ -119,9 +106,7 @@ export const createErrorReport = (error, context = {}) => {
   };
 };
 
-/**
- * Записать ошибку в лог (для разработчика)
- */
+
 export const logApiError = (error, context = {}) => {
   const report = createErrorReport(error, context);
 

@@ -119,7 +119,7 @@ describe('UserProfile Component', () => {
     );
 
     const closeBtn = screen.getByRole('button', { name: '' });
-    // Ищем кнопку закрытия по SVG
+    
     const closeButtons = screen.getAllByRole('button');
     const closeXBtn = closeButtons.find(btn => btn.querySelector('svg'));
     
@@ -138,8 +138,8 @@ describe('UserProfile Component', () => {
       />
     );
 
-    // Проверка, что статистика показывает 0
+    
     const stats = screen.getAllByText('0');
-    expect(stats.length).toBe(3); // favorites, watched, watchlist
+    expect(stats.length).toBe(3); 
   });
 });

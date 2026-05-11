@@ -11,35 +11,32 @@ import {
 import { getFirestore } from "firebase/firestore";
 import firebaseConfig from "./config";
 
-// ============================================
-// Инициализация Firebase
-// ============================================
+
+
+
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getFirestore(app);
 export const googleProvider = new GoogleAuthProvider();
 
-// Настройка провайдера Google
+
 googleProvider.setCustomParameters({
   prompt: "select_account",
 });
 
-// Установка персистентности (сохранение сессии)
+
 setPersistence(auth, browserLocalPersistence).catch((error) => {
   console.error("[Auth] Persistence error:", error.message);
 });
 
-// ============================================
-// Аутентификация
-// ============================================
 
-/**
- * Войти через Google
- * @returns {object|null} Объект пользователя или null
- */
+
+
+
+
 export const signInWithGoogle = async () => {
   try {
-    // Если уже авторизован — возвращаем текущего пользователя
+    
     if (auth.currentUser) {
       return auth.currentUser;
     }
@@ -55,9 +52,7 @@ export const signInWithGoogle = async () => {
   }
 };
 
-/**
- * Выйти из аккаунта
- */
+
 export const logout = async () => {
   try {
     await signOut(auth);
@@ -67,29 +62,19 @@ export const logout = async () => {
   }
 };
 
-/**
- * Подписаться на изменение состояния аутентификации
- * @param {function} callback - Функция обратного вызова
- * @returns {function} Функция отписки
- */
+
 export const onAuthChange = (callback) => {
   return onAuthStateChanged(auth, (user) => {
     callback(user);
   });
 };
 
-/**
- * Получить текущего авторизованного пользователя
- * @returns {object|null}
- */
+
 export const getCurrentUser = () => {
   return auth.currentUser;
 };
 
-/**
- * Проверить, сохранён ли аккаунт в localStorage
- * @returns {boolean}
- */
+
 export const hasSavedAccount = () => {
   return !!localStorage.getItem(
     "firebase:authUser:" + firebaseConfig.apiKey

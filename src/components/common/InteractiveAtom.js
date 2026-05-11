@@ -11,11 +11,11 @@ const InteractiveAtom = () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const ctx = canvas.getContext('2d', { alpha: false }); // Оптимизация: отключаем прозрачность canvas
+    const ctx = canvas.getContext('2d', { alpha: false }); 
     let width = canvas.width = window.innerWidth;
     let height = canvas.height = window.innerHeight;
 
-    // Уменьшаем количество частиц для производительности
+    
     const PARTICLE_COUNT = Math.min(8000, Math.floor((width * height) / 150));
 
     const createParticles = () => {
@@ -110,7 +110,7 @@ const InteractiveAtom = () => {
     const animate = () => {
       if (!ctx) return;
 
-      // Оптимизация: используем fillRect вместо clearRect
+      
       ctx.fillStyle = isDarkRef.current ? '#000000' : '#f5f2ed';
       ctx.fillRect(0, 0, width, height);
 
@@ -130,7 +130,7 @@ const InteractiveAtom = () => {
       const particles = particlesRef.current;
       const len = particles.length;
 
-      // Оптимизация: кэшируем вычисления
+      
       for (let i = 0; i < len; i++) {
         const p = particles[i];
         const x1 = p.x * cosY - p.z * sinY;
@@ -143,7 +143,7 @@ const InteractiveAtom = () => {
         p.displayZ = z2;
       }
 
-      // Оптимизация: отрисовка с сортировкой по Z
+      
       const sortedIndices = new Uint16Array(len);
       for (let i = 0; i < len; i++) sortedIndices[i] = i;
       

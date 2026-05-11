@@ -1,11 +1,6 @@
 import { useMemo, useCallback } from 'react';
 
-/**
- * Кастомный хук для управления пагинацией
- * @param {number} totalItems - общее количество элементов
- * @param {number} itemsPerPage - количество элементов на странице
- * @returns {Object} состояние и функции для управления пагинацией
- */
+
 const usePagination = (totalItems, itemsPerPage) => {
   const totalPages = Math.ceil(totalItems / itemsPerPage);
 

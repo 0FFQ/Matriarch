@@ -1,13 +1,6 @@
-/**
- * Вспомогательные функции для поиска и сортировки
- */
 
-/**
- * Получает поле для сортировки в зависимости от типа контента
- * @param {string} sortBy - строка сортировки (например, 'popularity.desc')
- * @param {string} type - тип контента ('movie' или 'tv')
- * @returns {string} поле для сортировки
- */
+
+
 export const getSortField = (sortBy, type = 'movie') => {
   const field = sortBy.split('.')[0];
   if (type === 'tv' && field === 'primary_release_date') {
@@ -17,12 +10,7 @@ export const getSortField = (sortBy, type = 'movie') => {
   return field;
 };
 
-/**
- * Сортирует результаты по указанному полю
- * @param {Array} results - массив результатов
- * @param {string} sortBy - строка сортировки (например, 'popularity.desc')
- * @returns {Array} отсортированный массив
- */
+
 export const sortResults = (results, sortBy) => {
   const [field, order] = sortBy.split('.');
   const sorted = [...results].sort((a, b) => {

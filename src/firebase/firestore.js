@@ -14,15 +14,11 @@ import { validateUserData } from "../utils/validation";
 
 const USERS_COLLECTION = "users";
 
-// ============================================
-// Поиск пользователя по email
-// ============================================
 
-/**
- * Проверить, существует ли документ с данным email
- * @param {string} email - Email пользователя
- * @returns {string|null} ID пользователя или null
- */
+
+
+
+
 export const findUserByEmail = async (email) => {
   try {
     const usersRef = collection(db, USERS_COLLECTION);
@@ -39,18 +35,14 @@ export const findUserByEmail = async (email) => {
   }
 };
 
-// ============================================
-// CRUD операции с данными пользователя
-// ============================================
 
-/**
- * Сохранить данные пользователя в Firestore
- * @param {string} userId - ID пользователя
- * @param {object} userData - Данные для сохранения
- */
+
+
+
+
 export const saveUserData = async (userId, userData) => {
   try {
-    // Валидация данных перед сохранением
+    
     const validatedData = validateUserData(userData);
 
     const userRef = doc(db, USERS_COLLECTION, userId);
@@ -74,11 +66,7 @@ export const saveUserData = async (userId, userData) => {
   }
 };
 
-/**
- * Загрузить данные пользователя из Firestore
- * @param {string} userId - ID пользователя
- * @returns {object|null} Данные пользователя или null
- */
+
 export const loadUserData = async (userId) => {
   try {
     const userRef = doc(db, USERS_COLLECTION, userId);
@@ -91,16 +79,11 @@ export const loadUserData = async (userId) => {
   }
 };
 
-// ============================================
-// Подписки на изменения (real-time)
-// ============================================
 
-/**
- * Подписаться на изменения данных пользователя
- * @param {string} userId - ID пользователя
- * @param {function} callback - Функция обратного вызова
- * @returns {function|null} Функция отписки
- */
+
+
+
+
 export const subscribeToUserData = (userId, callback) => {
   try {
     const userRef = doc(db, USERS_COLLECTION, userId);
@@ -124,14 +107,11 @@ export const subscribeToUserData = (userId, callback) => {
   }
 };
 
-// ============================================
-// Удаление данных
-// ============================================
 
-/**
- * Удалить данные пользователя
- * @param {string} userId - ID пользователя
- */
+
+
+
+
 export const deleteUserData = async (userId) => {
   try {
     const userRef = doc(db, USERS_COLLECTION, userId);
@@ -142,14 +122,11 @@ export const deleteUserData = async (userId) => {
   }
 };
 
-// ============================================
-// Онлайн-статус (lastSeen)
-// ============================================
 
-/**
- * Обновить время последней активности
- * @param {string} userId - ID пользователя
- */
+
+
+
+
 export const updateLastSeen = async (userId) => {
   try {
     const userRef = doc(db, USERS_COLLECTION, userId);
@@ -160,17 +137,12 @@ export const updateLastSeen = async (userId) => {
   }
 };
 
-/**
- * Подписаться на онлайн-статус пользователя
- * @param {string} userId - ID пользователя
- * @param {function} callback - Функция обратного вызова (isOnline)
- * @returns {function|null} Функция отписки
- */
+
 export const subscribeToUserPresence = (userId, callback) => {
   try {
     const userRef = doc(db, USERS_COLLECTION, userId);
-    const ONLINE_THRESHOLD = 30 * 1000; // 30 секунд
-    const CHECK_INTERVAL = 10 * 1000; // проверка каждые 10 сек
+    const ONLINE_THRESHOLD = 30 * 1000; 
+    const CHECK_INTERVAL = 10 * 1000; 
     let lastSeenValue = null;
     let checkInterval = null;
 
@@ -200,7 +172,7 @@ export const subscribeToUserPresence = (userId, callback) => {
       }
     );
 
-    // Локальный перерасчёт — чтобы отловить когда heartbeat остановился
+    
     checkInterval = setInterval(checkOnline, CHECK_INTERVAL);
 
     return () => {
@@ -213,16 +185,11 @@ export const subscribeToUserPresence = (userId, callback) => {
   }
 };
 
-// ============================================
-// Инициализация
-// ============================================
 
-/**
- * Инициализировать данные пользователя (при первом входе)
- * @param {string} userId - ID пользователя
- * @param {object} profile - Профиль пользователя
- * @returns {object|null} Данные пользователя
- */
+
+
+
+
 export const initializeUserData = async (userId, profile) => {
   const existingData = await loadUserData(userId);
 

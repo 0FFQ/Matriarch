@@ -2,10 +2,7 @@ import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
 
-/**
- * Панель действий для выбранных сообщений
- * Показывается под заголовком чата
- */
+
 const SelectionActionsBar = ({
   isVisible,
   selectedCount,
@@ -27,7 +24,7 @@ const SelectionActionsBar = ({
         >
           <div className="selection-actions-topbar-buttons">
             <div className="selection-actions-left">
-              {/* Переслать */}
+              {}
               <button
                 className="selection-topbar-btn"
                 onClick={onForward}
@@ -37,7 +34,7 @@ const SelectionActionsBar = ({
                 <span className="selection-btn-count">{selectedCount}</span>
               </button>
 
-              {/* Удалить */}
+              {}
               <button
                 className="selection-topbar-btn selection-danger-btn"
                 onClick={onDeleteEveryone}
@@ -48,7 +45,7 @@ const SelectionActionsBar = ({
               </button>
             </div>
 
-            {/* Отменить */}
+            {}
             <button
               className="selection-topbar-btn selection-cancel-btn"
               onClick={onClose}

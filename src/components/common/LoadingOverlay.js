@@ -1,10 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 
-/**
- * Компонент глобального индикатора загрузки
- * @param {string} language - текущий язык
- */
+
 const LoadingOverlay = ({ language }) => {
   return (
     <motion.div

@@ -33,42 +33,42 @@ const ForwardModal = ({ isOpen, onClose, message, currentChatId, onChatOpen }) =
     setForwarding(targetUser.id);
 
     try {
-      // Формируем ID чата (отсортированный)
+      
       const chatId = firebaseUser.uid < targetUser.id
         ? `${firebaseUser.uid}_${targetUser.id}`
         : `${targetUser.id}_${firebaseUser.uid}`;
 
-      // Подготавливаем профиль отправителя
+      
       const senderProfile = {
         name: profile.name || firebaseUser.displayName || 'Пользователь',
         avatar: profile.avatar || firebaseUser.photoURL || '',
         email: profile.email || firebaseUser.email || '',
       };
 
-      // Профиль получателя
+      
       const receiverProfile = {
         name: targetUser.name || '',
         avatar: targetUser.avatar || '',
         email: targetUser.email || '',
       };
 
-      // Инициализируем чат если не существует
+      
       await initializeChat(firebaseUser.uid, targetUser.id, senderProfile, receiverProfile);
 
-      // Формируем текст пересланного сообщения с информацией об отправителе
+      
       let forwardedFrom;
 
       if (message.forwardedFrom) {
-        // Уже пересланное — сохраняем оригинального автора
+        
         forwardedFrom = message.forwardedFrom;
       } else if (!message.senderId || message.senderId === firebaseUser.uid) {
-        // Своё сообщение — текущий пользователь
+        
         forwardedFrom = {
           name: senderProfile.name,
           avatar: senderProfile.avatar,
         };
       } else {
-        // Чужое сообщение — оригинальный автор
+        
         forwardedFrom = {
           name: message.senderName || 'Пользователь',
           avatar: message.senderAvatar || '',
@@ -82,7 +82,7 @@ const ForwardModal = ({ isOpen, onClose, message, currentChatId, onChatOpen }) =
 
       await sendMessage(chatId, firebaseUser.uid, senderProfile, JSON.stringify(forwardData));
 
-      // Закрываем модалку и открываем чат
+      
       onClose();
       if (onChatOpen) {
         onChatOpen(chatId, {
@@ -133,7 +133,7 @@ const ForwardModal = ({ isOpen, onClose, message, currentChatId, onChatOpen }) =
             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Заголовок */}
+            {}
             <div className="forward-modal-header">
               <h3>Переслать сообщение</h3>
               <button className="forward-modal-close" onClick={onClose}>
@@ -141,7 +141,7 @@ const ForwardModal = ({ isOpen, onClose, message, currentChatId, onChatOpen }) =
               </button>
             </div>
 
-            {/* Превью сообщения */}
+            {}
             <div className="forward-message-preview">
               <p className="forward-message-text">{message.text || '📎 Вложение'}</p>
               <div className="forward-message-actions">
@@ -164,7 +164,7 @@ const ForwardModal = ({ isOpen, onClose, message, currentChatId, onChatOpen }) =
               </div>
             </div>
 
-            {/* Поиск */}
+            {}
             <div className="forward-search">
               <input
                 type="text"
@@ -174,7 +174,7 @@ const ForwardModal = ({ isOpen, onClose, message, currentChatId, onChatOpen }) =
               />
             </div>
 
-            {/* Список пользователей */}
+            {}
             <div className="forward-users-list">
               {filteredUsers.length === 0 ? (
                 <div className="forward-empty">Нет пользователей</div>

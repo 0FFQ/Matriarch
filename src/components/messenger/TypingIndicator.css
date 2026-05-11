@@ -1,4 +1,4 @@
-/* Typing Indicator Styles */
+
 .typing-indicator-container {
   padding: 8px 16px;
   margin: 4px 0;
@@ -39,7 +39,7 @@
   letter-spacing: 0.2px;
 }
 
-/* Animation variants */
+
 @keyframes typingPulse {
   0%, 100% {
     opacity: 0.6;

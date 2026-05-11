@@ -1,4 +1,4 @@
-/* Message Input Component */
+
 .message-input-container {
   position: relative;
   display: flex;
@@ -82,7 +82,7 @@
   color: #6366f1;
 }
 
-/* Send Button */
+
 .send-button {
   position: relative;
   width: 48px;
@@ -126,7 +126,7 @@
   z-index: 100;
 }
 
-/* Typing Indicator */
+
 .typing-indicator {
   display: flex;
   align-items: center;
@@ -157,7 +157,7 @@
   font-style: italic;
 }
 
-/* Message Bubble Animations */
+
 @keyframes messageSlideIn {
   from {
     opacity: 0;
@@ -173,23 +173,23 @@
   animation: messageSlideIn 0.3s ease-out;
 }
 
-/* Particle Effects */
+
 .message-particle {
   position: absolute;
   pointer-events: none;
 }
 
-/* Smooth transitions for chat */
+
 .chat-messages {
   scroll-behavior: smooth;
 }
 
-/* Input auto-resize smooth */
+
 .message-input {
   transition: height 0.2s ease;
 }
 
-/* Mobile responsive */
+
 @media (max-width: 768px) {
   .message-input-container {
     padding: 12px;

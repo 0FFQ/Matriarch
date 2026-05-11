@@ -3,12 +3,7 @@ import { motion } from "framer-motion";
 import { Check, CheckCheck } from "lucide-react";
 import SharedContentBubble from "./SharedContentBubble";
 
-/**
- * Пузырь сообщения
- * @param {function} props.onContextMenu - Обработчик ПКМ (из родителя)
- * @param {boolean} props.isSelectionMode - Режим выбора сообщений
- * @param {boolean} props.isSelected - Выбрано ли сообщение
- */
+
 const MessageBubble = ({
   message,
   isOwn,
@@ -25,7 +20,7 @@ const MessageBubble = ({
 
   const handleTextPointerDown = (e) => {
     if (isSelectionMode) {
-      // Показываем знак запрета при зажатии в режиме выбора
+      
       setIsNoSelect(true);
       noSelectTimerRef.current = setTimeout(() => {
         setIsNoSelect(false);
@@ -43,7 +38,7 @@ const MessageBubble = ({
   };
 
   const handleClick = (e) => {
-    // Клик не делает ничего
+    
   };
 
   return (
@@ -57,7 +52,7 @@ const MessageBubble = ({
       onContextMenu={onContextMenu}
       onClick={handleClick}
     >
-      {/* Аватар отправителя (для чужих сообщений) */}
+      {}
       {!isOwn && (
         <div
           className="message-sender"
@@ -81,7 +76,7 @@ const MessageBubble = ({
       )}
 
       <div className="message-content">
-        {/* Заголовок пересланного сообщения */}
+        {}
         {isForwarded && (
           <div
             className="message-forwarded-header"
@@ -110,7 +105,7 @@ const MessageBubble = ({
           </div>
         )}
 
-        {/* Прикреплённый контент (если есть) */}
+        {}
         {hasSharedContent && (
           <SharedContentBubble
             content={message.content}
@@ -121,7 +116,7 @@ const MessageBubble = ({
           />
         )}
 
-        {/* Текстовое сообщение */}
+        {}
         {message.text && (
           <p
             className="message-text"
@@ -134,7 +129,7 @@ const MessageBubble = ({
           </p>
         )}
 
-        {/* Мета-информация и чекбокс справа */}
+        {}
         <div className="message-meta">
           <span
             className="message-time"
@@ -158,7 +153,7 @@ const MessageBubble = ({
             </span>
           )}
 
-          {/* Круглый чекбокс справа */}
+          {}
           {isSelectionMode && (
             <div
               className={`message-select-circle ${isSelected ? 'selected' : ''}`}

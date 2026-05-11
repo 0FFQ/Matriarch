@@ -2,21 +2,7 @@ import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import SearchBar from './SearchBar';
 
-/**
- * Компонент поисковой секции
- * @param {string} query - поисковый запрос
- * @param {function} setQuery - функция установки запроса
- * @param {function} onSearch - функция поиска
- * @param {boolean} searchActive - флаг активности поиска
- * @param {function} setSearchActive - функция установки активности
- * @param {boolean} loading - флаг загрузки
- * @param {Array} suggestions - подсказки
- * @param {function} onSuggestionClick - обработка клика по подсказке
- * @param {function} onFilterClick - обработка клика по фильтру
- * @param {function} onHomeClick - обработка клика домой
- * @param {boolean} hasActiveFilters - есть ли активные фильтры
- * @param {string} language - текущий язык
- */
+
 const SearchSection = ({
   query,
   setQuery,

@@ -3,18 +3,13 @@ import axios from 'axios';
 import { cachedRequest } from '../utils/cache';
 import { BASE_URL, CACHE_TTL, AUTH_TOKEN } from '../constants';
 
-/**
- * Кастомный хук для управления трейлерами
- * @param {Array} results - массив результатов поиска
- * @param {string} language - текущий язык
- * @returns {Object} состояние и функции для управления трейлерами
- */
+
 const useTrailer = (results, language) => {
   const [selectedTrailer, setSelectedTrailer] = useState(null);
   const [noTrailer, setNoTrailer] = useState(false);
   const [currentMovie, setCurrentMovie] = useState(null);
 
-  // Получение трейлера
+  
   const getTrailer = useCallback(async (id, type = 'movie') => {
     try {
       const { data } = await cachedRequest(
@@ -49,12 +44,12 @@ const useTrailer = (results, language) => {
     }
   }, [results, language]);
 
-  // Закрытие трейлера
+  
   const closeTrailer = useCallback(() => {
     setSelectedTrailer(null);
   }, []);
 
-  // Закрытие виджета "трейлер не найден"
+  
   const closeNoTrailer = useCallback(() => {
     setNoTrailer(false);
     setCurrentMovie(null);

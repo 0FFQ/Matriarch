@@ -49,9 +49,9 @@ describe('Sidebar Component', () => {
   test('calls onClose when close button is clicked', () => {
     render(<Sidebar {...defaultProps} />);
 
-    // Находим кнопку закрытия по X иконке (первая кнопка в header)
+    
     const allButtons = screen.getAllByRole('button');
-    const closeBtn = allButtons[0]; // Первая кнопка - close
+    const closeBtn = allButtons[0]; 
 
     fireEvent.click(closeBtn);
     expect(defaultProps.onClose).toHaveBeenCalled();

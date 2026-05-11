@@ -11,7 +11,7 @@ import SelectionActionsBar from './SelectionActionsBar';
 import useMessageSelection from '../../hooks/useMessageSelection';
 import useWindowPosition from '../../hooks/useWindowPosition';
 
-// Компонент группы сообщений с датой
+
 const DateGroup = React.memo(({ date, messages, isSelectionMode, formatTime, firebaseUser, onSelectContent, handleContextMenu, isSelected }) => {
   const [noSelect, setNoSelect] = React.useState(false);
   const timerRef = React.useRef(null);
@@ -67,9 +67,9 @@ const ChatWindow = ({ chatId, otherUser, onBack, t, isOpen, onClose, onSelectCon
   const [newMessage, setNewMessage] = useState('');
   const [isSending, setIsSending] = useState(false);
   const [isOnline, setIsOnline] = useState(false);
-  const [contextMenu, setContextMenu] = useState(null); // { x, y, messageId, message }
-  const [deleteMenu, setDeleteMenu] = useState(null); // { x, y, messageId }
-  const [localDeleted, setLocalDeleted] = useState(new Set()); // ID удалённых только у себя
+  const [contextMenu, setContextMenu] = useState(null); 
+  const [deleteMenu, setDeleteMenu] = useState(null); 
+  const [localDeleted, setLocalDeleted] = useState(new Set()); 
   const [forwardModalOpen, setForwardModalOpen] = useState(false);
   const [forwardMessage, setForwardMessage] = useState(null);
   const messagesEndRef = useRef(null);
@@ -78,7 +78,7 @@ const ChatWindow = ({ chatId, otherUser, onBack, t, isOpen, onClose, onSelectCon
   const lastTouchedRef = useRef(null);
   const chatContainerRef = useRef(null);
 
-  // Система выбора сообщений
+  
   const {
     selectedIds,
     selectedMessages,
@@ -94,7 +94,7 @@ const ChatWindow = ({ chatId, otherUser, onBack, t, isOpen, onClose, onSelectCon
     selectionStats,
   } = useMessageSelection(messages || [], firebaseUser?.uid || '');
 
-  // Глобальный mouseup — сброс drag
+  
   useEffect(() => {
     const handleMouseUp = () => {
       isMouseDraggingRef.current = false;
@@ -104,14 +104,14 @@ const ChatWindow = ({ chatId, otherUser, onBack, t, isOpen, onClose, onSelectCon
     return () => document.removeEventListener('mouseup', handleMouseUp);
   }, []);
 
-  // Начало drag-выбора — mousedown на контейнере сообщений
+  
   const handleContainerMouseDown = useCallback((e) => {
-    // Если клик внутри shared content — не выбираем сообщение
+    
     if (e.target.closest('[data-no-select]')) {
       return;
     }
 
-    // Проверяем target — если клик на shared content или его дочерних элементах, не выбираем
+    
     let el = e.target;
     const chatEl = chatContainerRef.current;
     while (el && el !== chatEl) {
@@ -134,7 +134,7 @@ const ChatWindow = ({ chatId, otherUser, onBack, t, isOpen, onClose, onSelectCon
 
     const elements = document.elementsFromPoint(e.clientX, e.clientY);
 
-    // Если клик на тексте, времени или пересланном — не начинаем drag-выбор
+    
     const textEl = elements.find(
       (el) => el.classList?.contains('message-text') || el.classList?.contains('message-time') || el.classList?.contains('message-forwarded-header')
     );
@@ -164,7 +164,7 @@ const ChatWindow = ({ chatId, otherUser, onBack, t, isOpen, onClose, onSelectCon
     }
   }, [isSelectionMode, isSelected, selectMessage, deselectMessage, enterSelectionMode]);
 
-  // Продолжение drag-выбора — mousemove
+  
   useEffect(() => {
     const handleMouseMove = (e) => {
       if (!isMouseDraggingRef.current || !chatContainerRef.current) return;
@@ -177,7 +177,7 @@ const ChatWindow = ({ chatId, otherUser, onBack, t, isOpen, onClose, onSelectCon
 
       const elements = document.elementsFromPoint(e.clientX, e.clientY);
 
-      // Не выбираем если курсор над текстом, временем или пересланным
+      
       const textEl = elements.find(
         (el) => el.classList?.contains('message-text') || el.classList?.contains('message-time') || el.classList?.contains('message-forwarded-header')
       );
@@ -208,7 +208,7 @@ const ChatWindow = ({ chatId, otherUser, onBack, t, isOpen, onClose, onSelectCon
   const panelRef = useRef(null);
   const [constraints, setConstraints] = useState({ left: 0, right: 0, top: 0, bottom: 0 });
 
-  // Сохранение позиции окна
+  
   const { x, y, handleDragStart, handleDragEnd, resetPosition } = useWindowPosition(
     `chat-window-${chatId || 'default'}`,
     isOpen
@@ -230,7 +230,7 @@ const ChatWindow = ({ chatId, otherUser, onBack, t, isOpen, onClose, onSelectCon
     }
   }, [isOpen]);
 
-  // Обработка Escape
+  
   useEffect(() => {
     const handleEscape = (e) => {
       if (e.key === 'Escape' && isOpen) {
@@ -241,7 +241,7 @@ const ChatWindow = ({ chatId, otherUser, onBack, t, isOpen, onClose, onSelectCon
     return () => document.removeEventListener('keydown', handleEscape);
   }, [isOpen, onClose]);
 
-  // Подписка на сообщения
+  
   useEffect(() => {
     if (!chatId || !isOpen) {
       setMessages(null);
@@ -251,7 +251,7 @@ const ChatWindow = ({ chatId, otherUser, onBack, t, isOpen, onClose, onSelectCon
     let unsubscribe = null;
     let isSubscribed = true;
 
-    // Сразу сбрасываем при смене чата
+    
     setMessages(null);
 
     const setupSubscription = async () => {
@@ -278,12 +278,12 @@ const ChatWindow = ({ chatId, otherUser, onBack, t, isOpen, onClose, onSelectCon
     };
   }, [chatId, isOpen]);
 
-  // Автоматическая прокрутка к последнему сообщению
+  
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  // Подписка на онлайн-статус собеседника
+  
   useEffect(() => {
     if (!otherUser?.id || !isOpen) {
       setIsOnline(false);
@@ -299,14 +299,14 @@ const ChatWindow = ({ chatId, otherUser, onBack, t, isOpen, onClose, onSelectCon
     };
   }, [otherUser?.id, isOpen]);
 
-  // Пометить сообщения как прочитанные при открытии чата
+  
   useEffect(() => {
     if (chatId && firebaseUser && isOpen) {
       markMessagesAsRead(chatId, firebaseUser.uid);
     }
   }, [chatId, firebaseUser, isOpen]);
 
-  // Фокус на поле ввода при открытии
+  
   useEffect(() => {
     if (isOpen) {
       const timer = setTimeout(() => inputRef.current?.focus(), 100);
@@ -314,7 +314,7 @@ const ChatWindow = ({ chatId, otherUser, onBack, t, isOpen, onClose, onSelectCon
     }
   }, [isOpen]);
 
-  // Отправка сообщения
+  
   const handleSend = useCallback(async () => {
     if (!newMessage.trim() || !firebaseUser || !profile || isSending) return;
 
@@ -330,7 +330,7 @@ const ChatWindow = ({ chatId, otherUser, onBack, t, isOpen, onClose, onSelectCon
     }
   }, [newMessage, firebaseUser, profile, chatId, isSending]);
 
-  // Отправка по Enter
+  
   const handleKeyDown = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
@@ -338,13 +338,13 @@ const ChatWindow = ({ chatId, otherUser, onBack, t, isOpen, onClose, onSelectCon
     }
   };
 
-  // Удаление сообщения — только у себя (локально)
+  
   const handleDeleteLocal = useCallback((messageId) => {
     setDeleteMenu(null);
     setLocalDeleted(prev => new Set([...prev, messageId]));
   }, []);
 
-  // Удаление сообщения — у всех (из Firestore)
+  
   const handleDeleteEveryone = useCallback(async (messageId) => {
     if (!firebaseUser?.uid) return;
     setDeleteMenu(null);
@@ -358,16 +358,16 @@ const ChatWindow = ({ chatId, otherUser, onBack, t, isOpen, onClose, onSelectCon
     }
   }, [firebaseUser, messages]);
 
-  // Открыть меню выбора удаления
+  
   const handleDeleteOptions = useCallback((messageId) => {
-    // Используем координаты исходного контекстного меню
+    
     if (contextMenu) {
       setDeleteMenu({ x: contextMenu.x, y: contextMenu.y, messageId });
       setContextMenu(null);
     }
   }, [contextMenu]);
 
-  // Контекстное меню — для любых сообщений
+  
   const handleContextMenu = useCallback((e, messageId) => {
     const msg = messages.find(m => m.id === messageId);
     if (!msg) return;
@@ -377,7 +377,7 @@ const ChatWindow = ({ chatId, otherUser, onBack, t, isOpen, onClose, onSelectCon
     setContextMenu({ x: e.clientX, y: e.clientY, messageId, message: msg, isOwn });
   }, [messages, firebaseUser]);
 
-  // Открыть модалку пересылки
+  
   const handleForward = useCallback((messageId) => {
     const msg = messages.find(m => m.id === messageId);
     if (msg) {
@@ -387,10 +387,10 @@ const ChatWindow = ({ chatId, otherUser, onBack, t, isOpen, onClose, onSelectCon
     setContextMenu(null);
   }, [messages]);
 
-  // Действия с выбранными сообщениями
+  
   const handleSelectionForward = useCallback(() => {
     if (selectedMessages.length === 0) return;
-    // Пересылаем первое выбранное сообщение
+    
     setForwardMessage(selectedMessages[0]);
     setForwardModalOpen(true);
     exitSelectionMode();
@@ -417,10 +417,10 @@ const ChatWindow = ({ chatId, otherUser, onBack, t, isOpen, onClose, onSelectCon
     for (const msg of selectedMessages) {
       try {
         if (msg.senderId === firebaseUser?.uid) {
-          // Свои — через обычную функцию
+          
           await deleteMessage(msg.id, msg.senderId, firebaseUser.uid);
         } else {
-          // Чужие — через функцию без проверки
+          
           await deleteMessageEveryone(msg.id);
         }
       } catch (error) {
@@ -431,7 +431,7 @@ const ChatWindow = ({ chatId, otherUser, onBack, t, isOpen, onClose, onSelectCon
     exitSelectionMode();
   }, [selectedMessages, firebaseUser, exitSelectionMode]);
 
-  // Переключить режим выбора (долгий тап или кнопка)
+  
   const handleToggleSelectionMode = useCallback(() => {
     if (isSelectionMode) {
       exitSelectionMode();
@@ -444,7 +444,7 @@ const ChatWindow = ({ chatId, otherUser, onBack, t, isOpen, onClose, onSelectCon
     setContextMenu(null);
   }, []);
 
-  // Закрытие по клику вне
+  
   useEffect(() => {
     if (!contextMenu && !deleteMenu) return;
     const handleClick = () => {
@@ -466,20 +466,20 @@ const ChatWindow = ({ chatId, otherUser, onBack, t, isOpen, onClose, onSelectCon
     };
   }, [contextMenu, deleteMenu, forwardModalOpen]);
 
-  // Форматирование времени сообщения
+  
   const formatMessageTime = (timestamp) => {
     if (!timestamp) return '';
     const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
     return date.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
   };
 
-  // Группировка сообщений по дате
+  
   const groupMessagesByDate = (msgs) => {
     if (!msgs) return {};
     const filtered = msgs.filter(m => !localDeleted.has(m.id));
     const groups = {};
     filtered.forEach((msg) => {
-      // Пытаемся распарсить пересланное сообщение
+      
       let parsedMsg = msg;
       try {
         const data = JSON.parse(msg.text);
@@ -487,7 +487,7 @@ const ChatWindow = ({ chatId, otherUser, onBack, t, isOpen, onClose, onSelectCon
           parsedMsg = { ...msg, text: data.text, forwardedFrom: data.forwardedFrom };
         }
       } catch {
-        // Обычное сообщение
+        
       }
       const date = parsedMsg.createdAt?.toDate ? parsedMsg.createdAt.toDate() : new Date();
       const dateKey = date.toLocaleDateString('ru-RU', {
@@ -531,7 +531,7 @@ const ChatWindow = ({ chatId, otherUser, onBack, t, isOpen, onClose, onSelectCon
           exit={{ opacity: 0 }}
           transition={{ duration: 0.25 }}
         >
-          {/* Заголовок чата */}
+          {}
           <div
             className="chat-window-header"
             onPointerDown={(e) => dragControls.start(e)}
@@ -558,7 +558,7 @@ const ChatWindow = ({ chatId, otherUser, onBack, t, isOpen, onClose, onSelectCon
               </div>
             </div>
             <div className="chat-window-actions">
-              {/* Кнопка выбора собеседника */}
+              {}
               <button
                 className="chat-select-btn"
                 onClick={() => onSwitchChat && onSwitchChat()}
@@ -566,7 +566,7 @@ const ChatWindow = ({ chatId, otherUser, onBack, t, isOpen, onClose, onSelectCon
               >
                 <Users size={20} />
               </button>
-              {/* Кнопка выбора сообщений */}
+              {}
               <button
                 className={`chat-select-btn ${isSelectionMode ? 'active' : ''}`}
                 onClick={handleToggleSelectionMode}
@@ -580,7 +580,7 @@ const ChatWindow = ({ chatId, otherUser, onBack, t, isOpen, onClose, onSelectCon
             </div>
           </div>
 
-          {/* Панель действий для выбранных сообщений */}
+          {}
           <SelectionActionsBar
             isVisible={isSelectionMode}
             selectedCount={selectionStats.total}
@@ -589,7 +589,7 @@ const ChatWindow = ({ chatId, otherUser, onBack, t, isOpen, onClose, onSelectCon
             onForward={handleSelectionForward}
           />
 
-          {/* Сообщения */}
+          {}
           <div className="chat-messages" ref={chatContainerRef} onMouseDown={handleContainerMouseDown}>
             {messages === null ? (
               <div className="chat-loading">
@@ -614,7 +614,7 @@ const ChatWindow = ({ chatId, otherUser, onBack, t, isOpen, onClose, onSelectCon
             <div ref={messagesEndRef} />
           </div>
 
-          {/* Поле ввода */}
+          {}
           <div className="chat-input-area">
             <textarea
               ref={inputRef}
@@ -644,7 +644,7 @@ const ChatWindow = ({ chatId, otherUser, onBack, t, isOpen, onClose, onSelectCon
       )}
     </AnimatePresence>
 
-    {/* Контекстное меню удаления — портал в body */}
+    {}
     {contextMenu && createPortal(
       <motion.div
         className="msg-context-menu"
@@ -673,7 +673,7 @@ const ChatWindow = ({ chatId, otherUser, onBack, t, isOpen, onClose, onSelectCon
       document.body
     )}
 
-    {/* Меню выбора удаления — портал в body */}
+    {}
     {deleteMenu && createPortal(
       <motion.div
         className="msg-context-menu"
@@ -702,7 +702,7 @@ const ChatWindow = ({ chatId, otherUser, onBack, t, isOpen, onClose, onSelectCon
       document.body
     )}
 
-    {/* Модалка пересылки */}
+    {}
     <ForwardModal
       isOpen={forwardModalOpen}
       onClose={() => setForwardModalOpen(false)}

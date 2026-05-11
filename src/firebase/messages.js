@@ -20,23 +20,18 @@ const MESSAGES_COLLECTION = "messages";
 const CHATS_COLLECTION = "chats";
 const USERS_COLLECTION = "users";
 
-// ============================================
-// Утилиты
-// ============================================
 
-/**
- * Получить ID чата между двумя пользователями
- * (отсортированный для уникальности)
- */
+
+
+
+
 const getChatId = (userId1, userId2) => {
   return userId1 < userId2
     ? `${userId1}_${userId2}`
     : `${userId2}_${userId1}`;
 };
 
-/**
- * Проверка на ошибку внутреннего состояния Firebase
- */
+
 const isInternalFirebaseError = (error) => {
   const message = error?.message || "";
   return (
@@ -46,27 +41,23 @@ const isInternalFirebaseError = (error) => {
   );
 };
 
-/**
- * Безопасная отписка от snapshot
- */
+
 const safeUnsubscribe = (unsubscribe) => {
   try {
     unsubscribe();
   } catch {
-    // Игнорируем ошибки при отписке
+    
   }
 };
 
-// ============================================
-// Отправка сообщений
-// ============================================
 
-/**
- * Отправить сообщение в чат
- */
+
+
+
+
 export const sendMessage = async (chatId, senderId, senderProfile, text) => {
   try {
-    // Валидация данных сообщения
+    
     const validated = validateMessageData(senderId, senderProfile, text);
 
     const messageData = {
@@ -79,18 +70,18 @@ export const sendMessage = async (chatId, senderId, senderProfile, text) => {
       read: false,
     };
 
-    // Добавляем сообщение в коллекцию
+    
     const docRef = await addDoc(
       collection(db, MESSAGES_COLLECTION),
       messageData
     );
 
-    // Обновляем документ чата
+    
     const chatRef = doc(db, CHATS_COLLECTION, chatId);
     const chatSnap = await getDoc(chatRef);
 
     if (chatSnap.exists()) {
-      // Проверяем, не является ли текст пересланным сообщением
+      
       let displayText = text.trim().substring(0, 100);
       try {
         const data = JSON.parse(text);
@@ -108,7 +99,7 @@ export const sendMessage = async (chatId, senderId, senderProfile, text) => {
         updatedAt: serverTimestamp(),
       };
 
-      // Обновляем статус прочтения для отправителя
+      
       if (chatSnap.data().lastMessageReadBy) {
         updateData[`lastMessageReadBy.${senderId}`] = true;
       } else {
@@ -125,13 +116,11 @@ export const sendMessage = async (chatId, senderId, senderProfile, text) => {
   }
 };
 
-// ============================================
-// Подписки на сообщения и чаты (real-time)
-// ============================================
 
-/**
- * Подписаться на сообщения в чате
- */
+
+
+
+
 export const subscribeToMessages = (chatId, callback) => {
   try {
     const messagesRef = collection(db, MESSAGES_COLLECTION);
@@ -149,7 +138,7 @@ export const subscribeToMessages = (chatId, callback) => {
           messages.push({ id: doc.id, ...doc.data() });
         });
 
-        // Сортируем на клиенте по времени создания
+        
         messages.sort((a, b) => {
           const timeA = a.createdAt?.toMillis
             ? a.createdAt.toMillis()
@@ -169,7 +158,7 @@ export const subscribeToMessages = (chatId, callback) => {
       }
     );
 
-    // Возвращаем обёртку с проверкой isAlive
+    
     return () => {
       isAlive = false;
       safeUnsubscribe(unsubscribe);
@@ -180,9 +169,7 @@ export const subscribeToMessages = (chatId, callback) => {
   }
 };
 
-/**
- * Подписаться на все чаты пользователя
- */
+
 export const subscribeToUserChats = (userId, callback) => {
   try {
     const chatsRef = collection(db, CHATS_COLLECTION);
@@ -200,7 +187,7 @@ export const subscribeToUserChats = (userId, callback) => {
           chats.push({ id: doc.id, ...doc.data() });
         });
 
-        // Сортируем на клиенте (новые сверху)
+        
         chats.sort((a, b) => {
           const timeA = a.updatedAt?.toMillis
             ? a.updatedAt.toMillis()
@@ -230,13 +217,11 @@ export const subscribeToUserChats = (userId, callback) => {
   }
 };
 
-// ============================================
-// Управление пользователями
-// ============================================
 
-/**
- * Получить список всех пользователей
- */
+
+
+
+
 export const getAllUsers = async () => {
   try {
     const usersRef = collection(db, USERS_COLLECTION);
@@ -265,13 +250,11 @@ export const getAllUsers = async () => {
   }
 };
 
-// ============================================
-// Статус прочтения сообщений
-// ============================================
 
-/**
- * Удалить сообщение (только отправитель может удалить)
- */
+
+
+
+
 export const deleteMessage = async (messageId, senderId, currentUserId) => {
   if (senderId !== currentUserId) {
     throw new Error("Можно удалять только свои сообщения");
@@ -285,7 +268,7 @@ export const deleteMessage = async (messageId, senderId, currentUserId) => {
 
     const chatId = msgSnap.data().chatId;
 
-    // Проверяем, последнее ли это сообщение в чате
+    
     const messagesRef = collection(db, MESSAGES_COLLECTION);
     const q = query(messagesRef, where("chatId", "==", chatId));
     const snapshot = await getDocs(q);
@@ -300,10 +283,10 @@ export const deleteMessage = async (messageId, senderId, currentUserId) => {
 
     const isLastMessage = messages[0]?.id === messageId;
 
-    // Удаляем сообщение
+    
     await deleteDoc(msgRef);
 
-    // Если это было последнее сообщение — обновляем чат
+    
     if (isLastMessage && messages.length > 1) {
       const chatRef = doc(db, CHATS_COLLECTION, chatId);
       const nextMsg = messages[1];
@@ -320,9 +303,7 @@ export const deleteMessage = async (messageId, senderId, currentUserId) => {
   }
 };
 
-/**
- * Удалить сообщение у всех (без проверки отправителя — для любых сообщений)
- */
+
 export const deleteMessageEveryone = async (messageId) => {
   try {
     const msgRef = doc(db, MESSAGES_COLLECTION, messageId);
@@ -332,7 +313,7 @@ export const deleteMessageEveryone = async (messageId) => {
 
     const chatId = msgSnap.data().chatId;
 
-    // Проверяем, последнее ли это сообщение в чате
+    
     const messagesRef = collection(db, MESSAGES_COLLECTION);
     const q = query(messagesRef, where("chatId", "==", chatId));
     const snapshot = await getDocs(q);
@@ -347,10 +328,10 @@ export const deleteMessageEveryone = async (messageId) => {
 
     const isLastMessage = messages[0]?.id === messageId;
 
-    // Удаляем сообщение
+    
     await deleteDoc(msgRef);
 
-    // Если это было последнее сообщение — обновляем чат
+    
     if (isLastMessage && messages.length > 1) {
       const chatRef = doc(db, CHATS_COLLECTION, chatId);
       const nextMsg = messages[1];
@@ -367,9 +348,7 @@ export const deleteMessageEveryone = async (messageId) => {
   }
 };
 
-/**
- * Пометить сообщения как прочитанные
- */
+
 export const markMessagesAsRead = async (chatId, userId) => {
   try {
     const messagesRef = collection(db, MESSAGES_COLLECTION);
@@ -378,7 +357,7 @@ export const markMessagesAsRead = async (chatId, userId) => {
     const snapshot = await getDocs(q);
     if (snapshot.empty) return;
 
-    // Фильтруем непрочитанные сообщения не от текущего пользователя
+    
     const unreadMessages = [];
     snapshot.forEach((docSnap) => {
       const data = docSnap.data();
@@ -389,12 +368,12 @@ export const markMessagesAsRead = async (chatId, userId) => {
 
     if (unreadMessages.length === 0) return;
 
-    // Помечаем как прочитанные
+    
     await Promise.all(
       unreadMessages.map((ref) => updateDoc(ref, { read: true }))
     );
 
-    // Обновляем статус прочтения в документе чата
+    
     const chatRef = doc(db, CHATS_COLLECTION, chatId);
     const chatSnap = await getDoc(chatRef);
 
@@ -410,9 +389,7 @@ export const markMessagesAsRead = async (chatId, userId) => {
   }
 };
 
-/**
- * Получить количество непрочитанных сообщений в чате
- */
+
 export const getUnreadCount = async (chatId, userId) => {
   try {
     const messagesRef = collection(db, MESSAGES_COLLECTION);
@@ -435,18 +412,11 @@ export const getUnreadCount = async (chatId, userId) => {
   }
 };
 
-// ============================================
-// Отправка контента в чат
-// ============================================
 
-/**
- * Отправить фильм/сериал в чат как сообщение с прикреплённым контентом
- * @param {string} chatId - ID чата
- * @param {string} senderId - ID отправителя
- * @param {object} senderProfile - Профиль отправителя
- * @param {object} contentItem - Элемент контента (фильм/сериал)
- * @param {string} message - Дополнительное сообщение
- */
+
+
+
+
 export const shareContentToChat = async (
   chatId,
   senderId,
@@ -484,13 +454,13 @@ export const shareContentToChat = async (
       read: false,
     };
 
-    // Добавляем сообщение в коллекцию
+    
     const docRef = await addDoc(
       collection(db, MESSAGES_COLLECTION),
       messageData
     );
 
-    // Обновляем документ чата
+    
     const chatRef = doc(db, CHATS_COLLECTION, chatId);
     const chatSnap = await getDoc(chatRef);
 
@@ -523,13 +493,11 @@ export const shareContentToChat = async (
   }
 };
 
-// ============================================
-// Инициализация чатов
-// ============================================
 
-/**
- * Инициализировать чат между двумя пользователями
- */
+
+
+
+
 export const initializeChat = async (
   userId1,
   userId2,

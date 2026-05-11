@@ -17,7 +17,7 @@ const UsersList = ({ t, isOpen, onClose, onViewProfile, onOpenChat }) => {
   const panelRef = useRef(null);
   const [constraints, setConstraints] = useState({ left: 0, right: 0, top: 0, bottom: 0 });
 
-  // Сохранение позиции окна
+  
   const { x, y, handleDragStart, handleDragEnd, resetPosition } = useWindowPosition(
     "users-list",
     isOpen
@@ -39,7 +39,7 @@ const UsersList = ({ t, isOpen, onClose, onViewProfile, onOpenChat }) => {
     }
   }, [isOpen]);
 
-  // Обработка Escape
+  
   useEffect(() => {
     const handleEscape = (e) => {
       if (e.key === 'Escape' && isOpen) {
@@ -50,7 +50,7 @@ const UsersList = ({ t, isOpen, onClose, onViewProfile, onOpenChat }) => {
     return () => document.removeEventListener('keydown', handleEscape);
   }, [isOpen, onClose]);
 
-  // Загружаем всех пользователей
+  
   useEffect(() => {
     if (isOpen && firebaseUser) {
       loadUsers();
@@ -72,7 +72,7 @@ const UsersList = ({ t, isOpen, onClose, onViewProfile, onOpenChat }) => {
     }
   };
 
-  // Фильтрация пользователей по поиску
+  
   useEffect(() => {
     if (searchQuery.trim() === '') {
       setFilteredUsers(users);
@@ -120,7 +120,7 @@ const UsersList = ({ t, isOpen, onClose, onViewProfile, onOpenChat }) => {
           exit={{ opacity: 0 }}
           transition={{ duration: 0.25 }}
         >
-          {/* Header */}
+          {}
           <div
             className="users-list-header"
             onPointerDown={(e) => dragControls.start(e)}
@@ -135,7 +135,7 @@ const UsersList = ({ t, isOpen, onClose, onViewProfile, onOpenChat }) => {
             </button>
           </div>
 
-          {/* Search */}
+          {}
           <div className="users-list-search">
             <Search size={16} />
             <input
@@ -146,7 +146,7 @@ const UsersList = ({ t, isOpen, onClose, onViewProfile, onOpenChat }) => {
             />
           </div>
 
-          {/* Users List */}
+          {}
           <div className="users-list-content">
             {loading ? (
               <div className="users-list-loading">

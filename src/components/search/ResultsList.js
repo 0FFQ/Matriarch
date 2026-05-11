@@ -5,26 +5,20 @@ import MovieActions from "../player/MovieActions";
 
 const IMAGE_BASE = "https://image.tmdb.org/t/p/w500";
 
-/**
- * Список результатов поиска
- */
+
 const ResultsList = memo(({ results, imageBase = IMAGE_BASE, onSelect, fromCache, onShareInChat, t }) => {
   const isSingleResult = results.length === 1;
 
-  /**
-   * Обработчик клика по карточке
-   */
+  
   const handleCardClick = (event, item) => {
-    // Не переходим по ссылке если клик по иконке Кинопоиска
+    
     if (!event.target.closest(".kinopoisk-icon")) {
       event.preventDefault();
       onSelect(item.id, item.media_type);
     }
   };
 
-  /**
-   * Получить ссылку на Кинопоиск
-   */
+  
   const getKinopoiskLink = (item) => {
     const title = item.title || item.name;
     const year = (item.release_date || item.first_air_date || "").split("-")[0];
@@ -34,17 +28,13 @@ const ResultsList = memo(({ results, imageBase = IMAGE_BASE, onSelect, fromCache
     )}`;
   };
 
-  /**
-   * Форматировать год
-   */
+  
   const formatYear = (dateString) => {
     if (!dateString) return "";
     return dateString.split("-")[0];
   };
 
-  /**
-   * Форматировать рейтинг
-   */
+  
   const formatRating = (value) => {
     if (value === null || value === undefined || isNaN(value)) return "—";
     return value.toFixed(1);
@@ -52,7 +42,7 @@ const ResultsList = memo(({ results, imageBase = IMAGE_BASE, onSelect, fromCache
 
   return (
     <>
-      {/* Индикатор кэша */}
+      {}
       {fromCache && (
         <motion.div
           className="cache-indicator"
@@ -65,7 +55,7 @@ const ResultsList = memo(({ results, imageBase = IMAGE_BASE, onSelect, fromCache
         </motion.div>
       )}
 
-      {/* Список карточек */}
+      {}
       <motion.div
         className={isSingleResult ? "results-list-single" : "results-list"}
         initial={{ opacity: 0 }}
@@ -87,7 +77,7 @@ const ResultsList = memo(({ results, imageBase = IMAGE_BASE, onSelect, fromCache
             transition={{ delay: index * 0.05 }}
             onClick={(event) => handleCardClick(event, item)}
           >
-            {/* Постер */}
+            {}
             <div className="poster-wrapper">
               {item.poster_path ? (
                 <img
@@ -112,7 +102,7 @@ const ResultsList = memo(({ results, imageBase = IMAGE_BASE, onSelect, fromCache
               <MovieActions item={item} onShareInChat={onShareInChat} />
             </div>
 
-            {/* Информация */}
+            {}
             <div className="title-wrapper">
               <h3>{item.title || item.name}</h3>
               <div className="meta-row">

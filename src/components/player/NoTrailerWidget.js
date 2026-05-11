@@ -1,12 +1,7 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-/**
- * Компонент отображения виджета "Трейлер не найден"
- * @param {Object} movie - информация о фильме
- * @param {function} onClose - функция закрытия
- * @param {Object} t - объект с переводами
- */
+
 const NoTrailerWidget = ({ movie, onClose, t }) => {
   if (!movie) return null;
 

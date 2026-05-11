@@ -33,10 +33,10 @@ describe('Cache Utility', () => {
 
     test('should return null for expired cache', () => {
       const testData = { name: 'test' };
-      // TTL 1ms - практически мгновенно истекает
+      
       setCache('/test', { param: 'value' }, testData, 1);
 
-      // Ждём истечения TTL
+      
       return new Promise((resolve) => {
         setTimeout(() => {
           const result = getCache('/test', { param: 'value' });
@@ -88,7 +88,7 @@ describe('Cache Utility', () => {
   describe('clearExpiredCache', () => {
     test('should remove only expired entries', () => {
       setCache('/expired', {}, { data: 'old' }, 1);
-      setCache('/valid', {}, { data: 'new' }, 1000 * 60 * 60); // 1 hour
+      setCache('/valid', {}, { data: 'new' }, 1000 * 60 * 60); 
 
       return new Promise((resolve) => {
         setTimeout(() => {
@@ -124,7 +124,7 @@ describe('Cache Utility', () => {
 
       return new Promise((resolve) => {
         setTimeout(() => {
-          // Сначала вызываем getCache чтобы триггернуть удаление expired
+          
           getCache('/expired', {});
           
           const stats = getCacheStats();
@@ -145,7 +145,7 @@ describe('Cache Utility', () => {
         get: jest.fn().mockResolvedValue({ data: mockData }),
       };
 
-      // Первый запрос - кэш промах
+      
       const result1 = await cachedRequest(
         mockAxios,
         'https://api.test.com',
@@ -158,7 +158,7 @@ describe('Cache Utility', () => {
       expect(result1.data).toEqual(mockData);
       expect(mockAxios.get).toHaveBeenCalledTimes(1);
 
-      // Второй запрос - кэш попадание
+      
       const result2 = await cachedRequest(
         mockAxios,
         'https://api.test.com',
@@ -169,7 +169,7 @@ describe('Cache Utility', () => {
 
       expect(result2.fromCache).toBe(true);
       expect(result2.data).toEqual(mockData);
-      expect(mockAxios.get).toHaveBeenCalledTimes(1); // Не вызывался снова
+      expect(mockAxios.get).toHaveBeenCalledTimes(1); 
     });
 
     test('should make new request for different params', async () => {

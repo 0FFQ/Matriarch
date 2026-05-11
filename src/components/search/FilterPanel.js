@@ -3,9 +3,7 @@ import { motion, AnimatePresence, useDragControls } from "framer-motion";
 import { X, Sliders, RotateCcw, Film, Tv, Globe, Star } from "lucide-react";
 import useWindowPosition from "../../hooks/useWindowPosition";
 
-/**
- * Панель фильтров
- */
+
 const FilterPanel = ({
   isOpen,
   onClose,
@@ -25,13 +23,13 @@ const FilterPanel = ({
     bottom: 0,
   });
 
-  // Сохранение позиции окна
+  
   const { x, y, handleDragStart, handleDragEnd, resetPosition } = useWindowPosition(
     "filter-panel",
     isOpen
   );
 
-  // Вычисляем ограничения для перетаскивания
+  
   useEffect(() => {
     if (isOpen && panelRef.current) {
       const headerEl = panelRef.current.querySelector('.filter-header');
@@ -48,7 +46,7 @@ const FilterPanel = ({
     }
   }, [isOpen]);
 
-  // Обработка Escape
+  
   useEffect(() => {
     const handleEscape = (e) => {
       if (e.key === "Escape" && isOpen) {
@@ -59,11 +57,11 @@ const FilterPanel = ({
     return () => document.removeEventListener("keydown", handleEscape);
   }, [isOpen, onClose]);
 
-  // Генерация списка годов
+  
   const currentYear = new Date().getFullYear();
   const years = Array.from({ length: 100 }, (_, i) => currentYear - i);
 
-  // Опции сортировки
+  
   const sortOptions = [
     { value: "popularity.desc", label: t.byPopularity },
     { value: "vote_average.desc", label: t.byRating },
@@ -73,16 +71,12 @@ const FilterPanel = ({
     { value: "title.desc", label: t.byTitleZA },
   ];
 
-  /**
-   * Обновить значение фильтра
-   */
+  
   const handleChange = (key, value) => {
     setFilters((prev) => ({ ...prev, [key]: value }));
   };
 
-  /**
-   * Сбросить все фильтры
-   */
+  
   const handleReset = () => {
     setFilters({
       type: "all",
@@ -94,9 +88,7 @@ const FilterPanel = ({
     });
   };
 
-  /**
-   * Применить фильтры
-   */
+  
   const handleApply = () => {
     onApply();
     onClose();
@@ -122,7 +114,7 @@ const FilterPanel = ({
           exit={{ opacity: 0 }}
           transition={{ duration: 0.25 }}
         >
-          {/* Заголовок */}
+          {}
           <div
             className="filter-header"
             onPointerDown={(e) => dragControls.start(e)}
@@ -141,9 +133,9 @@ const FilterPanel = ({
             </button>
           </div>
 
-          {/* Содержимое фильтров */}
+          {}
           <div className="filter-content">
-            {/* Тип контента */}
+            {}
             <div className="filter-section">
               <label className="filter-label">{t.contentType}</label>
               <div className="type-toggle">
@@ -173,7 +165,7 @@ const FilterPanel = ({
               </div>
             </div>
 
-            {/* Аниме фильтр */}
+            {}
             <div className="filter-section">
               <label className="filter-label">{t.anime}</label>
               <label className="anime-toggle">
@@ -189,7 +181,7 @@ const FilterPanel = ({
               </label>
             </div>
 
-            {/* Жанр */}
+            {}
             <div className="filter-section">
               <label className="filter-label">{t.genre}</label>
               <div className="select-wrapper">
@@ -209,7 +201,7 @@ const FilterPanel = ({
               </div>
             </div>
 
-            {/* Год */}
+            {}
             <div className="filter-section">
               <label className="filter-label">{t.year}</label>
               <div className="select-wrapper">
@@ -228,7 +220,7 @@ const FilterPanel = ({
               </div>
             </div>
 
-            {/* Рейтинг */}
+            {}
             <div className="filter-section">
               <label className="filter-label">
                 <Star size={14} /> {t.rating}:{" "}
@@ -249,7 +241,7 @@ const FilterPanel = ({
               </div>
             </div>
 
-            {/* Сортировка */}
+            {}
             <div className="filter-section">
               <label className="filter-label">{t.sortBy}</label>
               <div className="select-wrapper">
@@ -268,7 +260,7 @@ const FilterPanel = ({
             </div>
           </div>
 
-          {/* Кнопки действий */}
+          {}
           <div className="filter-footer">
             <button className="filter-reset" onClick={handleReset}>
               <RotateCcw size={16} />

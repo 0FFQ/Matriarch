@@ -1,11 +1,7 @@
 import { useState, useCallback } from 'react';
 import { logApiError, getUserErrorMessage } from '../utils/apiErrors';
 
-/**
- * Хук для управления состоянием ошибок API
- * @param {string} language - язык интерфейса
- * @returns {{error: string|null, clearError: function, handleError: function}}
- */
+
 export const useErrorHandler = (language = 'ru') => {
   const [error, setError] = useState(null);
 

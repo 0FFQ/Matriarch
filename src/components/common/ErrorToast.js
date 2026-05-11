@@ -2,9 +2,7 @@ import React, { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AlertCircle, X } from 'lucide-react';
 
-/**
- * Компонент всплывающего уведомления об ошибке
- */
+
 const ErrorToast = ({ message, onClose, duration = 5000 }) => {
   useEffect(() => {
     if (duration > 0) {

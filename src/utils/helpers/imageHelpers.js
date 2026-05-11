@@ -1,35 +1,18 @@
 import { IMAGE_BASE } from '../constants';
 
-/**
- * Получить URL изображения с fallback
- * @param {string|null|undefined} path - путь к изображению
- * @param {string} size - размер изображения (w92, w154, w500, и т.д.)
- * @returns {string|null} URL изображения или null
- */
+
 export const getImageUrl = (path, size = 'w500') => {
   if (!path) return null;
   return `${IMAGE_BASE.replace('w500', size)}${path}`;
 };
 
-/**
- * Получить URL изображения с fallback на английский
- * Если путь null, возвращаем null для показа placeholder
- * @param {Object} item - объект фильма/сериала
- * @param {string} size - размер изображения
- * @returns {string|null} URL изображения или null
- */
+
 export const getPosterUrl = (item, size = 'w500') => {
   if (!item || !item.poster_path) return null;
   return getImageUrl(item.poster_path, size);
 };
 
-/**
- * Компонент-заглушка для отсутствующих постеров
- * @param {Object} props
- * @param {string} props.mediaType - тип контента ('movie' или 'tv')
- * @param {string} props.label - текст для отображения
- * @param {string} props.className - дополнительный CSS класс
- */
+
 export const PosterPlaceholder = ({ mediaType, label, className = '' }) => {
   const isTV = mediaType === 'tv';
   

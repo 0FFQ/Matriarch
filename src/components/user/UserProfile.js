@@ -28,7 +28,7 @@ const UserProfile = ({ t, isOpen, onClose, onBackToMenu }) => {
   const [firebaseUser, setFirebaseUser] = useState(null);
   const [authLoading, setAuthLoading] = useState(true);
 
-  // Следим за состоянием авторизации
+  
   useEffect(() => {
     const unsubscribe = onAuthChange((user) => {
       setFirebaseUser(user);
@@ -50,7 +50,7 @@ const UserProfile = ({ t, isOpen, onClose, onBackToMenu }) => {
 
   const handleLogout = async () => {
     try {
-      // Выходим из Google (данные уже сохранены в Firestore автоматически через debounce 500ms)
+      
       await logout();
     } catch (error) {
       console.error('Logout error:', error);
@@ -60,21 +60,21 @@ const UserProfile = ({ t, isOpen, onClose, onBackToMenu }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editName, setEditName] = useState(profile.name || '');
   const [activeTab, setActiveTab] = useState('favorites');
-  const [activeCategory, setActiveCategory] = useState('all'); // all, movie, tv, anime
+  const [activeCategory, setActiveCategory] = useState('all'); 
   
-  // Состояние для вкладки пользователей
+  
   const [usersList, setUsersList] = useState([]);
   const [usersLoading, setUsersLoading] = useState(false);
   const [usersSearch, setUsersSearch] = useState('');
   const [filteredUsers, setFilteredUsers] = useState([]);
-  const [showUsersList, setShowUsersList] = useState(false); // Показывать ли список пользователей
-  const [subscriptionStatuses, setSubscriptionStatuses] = useState({}); // На кого подписан
-  const [subscriptionActionsLoading, setSubscriptionActionsLoading] = useState({}); // Загрузка действий
-  const [usersView, setUsersView] = useState('all'); // 'all', 'subscribed', или 'subscribers'
-  const [subscribersList, setSubscribersList] = useState([]); // Список подписчиков
+  const [showUsersList, setShowUsersList] = useState(false); 
+  const [subscriptionStatuses, setSubscriptionStatuses] = useState({}); 
+  const [subscriptionActionsLoading, setSubscriptionActionsLoading] = useState({}); 
+  const [usersView, setUsersView] = useState('all'); 
+  const [subscribersList, setSubscribersList] = useState([]); 
   const [subscribersLoading, setSubscribersLoading] = useState(false);
   
-  // Количество других пользователей (исключая текущего)
+  
   const otherUsersCount = usersList.filter(u => !firebaseUser || u.id !== firebaseUser.uid).length;
   const subscribedCount = usersList.filter(u => 
     (!firebaseUser || u.id !== firebaseUser.uid) && subscriptionStatuses[u.id]
@@ -87,7 +87,7 @@ const UserProfile = ({ t, isOpen, onClose, onBackToMenu }) => {
   const panelRef = useRef(null);
   const [constraints, setConstraints] = useState({ left: 0, right: 0, top: 0, bottom: 0 });
 
-  // Сохранение позиции окна
+  
   const { x, y, handleDragStart, handleDragEnd, resetPosition } = useWindowPosition(
     "user-profile",
     isOpen
@@ -120,16 +120,16 @@ const UserProfile = ({ t, isOpen, onClose, onBackToMenu }) => {
     }
   }, [isEditing]);
 
-  // Загрузка пользователей при переключении на вкладку
+  
   useEffect(() => {
     if (activeTab === 'users') {
       loadUsers();
     }
   }, [activeTab]);
 
-  // Фильтрация пользователей по поиску и виду
+  
   useEffect(() => {
-    // Если режим "подписчики" - используем список подписчиков
+    
     if (usersView === 'subscribers') {
       if (usersSearch.trim() === '') {
         setFilteredUsers(subscribersList.map(sub => ({
@@ -156,12 +156,12 @@ const UserProfile = ({ t, isOpen, onClose, onBackToMenu }) => {
       return;
     }
     
-    // Для "все" и "подписки" - используем usersList
+    
     let baseUsers = usersList.filter(user => 
       !firebaseUser || user.id !== firebaseUser.uid
     );
     
-    // Если режим "подписанные" - фильтруем только тех на кого подписаны
+    
     if (usersView === 'subscribed') {
       baseUsers = baseUsers.filter(user => subscriptionStatuses[user.id]);
     }
@@ -187,10 +187,10 @@ const UserProfile = ({ t, isOpen, onClose, onBackToMenu }) => {
       setUsersList(allUsers);
       setFilteredUsers(allUsers);
       
-      // Загружаем статусы подписок для всех пользователей
+      
       if (firebaseUser) {
         await loadSubscriptionStatuses(allUsers, firebaseUser.uid);
-        // Загружаем подписчиков
+        
         await loadSubscribers(firebaseUser.uid);
       }
     } catch (err) {
@@ -246,13 +246,13 @@ const UserProfile = ({ t, isOpen, onClose, onBackToMenu }) => {
         avatar: profile.avatar
       });
 
-      // Обновляем статус
+      
       setSubscriptionStatuses(prev => ({
         ...prev,
         [user.id]: true
       }));
       
-      // Обновляем подписчиков
+      
       if (firebaseUser) {
         await loadSubscribers(firebaseUser.uid);
       }
@@ -271,7 +271,7 @@ const UserProfile = ({ t, isOpen, onClose, onBackToMenu }) => {
       setSubscriptionActionsLoading(prev => ({ ...prev, [user.id]: true }));
       await unsubscribeFromUser(firebaseUser.uid, user.id);
       
-      // Обновляем статус
+      
       setSubscriptionStatuses(prev => {
         const newStatuses = { ...prev };
         delete newStatuses[user.id];
@@ -379,10 +379,10 @@ const UserProfile = ({ t, isOpen, onClose, onBackToMenu }) => {
         break;
     }
 
-    // Фильтрация по категории
+    
     if (activeCategory !== 'all') {
       items = items.filter(item => {
-        // Определяем, является ли элемент аниме
+        
         const isAnimation = item.genre_ids?.includes(16);
         const hasAnimeKeyword = item.title?.toLowerCase().includes('аниме') || 
                                 item.name?.toLowerCase().includes('аниме') || 
@@ -394,7 +394,7 @@ const UserProfile = ({ t, isOpen, onClose, onBackToMenu }) => {
           return isAnime;
         }
         if (activeCategory === 'tv') {
-          // Сериалы, но не аниме
+          
           return (item.media_type === 'tv' || item.media_type === undefined) && !isAnime;
         }
         if (activeCategory === 'movie') {
@@ -459,14 +459,14 @@ const UserProfile = ({ t, isOpen, onClose, onBackToMenu }) => {
           </div>
 
           <div className="filter-content">
-            {/* Объединённая секция профиля и синхронизации */}
+            {}
             <div className="filter-section">
               <label className="filter-label">
                 <User size={14} style={{ marginRight: '6px' }} />
                 {t.profile || 'Профиль'}
               </label>
               <div className="unified-profile-card">
-                {/* Верхняя строка: аватар + имя */}
+                {}
                 <div className="profile-header-row">
                   <div className={`profile-avatar-small ${profile.avatar ? 'has-avatar' : ''}`} style={{ background: profile.avatar ? 'transparent' : getAvatarColor(profile.name) }}>
                     {profile.avatar ? (
@@ -484,63 +484,7 @@ const UserProfile = ({ t, isOpen, onClose, onBackToMenu }) => {
                     <input
                       ref={fileInputRef}
                       type="file"
-                      accept="image/*"
-                      style={{ display: 'none' }}
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) {
-                          const reader = new FileReader();
-                          reader.onloadend = () => {
-                            updateProfile({ ...profile, avatar: reader.result });
-                          };
-                          reader.readAsDataURL(file);
-                        }
-                        e.target.value = '';
-                      }}
-                    />
-                  </div>
-                  <div className="profile-name-small">
-                    {isEditing ? (
-                      <div className="profile-name-small-edit">
-                        <input
-                          ref={inputRef}
-                          type="text"
-                          value={editName}
-                          onChange={(e) => setEditName(e.target.value)}
-                          onKeyDown={handleKeyDown}
-                          placeholder={t.profileName || 'Имя'}
-                          maxLength={30}
-                          className="profile-name-small-input"
-                        />
-                        <div className="edit-actions-small">
-                          <button className="edit-small-btn" onClick={handleSave}>
-                            <Edit2 size={14} />
-                          </button>
-                          <button
-                            className="edit-small-btn cancel"
-                            onClick={() => {
-                              setEditName(profile.name || '');
-                              setIsEditing(false);
-                            }}
-                          >
-                            <X size={14} />
-                          </button>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="profile-name-small-view">
-                        <span className="profile-name-small-display" onClick={() => setIsEditing(true)}>
-                          {profile.name || (t.profileNamePlaceholder || 'Ваше имя')}
-                        </span>
-                        <button className="profile-edit-small-btn" onClick={() => setIsEditing(true)}>
-                          <Edit2 size={14} />
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Статистика */}
+                      accept="image}
                 <div className="profile-stats-compact">
                   <div className="stat-compact">
                     <Heart size={14} />
@@ -556,10 +500,10 @@ const UserProfile = ({ t, isOpen, onClose, onBackToMenu }) => {
                   </div>
                 </div>
 
-                {/* Разделитель */}
+                {}
                 <div className="profile-divider"></div>
 
-                {/* Синхронизация */}
+                {}
                 {authLoading ? (
                   <div className="sync-compact-loading">
                     <div className="sync-loading-spinner-small"></div>
@@ -627,7 +571,7 @@ const UserProfile = ({ t, isOpen, onClose, onBackToMenu }) => {
               </div>
             </div>
 
-            {/* Вкладки */}
+            {}
             <div className="filter-section">
               <label className="filter-label">{t.lists || 'Списки'}</label>
               <div className="profile-tabs-row">
@@ -666,7 +610,7 @@ const UserProfile = ({ t, isOpen, onClose, onBackToMenu }) => {
               </div>
             </div>
 
-            {/* Категории */}
+            {}
             <div className="filter-section">
               <label className="filter-label">{t.categories || 'Категории'}</label>
               <div className="profile-category-row">
@@ -705,12 +649,12 @@ const UserProfile = ({ t, isOpen, onClose, onBackToMenu }) => {
               </div>
             </div>
 
-            {/* Пользователи */}
+            {}
             {activeTab === 'users' && (
               <div className="filter-section">
                 <label className="filter-label">{t.users || 'Пользователи'}</label>
                 
-                {/* Кнопка для показа списка пользователей */}
+                {}
                 <button
                   className="show-users-btn"
                   onClick={() => {
@@ -742,10 +686,10 @@ const UserProfile = ({ t, isOpen, onClose, onBackToMenu }) => {
                   </svg>
                 </button>
 
-                {/* Выпадающий список пользователей */}
+                {}
                 {showUsersList && (
                   <div className="users-dropdown">
-                    {/* Переключатель вида */}
+                    {}
                     <div className="users-view-toggle">
                       <button
                         className={`users-view-btn ${usersView === 'all' ? 'active' : ''}`}
@@ -779,7 +723,7 @@ const UserProfile = ({ t, isOpen, onClose, onBackToMenu }) => {
                       </button>
                     </div>
                     
-                    {/* Поиск пользователей */}
+                    {}
                     <div className="users-search">
                       <input
                         type="text"
@@ -790,7 +734,7 @@ const UserProfile = ({ t, isOpen, onClose, onBackToMenu }) => {
                       />
                     </div>
                     
-                    {/* Список пользователей */}
+                    {}
                     {(usersLoading || (usersView === 'subscribers' && subscribersLoading)) ? (
                       <div className="users-loading">
                         <div className="users-loading-spinner"></div>
@@ -853,7 +797,7 @@ const UserProfile = ({ t, isOpen, onClose, onBackToMenu }) => {
               </div>
             )}
 
-            {/* Список фильмов */}
+            {}
             {activeTab !== 'users' && (
             <div className="filter-section profile-list-section">
               {currentList.items.length === 0 ? (
